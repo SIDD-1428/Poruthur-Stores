@@ -1,24 +1,78 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack } from "expo-router";
+import React, {
+  useEffect,
+  useState,
+} from "react";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AuthProvider } from "@/context/AuthContext";
+import auth from "@react-native-firebase/auth";
+import { CartProvider } from "../context/CartContext";
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const unsubscribe =
+      auth().onAuthStateChanged(
+        (currentUser) => {
+          setUser(currentUser);
+          setLoading(false);
+        }
+      );
+
+    return unsubscribe;
+  }, []);
+
+  if (loading) {
+    return null;
+  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+    <AuthProvider>
+    <CartProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        {!user ? (
+          <>
+            <Stack.Screen
+              name="(auth)/login"
+            />
+
+            <Stack.Screen
+              name="(auth)/signup"
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="(tabs)"
+            />
+
+            <Stack.Screen
+              name="product/[id]"
+              options={{
+                presentation:
+                  "transparentModal",
+              }}
+            />
+
+            <Stack.Screen
+              name="add-address"
+            />
+
+            <Stack.Screen
+              name="edit-address"
+            />
+          </>
+        )}
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </CartProvider>
+    </AuthProvider>
   );
 }
