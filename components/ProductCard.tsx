@@ -39,12 +39,13 @@ export default function ProductCard({
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
 
-  const itemInCart = cart.find((item) => item.name === name);
+  const itemInCart = cart.find((item) => item.id == id);
   const isOutOfStock = stock <= 0;
   const isLowStock = !isOutOfStock && stock <= 5;
 
   const scale = useRef(new Animated.Value(1)).current;
   const btnScale = useRef(new Animated.Value(1)).current;
+  const isUpdatingRef=useRef(false);
 
   const onPressIn = () =>
     Animated.spring(scale, { toValue: 0.955, useNativeDriver: true }).start();
@@ -63,24 +64,66 @@ export default function ProductCard({
   };
 
   const handleAddToCart = (e: any) => {
-    e.stopPropagation();
-    if (isOutOfStock) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    animateBtn();
-    addToCart({ id, name, price, image, quantity: 1, stock, maxOrderQty, unit });
-  };
+  e.stopPropagation();
+  
+  if (isUpdatingRef.current) return;
+  isUpdatingRef.current = true;
+
+  if (isOutOfStock) {
+    isUpdatingRef.current = false;
+    return;
+  }
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  animateBtn();
+
+  console.log("Adding to cart",{
+    id,name,stock,maxOrderQty,stockType:typeof stock,maxOrderQtyType:typeof maxOrderQty,
+  });
+  
+  addToCart({
+    id,
+    name,
+    price,
+    image,
+    quantity: 1,
+    stock,
+    maxOrderQty,
+    unit,
+  });
+  requestAnimationFrame(() => {
+    isUpdatingRef.current = false;
+  });
+};
 
   const handleIncrease = (e: any) => {
-    e.stopPropagation();
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    increaseQty(name);
-  };
+  e.stopPropagation();
 
-  const handleDecrease = (e: any) => {
-    e.stopPropagation();
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    decreaseQty(name);
-  };
+  if (isUpdatingRef.current) return;
+
+  isUpdatingRef.current = true;
+
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+  increaseQty(id);
+
+  requestAnimationFrame(() => {
+    isUpdatingRef.current = false;
+  });
+};
+
+ const handleDecrease = (e: any) => {
+  e.stopPropagation();
+
+  if (isUpdatingRef.current) return;
+  isUpdatingRef.current = true;
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+  decreaseQty(id);
+
+  requestAnimationFrame(() => {
+    isUpdatingRef.current = false;
+  });
+};
 
   return (
     <TouchableOpacity
@@ -153,14 +196,18 @@ export default function ProductCard({
             ) : (
               <View style={styles.qtyBox}>
                 <TouchableOpacity
+                disabled={false}
                   style={styles.qtyBtn}
                   onPress={handleDecrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
                   <Ionicons name="remove" size={10} color="#007AFF" />
                 </TouchableOpacity>
+
+
                 <Text style={styles.qtyText}>{itemInCart.quantity}</Text>
                 <TouchableOpacity
+                  disabled={false}
                   style={[styles.qtyBtn, styles.qtyBtnAdd]}
                   onPress={handleIncrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}

@@ -16,9 +16,9 @@ type CartItem = Product;
 type CartContextType = {
     cart: CartItem[];
     addToCart: (product: CartItem) => void;
-    increaseQty: (name: string) => void;
-    decreaseQty: (name: string) => void;
-    removeFromCart: (name: string) => void;
+    increaseQty: (id: string) => void;
+    decreaseQty: (id: string) => void;
+    removeFromCart: (id: string) => void;
     clearCart: () => void;
 };
 
@@ -32,7 +32,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const addToCart = (product: CartItem) => {
     setCart(prev => {
         const existing = prev.find(
-            item => item.name === product.name
+            item => item.id === product.id
         );
 
         if (existing) {
@@ -53,7 +53,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             }
 
             return prev.map(item =>
-                item.name === product.name
+                item.id === product.id
                     ? {
                         ...item,
                         quantity: item.quantity + 1,
@@ -72,14 +72,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
 };
 
-     const increaseQty = (name: string)=>{
+     const increaseQty = (id: string)=>{
+
                         setCart(prev => prev.map(item => {
-                          if (item.name !== name)
+                            console.log({
+                                id:item.id,
+                                quantity:item.quantity,
+                                maxOrderQty: item.maxOrderQty,
+                                stock:item.stock,
+                                maxOrderQtyType:typeof item.maxOrderQty,
+                                stockType:typeof item.stock,
+                            });
+
+                            if (item.id !== id)
                             return item;
                           if(
-                            item.maxOrderQty && 
-                            item.maxOrderQty >0 &&
-                            item.quantity >= item.maxOrderQty
+                            item.maxOrderQty !=null && 
+                            item.quantity >= Number(item.maxOrderQty)
                           ){
                              Alert.alert(
                                     "Limit Reached",
@@ -87,8 +96,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                                 );
                             return item;
                           }
-                          if(item.stock &&
-                            item.quantity >= item.stock
+                          if(item.stock!= null &&
+                            item.quantity >= Number(item.stock)
                           ){
                             Alert.alert("Out of Stock","Sorry! That's all we have at this moment.")
                             return item;
@@ -103,11 +112,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                       );
                       } ;
 
-    const decreaseQty = (name: string) => {
+    const decreaseQty = (id: string) => {
         setCart(prev =>
             prev
                 .map(item =>
-                    item.name === name
+                    item.id === id
                         ? { ...item, quantity: item.quantity - 1 }
                         : item
                 )
@@ -115,8 +124,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
     };
 
-    const removeFromCart = (name: string) => {
-        setCart(prev => prev.filter(item => item.name !== name));
+    const removeFromCart = (id: string) => {
+        setCart(prev => prev.filter(item => item.id !== id));
     };
 
     return (

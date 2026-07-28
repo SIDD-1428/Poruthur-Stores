@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, {
   useEffect,
   useState,
@@ -147,7 +147,13 @@ export default function AddressScreen() {
       <Text style={styles.emptySubtitle}>Add your first delivery address</Text>
       <TouchableOpacity
         style={styles.emptyAddBtn}
-        onPress={() => router.push("/add-address")}
+        onPress={() => router.push({
+          pathname:"/add-address",
+        params:{
+          onboarding:"false",
+        },
+      })
+    }
       >
         <LinearGradient
           colors={[Colors.primary, Colors.accent]}
@@ -161,7 +167,10 @@ export default function AddressScreen() {
   );
 
 
-  
+  const {onboarding}=useLocalSearchParams<{
+    onboarding?:string;
+  }>();
+  const isOnboarding=onboarding==="true";
 
   return (
     <View style={styles.container}>
@@ -179,7 +188,11 @@ export default function AddressScreen() {
           <Text style={styles.title}>Delivery Addresses</Text>
           <TouchableOpacity
             style={styles.addBtn}
-            onPress={() => router.push("/add-address")}
+            onPress={() => router.push({pathname:"/add-address",
+              params:{
+                onboarding:"false",
+              },
+            })}
           >
             <Ionicons name="add-outline" size={24} color="#FFFFFF" />
           </TouchableOpacity>

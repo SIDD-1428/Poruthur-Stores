@@ -156,14 +156,14 @@ export default function Checkout() {
           const product = productSnap.data();
 
           if (!product) {
-            throw new Error(`${item.name} not found`);
+            throw new Error(`${item.id} not found`);
           }
 
           const currentStock = product.stock || 0;
 
 
           if (currentStock < item.quantity) {
-            throw new Error(`${item.name} is out of stock`);
+            throw new Error(`${item.id} is out of stock`);
           }
 
           productData.push({

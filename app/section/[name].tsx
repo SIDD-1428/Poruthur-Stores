@@ -188,6 +188,7 @@ export default function SectionScreen() {
                   protext={item.protext ?? item.description}
                   rating={item.rating}
                   unit={item.unit}
+                  maxOrderQty={item.maxOrderQty}
                 />
               </View>
             )}

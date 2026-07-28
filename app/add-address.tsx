@@ -3,7 +3,7 @@ import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -72,7 +72,7 @@ export default function AddAddressScreen() {
   const [type, setType] = useState("Home");
   const [address, setAddress] = useState("");
   const [landmark, setLandmark] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(auth().currentUser?.phoneNumber??"");
   const [isSaving, setIsSaving] = useState(false);
   const [region, setRegion]=useState({
     latitude: 12.9716,
@@ -90,6 +90,12 @@ export default function AddAddressScreen() {
   useEffect(() => {
     getCurrentLocation();
   }, []);
+
+  const {onboarding}=useLocalSearchParams<{
+      onboarding?:string;
+    }>();
+    
+  const isOnboarding=onboarding==="true";
 
   const getCurrentLocation = async () => {
     try{
@@ -175,7 +181,16 @@ export default function AddAddressScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("Success", "Address added successfully", [
-        { text: "OK", onPress: () => router.back() }
+        {
+          text: "OK",
+          onPress: () => {
+            if (isOnboarding) {
+              router.replace("/(tabs)/home");
+            } else {
+              router.back();
+            }
+          },
+        },
       ]);
     } catch (error) {
       console.log(error);
@@ -198,12 +213,20 @@ export default function AddAddressScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
+          {!isOnboarding&&(
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
+          )}
+
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Add Address</Text>
-            <Text style={styles.headerSubtitle}>Add a new delivery address</Text>
+            <Text style={styles.headerTitle}>
+              {isOnboarding? "Set Delivery Address":"Add Address"}
+            </Text>
+
+            <Text style={styles.headerSubtitle}>
+              {isOnboarding?"Where should we deliver your orders?":"Add a new delivery address"}
+            </Text>
           </View>
         </Animated.View>
       </LinearGradient>
@@ -379,6 +402,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
+    justifyContent:"flex-start",
   },
   backBtn: {
     width: 40,

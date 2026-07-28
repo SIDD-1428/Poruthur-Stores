@@ -4,20 +4,20 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, {
-  useEffect,
-  useRef,
-  useState,
+    useEffect,
+    useRef,
+    useState,
 } from "react";
 import {
-  Animated,
-  Dimensions,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    Image,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useCart } from "../../context/CartContext";
 import { getProductById } from "../../services/products";
@@ -123,7 +123,7 @@ export default function ProductDetail() {
         );
     }
 
-    const itemInCart = cart.find((item) => item.name === product.name);
+    const itemInCart = cart.find((item) => item.id === product.id);
     const isOutOfStock = product.stock <= 0;
     const productPrice = Number(product.price);
 
@@ -237,7 +237,7 @@ export default function ProductDetail() {
                                 <View style={styles.qtyBox}>
                                     <TouchableOpacity
                                         style={styles.qtyBtn}
-                                        onPress={() => decreaseQty(product.name)}
+                                        onPress={() => decreaseQty(product.id)}
                                     >
                                         <Ionicons name="remove" size={18} color="#FFF" />
                                     </TouchableOpacity>
@@ -246,7 +246,7 @@ export default function ProductDetail() {
                                     </Text>
                                     <TouchableOpacity
                                         style={styles.qtyBtn}
-                                        onPress={() => increaseQty(product.name)}
+                                        onPress={() => increaseQty(product.id)}
                                     >
                                         <Ionicons name="add" size={18} color="#FFF" />
                                     </TouchableOpacity>
