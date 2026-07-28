@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import Animated, {
   FadeInDown,
   FadeInUp,
@@ -125,16 +126,19 @@ export default function AddAddressScreen() {
   };
 
   const reverseGeocode = async (lat: number, lng: number) => {
-    const result = await Location.reverseGeocodeAsync({
-      latitude: lat,
-      longitude: lng,
-    });
+        try{
+          const result = await Location.reverseGeocodeAsync({
+          latitude: lat,
+          longitude: lng,
+        });
 
     if (result.length > 0) {
       const place = result[0];
       const fullAddress=[place.name,place.street,place.district,place.city,place.region,place.postalCode].filter(Boolean).join(",");
       setAddress(fullAddress);
       setPincode(place.postalCode??"");
+    }}catch(e){
+      console.log(e);
     }
   };
   const addressTypes = ["Home", "Work", "Other"];
@@ -236,12 +240,11 @@ export default function AddAddressScreen() {
         overflow: "hidden",
       }}
     >
-      {/*
    <MapView
         style={{
           flex: 1,
         }}
-        initialRegion={region}
+        region={region}
         onPress={(e) => {
 
           const coords =
@@ -284,7 +287,6 @@ export default function AddAddressScreen() {
           }}
         /> 
       </MapView>
-          */}
     </View>
 
 
