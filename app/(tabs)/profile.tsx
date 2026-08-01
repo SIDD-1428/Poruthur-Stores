@@ -3,8 +3,9 @@ import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { db } from "../../firebase/config";
 
 const Colors = {
   background: "#FFFFFF",
@@ -21,6 +22,29 @@ const Colors = {
 };
 
 export default function ProfileScreen() {
+  const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    const user = auth().currentUser;
+
+    if (!user) return;
+
+    const unsubscribe = db
+      .collection("users")
+      .doc(user.uid)
+      .onSnapshot(
+        (doc) => {
+          if (doc.exists()) {
+            setUserData(doc.data());
+          }
+        },
+        (error) => {
+          console.log("User listener:", error.message);
+        }
+      );
+
+    return unsubscribe;
+  }, []);
   const handleLogout = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
@@ -85,22 +109,33 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
         >
           <Text style={styles.avatarText}>
-            {auth().currentUser?.displayName?.charAt(0)?.toUpperCase() || "U"}
+            {(userData?.fullName?.charAt(0) ?? "U").toUpperCase()}
           </Text>
         </LinearGradient>
 
         <View style={styles.userInfo}>
           <Text style={styles.name}>
-            {auth().currentUser?.displayName || "User"}
+            {userData?.fullName ?? "User"}
           </Text>
           <View style={styles.emailContainer}>
             <Ionicons name="mail-outline" size={14} color={Colors.muted} />
-            <Text style={styles.email}>{auth().currentUser?.email}</Text>
+            <Text style={styles.email}>{userData?.email ?? "No Email"}</Text>
+          </View>
+
+          <View style={styles.emailContainer}>
+            <Ionicons
+              name="call-outline"
+              size={14}
+              color={Colors.muted}
+            />
+            <Text style={styles.email}>
+              {userData?.phone ?? "No Phone"}
+            </Text>
           </View>
           <View style={styles.uidContainer}>
             <Ionicons name="finger-print-outline" size={12} color={Colors.muted} />
             <Text style={styles.uid} numberOfLines={1}>
-              ID: {auth().currentUser?.uid?.slice(0, 12)}...
+              ID: {userData?.uid?.slice(0, 12)}...
             </Text>
           </View>
         </View>
@@ -127,11 +162,6 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* App Info */}
-      <View style={styles.appInfo}>
-        <Text style={styles.appVersion}>Namma Store v1.0.0</Text>
-        <Text style={styles.appCopy}>© 2024 Namma Store. All rights reserved.</Text>
-      </View>
 
       {/* Logout Button */}
       <TouchableOpacity
