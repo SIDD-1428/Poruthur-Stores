@@ -2,15 +2,18 @@ import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,8 +22,6 @@ import {
 import { useCart } from "../context/CartContext";
 import { db } from "../firebase/config";
 
-
-// ── Clean Black/White/Grey Color Scheme ──
 const Colors = {
   background: "#FFFFFF",
   card: "#FFFFFF",
@@ -39,37 +40,43 @@ const Colors = {
 
 export default function Checkout() {
   const { cart, clearCart } = useCart();
-  const [defaultAddress, setDefaultAddress] = useState<any>(null);
   const [placingOrder, setPlacingOrder] = useState(false);
-
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
+  const [showAddressSelector, setShowAddressSelector] = useState(false);
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  const deliveryCharge=subtotal >= 999? 0:30;
-  
+  const deliveryCharge = subtotal >= 999 ? 0 : 30;
+  const discount = 0;
+  const grandTotal = subtotal + deliveryCharge - discount;
 
-  const discount=0;
-  const grandTotal=subtotal+deliveryCharge-discount;
+  useFocusEffect(
+    React.useCallback(() => {
+      loadAddresses();
+    }, [])
+  );
 
-  useEffect(() => {
-    loadDefaultAddress();
-  }, []);
-
-  const loadDefaultAddress = async () => {
+  const loadAddresses = async () => {
     try {
-      const user=auth().currentUser;
-      if(!user) return;
+      const user = auth().currentUser;
+      if (!user) return;
       const snapshot = await db
         .collection("addresses")
         .where("userId", "==", user.uid)
-        .where("isDefault", "==", true)
         .get();
 
-      if (!snapshot.empty) {
-        setDefaultAddress(snapshot.docs[0].data());
-      }
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setAddresses(data);
+
+      const defaultAddr = data.find((a: any) => a.isDefault) ?? data[0];
+      setSelectedAddress(defaultAddr);
     } catch (error) {
       console.log(error);
     }
@@ -84,143 +91,94 @@ export default function Checkout() {
       return;
     }
 
-    const addressSnapshot = await db
-  .collection("addresses")
-  .where("userId", "==", auth().currentUser?.uid)
-  .where("isDefault", "==", true)
-  .get();
-
-    if(addressSnapshot.empty){
+    if (!selectedAddress) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Address Required",
-      "Please select a delivery address before placing your order.");
+      Alert.alert(
+        "Address Required",
+        "Please select a delivery address."
+      );
       return;
     }
-
-    const latestAddress=addressSnapshot.docs[0].data();
     setPlacingOrder(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setDefaultAddress(latestAddress);
 
     try {
       console.log("CHECKOUT USER:", auth().currentUser);
       console.log("CHECKOUT UID:", auth().currentUser?.uid);
 
       const deliverySnap = await db
-      .collection("settings")
-      .doc("delivery")
-      .get();
+        .collection("settings")
+        .doc("delivery")
+        .get();
 
       if (!deliverySnap.exists()) {
         throw new Error("Delivery settings not configured");
       }
 
-      const delivery=deliverySnap.data();
-      if(!delivery){
+      const delivery = deliverySnap.data();
+      if (!delivery) {
         throw new Error("Delivery settings not configured");
       }
 
       //radius validation
-      const distance=calculateDistance(
+      const distance = calculateDistance(
         delivery.shopLatitude,
         delivery.shopLongitude,
-        latestAddress.latitude,
-        latestAddress.longitude
+        selectedAddress.latitude,
+        selectedAddress.longitude
       );
 
-      const insideRadius=distance<=delivery.radiusKm;
+      const insideRadius = distance <= delivery.radiusKm;
 
-      const insidePincode=delivery.serviceablePincodes?.includes(String(latestAddress.pincode))??false;
-      
-      if(!insideRadius || !insidePincode){
+      const insidePincode = delivery.serviceablePincodes?.includes(String(selectedAddress.pincode)) ?? false;
+
+      if (!insideRadius || !insidePincode) {
         throw new Error(
           "The selected address is outside our delivery area. Please choose another address"
-        )
+        );
       }
-      await db.runTransaction(async (transaction) => {
-        // Create Order ID first
-        const orderRef = db.collection("orders").doc();
+      const orderRef = db.collection("orders").doc();
 
-        // Check stock and reduce
-        const productData = [];
-
-        // READ EVERYTHING FIRST
-        for (const item of cart) {
-          const productRef = db .collection("products").doc(item.id);
-          const productSnap = await transaction.get(productRef);
-
-       if (!productSnap.exists()) {
-            throw new Error(`${item.name} not found`);
-          }
-
-          const product = productSnap.data();
-
-          if (!product) {
-            throw new Error(`${item.id} not found`);
-          }
-
-          const currentStock = product.stock || 0;
-
-
-          if (currentStock < item.quantity) {
-            throw new Error(`${item.id} is out of stock`);
-          }
-
-          productData.push({
-            ref: productRef,
-            stock: currentStock,
-            quantity: item.quantity,
-          });
-        }
-
-        // NOW DO WRITES
-        for (const product of productData) {
-          transaction.update(product.ref, {
-            stock: product.stock - product.quantity,
-          });
-        }
-
-        // Create order only after stock passes
-        transaction.set(orderRef, {
-          userId: auth().currentUser?.uid,
-          customerName: auth().currentUser?.displayName || "",
-          customerEmail: auth().currentUser?.email || "",
-          address: {
-            type: latestAddress.type,
-            address: latestAddress.address,
-            landmark: latestAddress.landmark,
-            phone: latestAddress.phone,
-            latitude:latestAddress.latitude,
-            longitude:latestAddress.longitude,
-            pincode:latestAddress.pincode,
-          },
-          items: cart.map((item) => ({
-            productId: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice:item.price,
-            totalPrice:item.price*item.quantity,
-            image: item.image || "",
-          })),
-          pricing:{
-            subtotal,
-            deliveryCharge,
-            discount,
-            grandTotal,
-          },
-          invoice:{
-            number:`PS-INV-${Date.now()}`,
-            issuedAt:firestore.FieldValue.serverTimestamp(),
-          },
-          payment:{
-            method:"Cash on Delivery",
-            status:"Pending"
-          },
-          total:grandTotal,
+      await orderRef.set({
+        userId: auth().currentUser?.uid,
+        customerName: auth().currentUser?.displayName || "",
+        customerEmail: auth().currentUser?.email || "",
+        address: {
+          type: selectedAddress.type,
+          address: selectedAddress.address,
+          landmark: selectedAddress.landmark,
+          phone: selectedAddress.phone,
+          latitude: selectedAddress.latitude,
+          longitude: selectedAddress.longitude,
+          pincode: selectedAddress.pincode,
+        },
+        items: cart.map((item) => ({
+          productId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.price * item.quantity,
+          image: item.image || "",
+        })),
+        pricing: {
+          subtotal,
+          deliveryCharge,
+          discount,
+          grandTotal,
+        },
+        invoice: {
+          number: `PS-INV-${Date.now()}`,
+          issuedAt: firestore.FieldValue.serverTimestamp(),
+        },
+        payment: {
+          method: "Cash on Delivery",
           status: "Pending",
-          stockRestored: false,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        });
+        },
+        total: grandTotal,
+        status: "Pending",
+        stockDeducted: false,
+        stockRestored: false,
+        createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -240,38 +198,155 @@ export default function Checkout() {
   const AddressSection = () => (
     <View style={styles.addressCard}>
       <View style={styles.sectionHeader}>
-        <Ionicons name="location-outline" size={20} color={Colors.primary} />
-        <Text style={styles.sectionTitle}>Delivery Address</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8
+          }}
+        >
+          <Ionicons
+            name="location-outline"
+            size={20}
+            color={Colors.primary}
+          />
+          <Text style={styles.sectionTitle}>
+            Delivery Address
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => setShowAddressSelector(true)}
+        >
+          <Text
+            style={{
+              fontWeight: "700",
+              color: Colors.primary
+            }}
+          >
+            Change
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {defaultAddress ? (
+      {selectedAddress ? (
         <View style={styles.addressContent}>
           <View style={styles.addressTypeBadge}>
             <Text style={styles.addressTypeText}>
-              {defaultAddress.type || "Home"}
+              {selectedAddress.type || "Home"}
             </Text>
           </View>
-          <Text style={styles.addressLine}>{defaultAddress.address}</Text>
-          {defaultAddress.landmark && (
+          <Text style={styles.addressLine}>{selectedAddress.address}</Text>
+          {selectedAddress.landmark && (
             <Text style={styles.addressLandmark}>
-              📍 Near {defaultAddress.landmark}
+              📍 Near {selectedAddress.landmark}
             </Text>
           )}
           <View style={styles.phoneContainer}>
             <Ionicons name="call-outline" size={14} color={Colors.muted} />
-            <Text style={styles.phoneText}>{defaultAddress.phone}</Text>
+            <Text style={styles.phoneText}>{selectedAddress.phone}</Text>
           </View>
         </View>
       ) : (
         <TouchableOpacity
           style={styles.addAddressBtn}
-          onPress={() => router.push("/address")}
+          onPress={() => router.push({
+            pathname: "/add-address",
+            params: {
+              onboarding: "false"
+            }
+          })}
         >
           <Ionicons name="add-circle-outline" size={20} color={Colors.primary} />
           <Text style={styles.addAddressText}>Add Delivery Address</Text>
         </TouchableOpacity>
       )}
     </View>
+  );
+
+  const AddressSelector = () => (
+    <Modal
+      visible={showAddressSelector}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowAddressSelector(false)}
+    >
+      <Pressable
+        style={styles.modalOverlay}
+        onPress={() => setShowAddressSelector(false)}
+      >
+        <Pressable style={styles.bottomSheet}>
+          <View style={styles.sheetHandle} />
+
+          <Text style={styles.sheetTitle}>
+            Select Delivery Address
+          </Text>
+
+          <FlatList
+            data={addresses}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.addressOption,
+                  selectedAddress?.id === item.id &&
+                  styles.selectedAddressOption,
+                ]}
+                onPress={() => {
+                  setSelectedAddress(item);
+                  setShowAddressSelector(false);
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.optionType}>
+                    {item.type}
+                  </Text>
+                  <Text style={styles.optionAddress}>
+                    {item.address}
+                  </Text>
+                  {!!item.landmark && (
+                    <Text style={styles.optionLandmark}>
+                      Near {item.landmark}
+                    </Text>
+                  )}
+                </View>
+
+                {selectedAddress?.id === item.id && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={24}
+                    color={Colors.success}
+                  />
+                )}
+              </TouchableOpacity>
+            )}
+            ListFooterComponent={
+              <TouchableOpacity
+                style={styles.addAnotherAddress}
+                onPress={() => {
+                  setShowAddressSelector(false);
+                  router.push({
+                    pathname: "/add-address",
+                    params: {
+                      onboarding: "false",
+                    },
+                  });
+                }}
+              >
+                <Ionicons
+                  name="add-circle-outline"
+                  size={22}
+                  color={Colors.primary}
+                />
+                <Text style={styles.addAnotherText}>
+                  Add New Address
+                </Text>
+              </TouchableOpacity>
+            }
+          />
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 
   const renderCartItem = ({ item, index }: { item: any; index: number }) => (
@@ -341,7 +416,7 @@ export default function Checkout() {
 
       <FlatList
         data={cart}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
@@ -364,6 +439,7 @@ export default function Checkout() {
             </View>
 
             <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Delivery</Text>
               <Text
                 style={[
                   styles.summaryValue,
@@ -379,7 +455,12 @@ export default function Checkout() {
               </Text>
             </View>
 
-            
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Discount</Text>
+              <Text style={[styles.summaryValue, { color: Colors.danger }]}>
+                -₹{discount}
+              </Text>
+            </View>
 
             <View style={styles.divider} />
 
@@ -390,7 +471,7 @@ export default function Checkout() {
           </View>
         }
       />
-
+      <AddressSelector />
       {/* Place Order Button */}
       <View style={styles.bottomBar}>
         <View style={styles.bottomTotal}>
@@ -478,8 +559,8 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 8,
     marginBottom: 12,
   },
   sectionTitle: {
@@ -755,5 +836,72 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#FFFFFF",
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "flex-end",
+  },
+  bottomSheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 20,
+    maxHeight: "70%",
+  },
+  sheetHandle: {
+    alignSelf: "center",
+    width: 45,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#D0D0D0",
+    marginBottom: 16,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 20,
+  },
+  addressOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EFEFEF",
+  },
+  selectedAddressOption: {
+    backgroundColor: "#F7F7F7",
+  },
+  optionType: {
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  optionAddress: {
+    fontSize: 14,
+    color: "#333",
+  },
+  optionLandmark: {
+    fontSize: 12,
+    color: "#777",
+    marginTop: 4,
+  },
+  addAnotherAddress: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 20,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#DDD",
+    borderRadius: 14,
+  },
+  addAnotherText: {
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

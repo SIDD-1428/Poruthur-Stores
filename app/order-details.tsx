@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import firestore from "@react-native-firebase/firestore";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -81,85 +80,40 @@ export default function OrderDetails() {
             setCancelling(true);
             await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             
-            try {
-  await db.runTransaction(async (transaction) => {
-    const orderRef = db.collection("orders").doc(id as string);
-    const orderSnap = await transaction.get(orderRef);
+            try{
+              if(order.status==="Cancelled"){
+                Alert.alert("Already Cancelled");
+                return;
+              }
 
-    if (!orderSnap.exists()) {
-      throw new Error("Order not found");
-    }
+              const orderRef=db.collection("orders").doc(id as string);
 
-    const latestOrder = orderSnap.data();
+              await orderRef.update({
+                status:"Cancelled",
+              });
 
-    if (!latestOrder) {
-      throw new Error("Order not found");
-    }
+              await Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+              );
 
-    if (latestOrder.stockRestored) {
-      throw new Error("Order already cancelled");
-    }
+              Alert.alert("Success","Your order has been successfully cancelled.");
+            }catch (error: any) {
+              console.log("Error code:",error.code);
+              console.log("Error message:",error.message);
+              console.log("Full Error: ",error);
 
-    for (const item of latestOrder.items || []) {
-      if (!item.productId) continue;
+              await Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Error
+              );
 
-      const productRef = db
-        .collection("products")
-        .doc(item.productId);
-
-      const productSnap = await transaction.get(productRef);
-
-      if (!productSnap.exists()) {
-        continue;
-      }
-
-      transaction.update(productRef, {
-        stock: firestore.FieldValue.increment(item.quantity),
-      });
-    }
-
-    transaction.update(orderRef, {
-      status: "Cancelled",
-      stockRestored: true,
-      "payment.status": "Canceled",
-    });
-  });
-
-  setOrder((prev: any) => ({
-    ...prev,
-    status: "Cancelled",
-    stockRestored: true,
-    payment: {
-      ...prev.payment,
-      status: "Canceled",
-    },
-  }));
-
-  await Haptics.notificationAsync(
-    Haptics.NotificationFeedbackType.Success
-  );
-
-  Alert.alert("Success", "Your order has been successfully cancelled");
-} catch (error: any) {
-  console.log(error);
-
-  await Haptics.notificationAsync(
-    Haptics.NotificationFeedbackType.Error
-  );
-
-  if (error.message === "Order already cancelled") {
-    Alert.alert("Already Cancelled");
-  } else {
-    Alert.alert("Error", "Failed to cancel order");
-  }
-} finally {
-  setCancelling(false);
-}
-          },
-        },
-      ]
-    );
-  };
+            } finally {
+              setCancelling(false);
+            }
+                      },
+                    },
+                  ]
+                );
+              };
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -225,7 +179,7 @@ export default function OrderDetails() {
     );
   }
 
-  const isCancellable = order.status === "Pending";
+  const isCancellable = order.status === "Pending" && !order.stockRestored;
   const statusColor = getStatusColor(order.status);
 
   return (

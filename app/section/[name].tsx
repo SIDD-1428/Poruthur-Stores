@@ -24,27 +24,34 @@ export default function SectionScreen() {
   const sidebarRef=useRef<FlatList<any>>(null);
 
   useEffect(() => {
-    loadProducts();
-  },[name]);
+  const unsubscribe = db
+    .collection("products")
+    .onSnapshot(
+      (snapshot) => {
+        const allProducts = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const filteredProducts = allProducts.filter(
+          (item: any) => item.category === name
+        );
+
+        setProducts(filteredProducts);
+      },
+      (error) => {
+        console.log("Products listener:", error.message);
+      }
+    );
+
+  return unsubscribe;
+}, [name]);
     
   useEffect(() => {
     loadCategories();
 }, [name]);
 
-  
-  const loadProducts = async () => {
-    try {
-      const allProducts = await getProducts();
 
-      const filteredProducts = allProducts.filter(
-        (item: any) => item.category === name
-      );
-
-      setProducts(filteredProducts);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const loadCategories = async () => {
   try {
