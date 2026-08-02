@@ -1,3 +1,4 @@
+import FloatingCart from "@/components/FloatingCart";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -130,7 +131,7 @@ export default function SectionScreen() {
             ref={sidebarRef}
             data={categories}
             keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={true}  // ← SCROLL INDICATOR ENABLED
+            showsVerticalScrollIndicator={true}
             contentContainerStyle={styles.sidebarContent}
             onScrollToIndexFailed={(info)=>{
               sidebarRef.current?.scrollToOffset({
@@ -181,7 +182,7 @@ export default function SectionScreen() {
             data={products}
             keyExtractor={(item) => item.id}
             numColumns={2}
-            showsVerticalScrollIndicator={true}  // ← SCROLL INDICATOR ENABLED
+            showsVerticalScrollIndicator={true}
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.productList}
             renderItem={({ item }) => (
@@ -205,8 +206,13 @@ export default function SectionScreen() {
               </View>
             }
           />
+          
         </View>
+       
       </View>
+
+      {/* ── Floating Cart ── */}
+      <FloatingCart />
     </View>
   );
 }

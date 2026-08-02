@@ -1,4 +1,5 @@
 import CategoryCard from "@/components/CategoryCard";
+import FloatingCart from "@/components/FloatingCart";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
@@ -308,6 +309,7 @@ export default function CustomerHome() {
         {/* Bottom Padding */}
         <View style={styles.bottomPadding} />
       </ScrollView>
+      <FloatingCart/>
     </View>
   );
 }
