@@ -219,6 +219,26 @@ export default function OrderDetails() {
         </View>
       </View>
 
+      {/*pin*/}
+      {order.status === "Out For Delivery" && (
+        <View style={styles.pinCard}>
+          <View style={styles.pinHeader}>
+            <Ionicons name="shield-checkmark-outline" size={22} color={Colors.success}/>
+            <Text style={styles.pinTitle}>
+              Delivery PIN
+            </Text>
+          </View>
+
+          <Text style={styles.pinValue}>
+            {order.delivery?.pin}
+          </Text>
+
+          <Text style={styles.pinDescription}>
+            Share this PIN only after you receive your order.
+          </Text>
+        </View>
+      )}
+
         {/* Order Info Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -680,5 +700,43 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#242525",
 
+  },
+  pinCard:{
+    backgroundColor:"#ECFDF3",
+    marginHorizontal:16,
+    marginBottom:16,
+    padding:20,
+    borderRadius:20,
+    borderWidth:1,
+    borderColor: "#C8F2D5",
+    alignItems:"center",
+  },
+
+  pinHeader:{
+    flexDirection:"row",
+    alignItems:"center",
+    marginBottom:12,
+    gap:8,
+  },
+
+  pinTitle:{
+    fontSize:17,
+    fontWeight:"700",
+    color: Colors.success,
+  },
+
+  pinValue:{
+    fontSize:42,
+    fontWeight:"800",
+    letterSpacing:10,
+    color:Colors.textPrimary,
+  },
+
+  pinDescription:{
+    marginTop:12,
+    fontSize:13,
+    color:Colors.textSecondary,
+    textAlign:"center",
+    lineHeight:20,
   },
 });

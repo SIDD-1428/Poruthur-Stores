@@ -137,12 +137,27 @@ export default function Checkout() {
           "The selected address is outside our delivery area. Please choose another address"
         );
       }
+      
       const orderRef = db.collection("orders").doc();
+      
+      const user=auth().currentUser;
+
+      if(!user){
+        throw new Error("User not found");
+      }
+
+      const userDoc=await db
+      .collection("users")
+      .doc(user.uid)
+      .get();
+      const userData=userDoc.data();
+
+      const deliveryPin=Math.floor(1000+Math.random()*9000).toString();
 
       await orderRef.set({
         userId: auth().currentUser?.uid,
-        customerName: auth().currentUser?.displayName || "",
-        customerEmail: auth().currentUser?.email || "",
+        customerName: userData?.fullName || `${userData?.firstName??""} ${userData?.lastName??""}`.trim(),
+        customerEmail: userData?.email ?? "",
         address: {
           type: selectedAddress.type,
           address: selectedAddress.address,
@@ -170,6 +185,7 @@ export default function Checkout() {
           number: `PS-INV-${Date.now()}`,
           issuedAt: firestore.FieldValue.serverTimestamp(),
         },
+        
         payment: {
           method: "Cash on Delivery",
           status: "Pending",
@@ -178,6 +194,11 @@ export default function Checkout() {
         status: "Pending",
         stockDeducted: false,
         stockRestored: false,
+        delivery:{
+          pin: deliveryPin,
+          verified:false,
+          verifiedAt:null,
+        },
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 

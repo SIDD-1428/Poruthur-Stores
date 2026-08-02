@@ -43,8 +43,7 @@ export default function OrderConfirmed() {
       </View>
 
       {/* Success Text */}
-      <Text style={styles.title}>Order Confirmed!</Text>
-      <Text style={styles.subtitle}>Your order has been placed successfully</Text>
+      <Text style={styles.title}>Order Placed!</Text>
       <Text style={styles.submsg}>please wait as the store will shortly accept the order</Text>
 
       {/* Order Info Card */}
