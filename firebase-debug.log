@@ -1,24 +1,71 @@
-[debug] [2026-08-02T05:55:31.911Z] ----------------------------------------------------------------------
-[debug] [2026-08-02T05:55:31.915Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\siddh\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
-[debug] [2026-08-02T05:55:31.915Z] CLI Version:   15.25.1
-[debug] [2026-08-02T05:55:31.915Z] Platform:      win32
-[debug] [2026-08-02T05:55:31.915Z] Node Version:  v24.12.0
-[debug] [2026-08-02T05:55:31.916Z] Detected Agent: unknown
-[debug] [2026-08-02T05:55:31.916Z] Time:          Sun Aug 02 2026 11:25:31 GMT+0530 (India Standard Time)
-[debug] [2026-08-02T05:55:31.916Z] ----------------------------------------------------------------------
+[debug] [2026-08-02T16:06:56.137Z] ----------------------------------------------------------------------
+[debug] [2026-08-02T16:06:56.142Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\siddh\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init functions
+[debug] [2026-08-02T16:06:56.142Z] CLI Version:   15.25.1
+[debug] [2026-08-02T16:06:56.142Z] Platform:      win32
+[debug] [2026-08-02T16:06:56.142Z] Node Version:  v24.12.0
+[debug] [2026-08-02T16:06:56.143Z] Detected Agent: unknown
+[debug] [2026-08-02T16:06:56.143Z] Time:          Sun Aug 02 2026 21:36:56 GMT+0530 (India Standard Time)
+[debug] [2026-08-02T16:06:56.143Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2026-08-02T05:55:36.749Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2026-08-02T05:55:36.750Z] > authorizing via signed-in user (siddharthsunil378@gmail.com)
-[debug] [2026-08-02T05:55:36.750Z] [iam] checking project poruthurstores-1bb74 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
-[debug] [2026-08-02T05:55:36.769Z] Checked if tokens are valid: true, expires at: 1785653690935
-[debug] [2026-08-02T05:55:36.769Z] Checked if tokens are valid: true, expires at: 1785653690935
-[debug] [2026-08-02T05:55:36.771Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions [none]
-[debug] [2026-08-02T05:55:36.772Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions  x-goog-user-project=poruthurstores-1bb74
-[debug] [2026-08-02T05:55:36.773Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
-[debug] [2026-08-02T05:55:38.244Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions 200
-[debug] [2026-08-02T05:55:38.245Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
-[debug] [2026-08-02T05:55:38.246Z] Checked if tokens are valid: true, expires at: 1785653690935
-[debug] [2026-08-02T05:55:38.246Z] Checked if tokens are valid: true, expires at: 1785653690935
-[debug] [2026-08-02T05:55:38.246Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/poruthurstores-1bb74/serviceAccounts/poruthurstores-1bb74@appspot.gserviceaccount.com:testIamPermissions [none]
-[debug] [2026-08-02T05:55:38.246Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/poruthurstores-1bb74/serviceAccounts/poruthurstores-1bb74@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
-[debug] [2026-08-02T05:55:40.006Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/poruthurstores-1bb74/serviceAccounts/poruthurstores-1bb74@appspot.gserviceaccount.com:testIamPermissions 200
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\siddh\grocery-app
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-08-02T16:07:08.443Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-02T16:07:08.444Z] > authorizing via signed-in user (siddharthsunil378@gmail.com)
+[debug] [2026-08-02T16:07:08.465Z] Checked if tokens are valid: false, expires at: 1785653690935
+[debug] [2026-08-02T16:07:08.465Z] Checked if tokens are valid: false, expires at: 1785653690935
+[debug] [2026-08-02T16:07:08.465Z] > refreshing access token with scopes: []
+[debug] [2026-08-02T16:07:08.480Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-08-02T16:07:08.481Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-02T16:07:08.917Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-08-02T16:07:08.917Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-08-02T16:07:08.930Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/poruthurstores-1bb74 [none]
+[debug] [2026-08-02T16:07:09.525Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/poruthurstores-1bb74 200
+[debug] [2026-08-02T16:07:09.525Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/poruthurstores-1bb74 {"projectId":"poruthurstores-1bb74","projectNumber":"784163241119","displayName":"PoruthurStores","name":"projects/poruthurstores-1bb74","resources":{"hostingSite":"poruthurstores-1bb74"},"state":"ACTIVE","labels":{"firebase":"enabled","firebase/storage-default-bucket":"created"},"etag":"1_239d5434-8e76-436e-ba09-fa45ab657db9"}
+[info] i  Using project poruthurstores-1bb74 (PoruthurStores) . 
+[info] 
+=== Functions Setup
+[debug] [2026-08-02T16:07:09.536Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-02T16:07:09.536Z] > authorizing via signed-in user (siddharthsunil378@gmail.com)
+[debug] [2026-08-02T16:07:09.538Z] [iam] checking project poruthurstores-1bb74 for permissions ["firebase.projects.get"]
+[debug] [2026-08-02T16:07:09.539Z] Checked if tokens are valid: true, expires at: 1785690427918
+[debug] [2026-08-02T16:07:09.539Z] Checked if tokens are valid: true, expires at: 1785690427918
+[debug] [2026-08-02T16:07:09.539Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions [none]
+[debug] [2026-08-02T16:07:09.539Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions  x-goog-user-project=poruthurstores-1bb74
+[debug] [2026-08-02T16:07:09.539Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-08-02T16:07:10.956Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions 200
+[debug] [2026-08-02T16:07:10.957Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/poruthurstores-1bb74:testIamPermissions {"permissions":["firebase.projects.get"]}
+[info] 
+Detected existing codebase(s): default
+
+[debug] [2026-08-02T16:07:23.756Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (C:\Users\siddh\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\@inquirer\core\dist\commonjs\lib\create-prompt.js:101:37)
+    at Interface.emit (node:events:508:28)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1327:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:284:20)
+    at ReadStream.emit (node:events:520:35)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+    at ReadStream.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+[error] 
+[error] Error: An unexpected error has occurred.

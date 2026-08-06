@@ -4,10 +4,12 @@ import React, {
   useState,
 } from "react";
 
+import InAppNotification from "@/components/InAppNotification";
 import { AuthProvider } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { initializeNotifications } from "@/services/notification";
 import auth from "@react-native-firebase/auth";
 import { CartProvider } from "../context/CartContext";
-
 
 export default function RootLayout() {
   const [user, setUser] = useState<any>(null);
@@ -17,8 +19,11 @@ export default function RootLayout() {
   useEffect(() => {
     const unsubscribe =
       auth().onAuthStateChanged(
-        (currentUser) => {
+        async (currentUser) => {
           setUser(currentUser);
+          if(currentUser){
+            await initializeNotifications();
+          }
           setLoading(false);
         }
       );
@@ -31,6 +36,8 @@ export default function RootLayout() {
   }
 
   return (
+    <NotificationProvider>
+    {/*<NotificationBanner />*/}
     <AuthProvider>
     <CartProvider>
       <Stack
@@ -72,7 +79,9 @@ export default function RootLayout() {
           </>
         )}
       </Stack>
+    <InAppNotification/>
     </CartProvider>
     </AuthProvider>
+    </NotificationProvider>
   );
 }

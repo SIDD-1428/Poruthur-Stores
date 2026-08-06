@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { getMessaging } from "firebase-admin/messaging";
 import {
   onDocumentCreated,
   onDocumentUpdated,
@@ -7,6 +8,52 @@ import {
 admin.initializeApp();
 
 const db = admin.firestore();
+
+
+//notifications
+async function sendNotificationToUser(
+  userId: string,
+  title: string,
+  body: string
+) {
+  const userSnap = await db.collection("users").doc(userId).get();
+
+  if (!userSnap.exists) return;
+
+  const token = userSnap.data()?.fcmToken;
+
+  if (!token) {
+    console.log("No FCM token for", userId);
+    return;
+  }
+
+  try{await getMessaging().send({
+    token,
+    notification: {
+      title,
+      body,
+    },
+    android: {
+      priority: "high",
+    },
+  });
+console.log("Notification sent");
+}catch (error: any) {
+  console.error("Notification Error:", error);
+
+  if (
+    error.code === "messaging/registration-token-not-registered" ||
+    error.code === "messaging/invalid-registration-token"
+  ) {
+    await db.collection("users").doc(userId).update({
+      fcmToken: admin.firestore.FieldValue.delete(),
+    });
+  }
+}
+
+  
+}
+
 
 export const restoreStockAfterCancellation = onDocumentUpdated(
   
@@ -141,6 +188,12 @@ export const processNewOrder = onDocumentCreated(
       });
 
       console.log(`Processed order ${event.params.orderId}`);
+      await sendNotificationToUser(
+      order.userId,
+      "Order Placed",
+      "We've received your order and will start preparing it shortly."
+    );
+
     } catch (err: any) {
       console.error(err);
 
@@ -150,5 +203,67 @@ export const processNewOrder = onDocumentCreated(
         "payment.status": "Failed",
       });
     }
+  }
+);
+
+export const notifyCustomerOrderUpdates = onDocumentUpdated(
+  {
+    document: "orders/{orderId}",
+    region: "asia-south1",
+  },
+  async (event) => {
+
+    const before = event.data?.before.data();
+    const after = event.data?.after.data();
+
+    if (!before || !after) return;
+
+    if (before.status === after.status) return;
+
+    let title = "";
+    let body = "";
+
+    switch (after.status) {
+
+      case "Accepted":
+        title = "Order Accepted";
+        body = "Your order has been accepted.";
+        break;
+
+      case "Packed":
+        title = "Order Packed";
+        body = "Your order has been packed.";
+        break;
+
+      case "Out For Delivery":
+        title = "Out for Delivery";
+        body = "Your order is on the way.";
+        break;
+
+      case "Delivered":
+        title = "Delivered";
+        body = "Your order has been delivered.";
+        break;
+
+      case "Cancelled":
+        title = "Order Cancelled";
+        body = "Your order has been cancelled.";
+        break;
+
+      case "Rejected":
+        title = "Order Rejected";
+        body = after.rejectionReason ?? "Order rejected.";
+        break;
+
+      default:
+        return;
+    }
+
+    await sendNotificationToUser(
+      after.userId,
+      title,
+      body
+    );
+
   }
 );
