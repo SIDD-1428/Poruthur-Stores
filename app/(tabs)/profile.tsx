@@ -51,7 +51,7 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { icon: "bag-outline", title: "My Orders", route: "/orders" },
+    { icon: "bag-outline", title: "My Orders", route: "/(tabs)/orders" },
     { icon: "location-outline", title: "Delivery Address", route: "/address" },
     { icon: "help-circle-outline", title: "Help & Support", route: "/support" },
     { icon: "shield-checkmark-outline", title: "Privacy Policy", route: "/privacy" },

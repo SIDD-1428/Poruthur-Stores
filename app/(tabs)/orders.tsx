@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { db } from "../firebase/config";
+import { db } from "../../firebase/config";
 
 // ── Clean Black/White/Grey Color Scheme ──
 const Colors = {

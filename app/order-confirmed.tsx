@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useCart } from "../context/CartContext";
 
@@ -30,8 +30,17 @@ export default function OrderConfirmed() {
 
   const handleViewOrders = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push("/orders");
+    router.push("/(tabs)/orders");
   };
+
+ const { paymentMethod, address, addressType, landmark } =
+  useLocalSearchParams<{
+    paymentMethod?: string;
+    address?: string;
+    addressType?: string;
+    landmark?: string;
+  }>();
+
 
   return (
     <View style={styles.container}>
@@ -54,7 +63,7 @@ export default function OrderConfirmed() {
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Estimated Delivery</Text>
-            <Text style={styles.infoValue}>30-45 minutes</Text>
+            <Text style={styles.infoValue}>1-2 working days</Text>
           </View>
         </View>
 
@@ -65,9 +74,30 @@ export default function OrderConfirmed() {
             <Ionicons name="location-outline" size={18} color={Colors.primary} />
           </View>
           <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Delivery Address</Text>
-            <Text style={styles.infoValue}>Your saved address</Text>
-          </View>
+  <Text style={styles.infoLabel}>
+    {addressType || "Delivery Address"}
+  </Text>
+
+  <Text
+    style={styles.infoValue}
+    numberOfLines={2}
+  >
+    {address || "Address unavailable"}
+  </Text>
+
+  {!!landmark && (
+    <Text
+      style={{
+        fontSize: 11,
+        color: Colors.muted,
+        marginTop: 3,
+      }}
+      numberOfLines={1}
+    >
+      Near {landmark}
+    </Text>
+  )}
+</View>
         </View>
 
         <View style={styles.divider} />
@@ -78,7 +108,7 @@ export default function OrderConfirmed() {
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Payment Method</Text>
-            <Text style={styles.infoValue}>Cash on Delivery</Text>
+            <Text style={styles.infoValue}> {paymentMethod ?? "Cash on Delivery"} </Text>
           </View>
         </View>
       </View>

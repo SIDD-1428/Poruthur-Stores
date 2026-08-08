@@ -44,6 +44,10 @@ export default function Checkout() {
   const [addresses, setAddresses] = useState<any[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [showAddressSelector, setShowAddressSelector] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "QR">("COD");
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [loadingQR, setLoadingQR] = useState(false);
+
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -56,9 +60,34 @@ export default function Checkout() {
   useFocusEffect(
     React.useCallback(() => {
       loadAddresses();
+      loadPaymentQR();
     }, [])
   );
 
+  const loadPaymentQR = async () => {
+  try {
+    setLoadingQR(true);
+
+    const snapshot = await db
+      .collection("settings")
+      .doc("payment")
+      .get();
+
+    if (!snapshot.exists) {
+      setQrCodeUrl("");
+      return;
+    }
+
+    const data = snapshot.data();
+
+    setQrCodeUrl(data?.qrCodeUrl || "");
+  } catch (error) {
+    console.log("Failed to load payment QR:", error);
+    setQrCodeUrl("");
+  } finally {
+    setLoadingQR(false);
+  }
+};
   const loadAddresses = async () => {
     try {
       const user = auth().currentUser;
@@ -92,13 +121,31 @@ export default function Checkout() {
     }
 
     if (!selectedAddress) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Error
+      );
+
       Alert.alert(
         "Address Required",
         "Please select a delivery address."
       );
+
       return;
     }
+
+    if (paymentMethod === "QR" && !qrCodeUrl) {
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Error
+      );
+
+      Alert.alert(
+        "QR Payment Unavailable",
+        "Please choose Cash on Delivery."
+      );
+
+      return;
+    }
+
     setPlacingOrder(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
@@ -187,7 +234,7 @@ export default function Checkout() {
         },
         
         payment: {
-          method: "Cash on Delivery",
+          method: paymentMethod === "COD" ? "Cash on Delivery" : "QR Payment",
           status: "Pending",
         },
         total: grandTotal,
@@ -205,7 +252,18 @@ export default function Checkout() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setPlacingOrder(false);
       clearCart();
-      router.replace("/order-confirmed");
+      router.replace({
+      pathname: "/order-confirmed",
+      params: {
+        paymentMethod:
+          paymentMethod === "COD"
+            ? "Cash on Delivery"
+            : "QR Payment",
+          address: selectedAddress.address,
+        addressType: selectedAddress.type || "Home",
+        landmark: selectedAddress.landmark || "",
+      },
+    });
     } catch (error) {
       setPlacingOrder(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -341,29 +399,7 @@ export default function Checkout() {
                 )}
               </TouchableOpacity>
             )}
-            ListFooterComponent={
-              <TouchableOpacity
-                style={styles.addAnotherAddress}
-                onPress={() => {
-                  setShowAddressSelector(false);
-                  router.push({
-                    pathname: "/add-address",
-                    params: {
-                      onboarding: "false",
-                    },
-                  });
-                }}
-              >
-                <Ionicons
-                  name="add-circle-outline"
-                  size={22}
-                  color={Colors.primary}
-                />
-                <Text style={styles.addAnotherText}>
-                  Add New Address
-                </Text>
-              </TouchableOpacity>
-            }
+            
           />
         </Pressable>
       </Pressable>
@@ -386,6 +422,174 @@ export default function Checkout() {
       <Text style={styles.itemTotal}>₹{item.price * item.quantity}</Text>
     </View>
   );
+
+    const PaymentSection = () => (
+    <View style={styles.paymentCard}>
+      <View style={styles.sectionHeader}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <Ionicons
+            name="card-outline"
+            size={20}
+            color={Colors.primary}
+          />
+
+          <Text style={styles.sectionTitle}>
+            Payment Method
+          </Text>
+        </View>
+      </View>
+
+      {/* Cash on Delivery */}
+      <TouchableOpacity
+        style={[
+          styles.paymentOption,
+          paymentMethod === "COD" && styles.selectedPaymentOption,
+        ]}
+        onPress={() => {
+          Haptics.selectionAsync();
+          setPaymentMethod("COD");
+        }}
+        activeOpacity={0.8}
+      >
+        <View style={styles.paymentIconContainer}>
+          <Ionicons
+            name="cash-outline"
+            size={22}
+            color={Colors.primary}
+          />
+        </View>
+
+        <View style={styles.paymentInfo}>
+          <Text style={styles.paymentTitle}>
+            Cash on Delivery
+          </Text>
+
+          <Text style={styles.paymentSubtitle}>
+            Pay when your order arrives
+          </Text>
+        </View>
+
+        <Ionicons
+          name={
+            paymentMethod === "COD"
+              ? "radio-button-on"
+              : "radio-button-off"
+          }
+          size={24}
+          color={
+            paymentMethod === "COD"
+              ? Colors.primary
+              : Colors.muted
+          }
+        />
+      </TouchableOpacity>
+
+      {/* QR Payment */}
+      <TouchableOpacity
+        style={[
+          styles.paymentOption,
+          paymentMethod === "QR" && styles.selectedPaymentOption,
+        ]}
+        onPress={() => {
+          Haptics.selectionAsync();
+          setPaymentMethod("QR");
+        }}
+        activeOpacity={0.8}
+      >
+        <View style={styles.paymentIconContainer}>
+          <Ionicons
+            name="qr-code-outline"
+            size={22}
+            color={Colors.primary}
+          />
+        </View>
+
+        <View style={styles.paymentInfo}>
+          <Text style={styles.paymentTitle}>
+            Pay by QR
+          </Text>
+
+          <Text style={styles.paymentSubtitle}>
+            Scan and pay using your UPI app
+          </Text>
+        </View>
+
+        <Ionicons
+          name={
+            paymentMethod === "QR"
+              ? "radio-button-on"
+              : "radio-button-off"
+          }
+          size={24}
+          color={
+            paymentMethod === "QR"
+              ? Colors.primary
+              : Colors.muted
+          }
+        />
+      </TouchableOpacity>
+
+      {paymentMethod === "QR" && (
+        <View style={styles.qrContainer}>
+  {loadingQR ? (
+    <>
+      <ActivityIndicator
+        size="large"
+        color={Colors.primary}
+      />
+
+      <Text style={styles.qrSubtitle}>
+        Loading payment QR...
+      </Text>
+    </>
+  ) : qrCodeUrl ? (
+    <>
+      <View style={styles.qrImageWrapper}>
+        <Image
+          source={{ uri: qrCodeUrl }}
+          style={styles.qrImage}
+          resizeMode="contain"
+        />
+      </View>
+
+      <Text style={styles.qrTitle}>
+        Scan to Pay
+      </Text>
+
+      <Text style={styles.qrSubtitle}>
+        Pay ₹{grandTotal} using your preferred UPI app.
+      </Text>
+    </>
+  ) : (
+    <>
+      <Ionicons
+        name="alert-circle-outline"
+        size={42}
+        color={Colors.muted}
+      />
+
+      <Text style={styles.qrTitle}>
+        QR Payment Unavailable
+      </Text>
+
+      <Text style={styles.qrSubtitle}>
+        The store has not configured a payment QR yet.
+        {"\n"}
+        Please choose Cash on Delivery.
+      </Text>
+    </>
+  )}
+</View>
+      )}
+    </View>
+  );
+
 
   const EmptyCart = () => (
     <View style={styles.emptyContainer}>
@@ -443,6 +647,7 @@ export default function Checkout() {
         ListHeaderComponent={
           <>
             <AddressSection />
+            <PaymentSection />
             <View style={styles.itemsHeader}>
               <Text style={styles.itemsTitle}>Order Items</Text>
               <Text style={styles.itemsCount}>{cart.length} items</Text>
@@ -450,47 +655,137 @@ export default function Checkout() {
           </>
         }
         renderItem={renderCartItem}
-        ListFooterComponent={
-          <View style={styles.summaryContainer}>
-            <Text style={styles.summaryTitle}>Bill Summary</Text>
+       ListFooterComponent={
+  <>
+    {/* Delivery Information */}
+    <View style={styles.deliveryInfoCard}>
+      <View style={styles.deliveryInfoHeader}>
+        <View style={styles.deliveryInfoIcon}>
+          <Ionicons
+            name="cube-outline"
+            size={20}
+            color={Colors.textPrimary}
+          />
+        </View>
 
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>₹{subtotal}</Text>
-            </View>
+        <Text style={styles.deliveryInfoTitle}>
+          Delivery Information
+        </Text>
+      </View>
 
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery</Text>
-              <Text
-                style={[
-                  styles.summaryValue,
-                  {
-                    color:
-                      deliveryCharge === 0
-                        ? Colors.success
-                        : Colors.textPrimary,
-                  },
-                ]}
-              >
-                {deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}
-              </Text>
-            </View>
+      <View style={styles.deliveryInfoRow}>
+        <Ionicons
+          name="time-outline"
+          size={16}
+          color={Colors.muted}
+        />
 
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Discount</Text>
-              <Text style={[styles.summaryValue, { color: Colors.danger }]}>
-                -₹{discount}
-              </Text>
-            </View>
+        <Text style={styles.deliveryInfoText}>
+          Orders before{" "}
+          <Text style={styles.deliveryBold}>5 PM</Text>
+          {" → "}delivered the next working day.
+        </Text>
+      </View>
 
-            <View style={styles.divider} />
+      <View style={styles.deliveryInfoRow}>
+        <Ionicons
+          name="time-outline"
+          size={16}
+          color={Colors.muted}
+        />
 
-            <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalValue}>₹{grandTotal}</Text>
-            </View>
-          </View>
-        }
+        <Text style={styles.deliveryInfoText}>
+          Orders after{" "}
+          <Text style={styles.deliveryBold}>5 PM</Text>
+          {" → "}delivered within 2 working days.
+        </Text>
+      </View>
+
+      <View style={styles.deliveryInfoRow}>
+        <Ionicons
+          name="calendar-outline"
+          size={16}
+          color={Colors.muted}
+        />
+
+        <Text style={styles.deliveryInfoText}>
+          No delivery on Saturdays or Sundays.
+        </Text>
+      </View>
+    </View>
+
+    {/* Bill Summary */}
+    <View style={styles.summaryContainer}>
+      <Text style={styles.summaryTitle}>
+        Bill Summary
+      </Text>
+
+      <View style={styles.summaryRow}>
+        <Text style={styles.summaryLabel}>
+          Subtotal
+        </Text>
+
+        <Text style={styles.summaryValue}>
+          ₹{subtotal}
+        </Text>
+      </View>
+
+      <View style={styles.summaryRow}>
+        <Text style={styles.summaryLabel}>
+          Delivery
+        </Text>
+
+        <Text
+          style={[
+            styles.summaryValue,
+            {
+              color:
+                deliveryCharge === 0
+                  ? Colors.success
+                  : Colors.textPrimary,
+            },
+          ]}
+        >
+          {deliveryCharge === 0
+            ? "FREE"
+            : `₹${deliveryCharge}`}
+        </Text>
+      </View>
+
+      <View style={styles.summaryRow}>
+        <Text style={styles.summaryLabel}>
+          Discount
+        </Text>
+
+        <Text
+          style={[
+            styles.summaryValue,
+            { color: Colors.danger },
+          ]}
+        >
+          -₹{discount}
+        </Text>
+      </View>
+
+      <View style={styles.divider} />
+
+      <View
+        style={[
+          styles.summaryRow,
+          styles.totalRow,
+        ]}
+      >
+        <Text style={styles.totalLabel}>
+          Total Amount
+        </Text>
+
+        <Text style={styles.totalValue}>
+          ₹{grandTotal}
+        </Text>
+      </View>
+    </View>
+  </>
+}
       />
       <AddressSelector />
       {/* Place Order Button */}
@@ -925,4 +1220,146 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
+  paymentCard: {
+  backgroundColor: Colors.card,
+  borderRadius: 20,
+  padding: 16,
+  marginBottom: 20,
+  borderWidth: 1,
+  borderColor: Colors.separator,
+},
+
+paymentOption: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 14,
+  borderWidth: 1,
+  borderColor: Colors.separator,
+  borderRadius: 16,
+  marginBottom: 10,
+  backgroundColor: Colors.card,
+},
+
+selectedPaymentOption: {
+  borderColor: Colors.primary,
+  backgroundColor: "#F8F8F8",
+},
+
+paymentIconContainer: {
+  width: 42,
+  height: 42,
+  borderRadius: 12,
+  backgroundColor: Colors.surface,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+},
+
+paymentInfo: {
+  flex: 1,
+},
+
+paymentTitle: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: Colors.textPrimary,
+  marginBottom: 3,
+},
+
+paymentSubtitle: {
+  fontSize: 12,
+  color: Colors.muted,
+},
+
+qrContainer: {
+  alignItems: "center",
+  paddingTop: 18,
+  paddingBottom: 8,
+  borderTopWidth: 1,
+  borderTopColor: Colors.separator,
+  marginTop: 4,
+},
+
+qrTitle: {
+  fontSize: 15,
+  fontWeight: "700",
+  color: Colors.textPrimary,
+  marginTop: 12,
+},
+
+qrSubtitle: {
+  fontSize: 12,
+  color: Colors.muted,
+  textAlign: "center",
+  lineHeight: 18,
+  marginTop: 5,
+},
+qrImageWrapper: {
+  width: 240,
+  height: 240,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 18,
+  borderWidth: 1,
+  borderColor: Colors.separator,
+  padding: 12,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+qrImage: {
+  width: "100%",
+  height: "100%",
+},
+// Delivery Information
+deliveryInfoCard: {
+  backgroundColor: "#F8FFFB",
+  borderRadius: 18,
+  padding: 16,
+  marginTop: 20,
+  marginBottom: 4,
+  borderWidth: 1,
+  borderColor: "#E5F3EA",
+},
+
+deliveryInfoHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 14,
+},
+
+deliveryInfoIcon: {
+  width: 36,
+  height: 36,
+  borderRadius: 10,
+  backgroundColor: "#EAF8EF",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+deliveryInfoTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: Colors.textPrimary,
+},
+
+deliveryInfoRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  marginBottom: 10,
+  paddingLeft: 2,
+},
+
+deliveryInfoText: {
+  flex: 1,
+  fontSize: 13,
+  lineHeight: 19,
+  color: Colors.textSecondary,
+  marginLeft: 9,
+},
+
+deliveryBold: {
+  fontWeight: "700",
+  color: Colors.textPrimary,
+},
 });

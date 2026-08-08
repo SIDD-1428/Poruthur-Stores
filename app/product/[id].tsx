@@ -128,136 +128,274 @@ export default function ProductDetail() {
     const productPrice = Number(product.price);
 
     return (
-        <Pressable style={styles.overlay} onPress={handleClose}>
-            <BlurView intensity={80} style={StyleSheet.absoluteFill} tint="dark" />
+    <View style={styles.overlay}>
 
-            <Animated.View
-                style={[
-                    styles.card,
-                    {
-                        transform: [{ scale: scaleAnim }],
-                        opacity: opacityAnim,
-                    },
-                ]}
+        {/* Blurred background */}
+        <BlurView
+            intensity={80}
+            style={StyleSheet.absoluteFill}
+            tint="dark"
+        />
+
+        {/* Tap outside card to close */}
+        <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={handleClose}
+        />
+
+        <Animated.View
+            style={[
+                styles.card,
+                {
+                    transform: [{ scale: scaleAnim }],
+                    opacity: opacityAnim,
+                },
+            ]}
+        >
+
+            {/* CARD */}
+
+            {/* Close Button */}
+            <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={handleClose}
             >
-                <Pressable onPress={(e) => e.stopPropagation()}>
-                    {/* Close Button */}
-                    <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
-                        <Ionicons name="close" size={24} color="#000" />
-                    </TouchableOpacity>
+                <Ionicons
+                    name="close"
+                    size={24}
+                    color="#000"
+                />
+            </TouchableOpacity>
 
-                    <ScrollView showsVerticalScrollIndicator={false}>
-                        {/* Product Image */}
-                        <Animated.View style={{ transform: [{ scale: imageScale }] }}>
-                            <Image
-                                source={{ uri: product.image }}
-                                style={styles.image}
-                                onLoadStart={() => setImageLoaded(false)}
-                                onLoadEnd={() => setImageLoaded(true)}
+
+            {/* FIXED IMAGE */}
+            <Animated.View
+                style={{
+                    transform: [{ scale: imageScale }],
+                }}
+            >
+                <Image
+                    source={{ uri: product.image }}
+                    style={styles.image}
+                    onLoadStart={() => setImageLoaded(false)}
+                    onLoadEnd={() => setImageLoaded(true)}
+                />
+
+                {!imageLoaded && (
+                    <View style={styles.imagePlaceholder}>
+                        <Ionicons
+                            name="image-outline"
+                            size={40}
+                            color="#CCC"
+                        />
+                    </View>
+                )}
+            </Animated.View>
+
+
+            {/* SCROLLABLE DETAILS */}
+            <ScrollView
+                style={styles.detailsScroll}
+                contentContainerStyle={styles.detailsContent}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                directionalLockEnabled={true}
+            >
+
+                {/* Stock */}
+                {isOutOfStock ? (
+                    <View
+                        style={[
+                            styles.stockBadge,
+                            styles.outOfStockBadge,
+                        ]}
+                    >
+                        <Ionicons
+                            name="close-circle"
+                            size={16}
+                            color="#FF3B30"
+                        />
+
+                        <Text style={styles.outOfStockText}>
+                            Out of Stock
+                        </Text>
+                    </View>
+                ) : product.stock <= 5 ? (
+                    <View
+                        style={[
+                            styles.stockBadge,
+                            styles.lowStockBadge,
+                        ]}
+                    >
+                        <Ionicons
+                            name="alert-circle"
+                            size={16}
+                            color="#FF9500"
+                        />
+
+                        <Text style={styles.lowStockText}>
+                            Only {product.stock} left in stock
+                        </Text>
+                    </View>
+                ) : null}
+
+
+                {/* NAME */}
+                <Text style={styles.name}>
+                    {product.name}
+                </Text>
+
+
+                {/* UNIT + RATING */}
+                <View style={styles.metaRow}>
+
+                    <View style={styles.unitContainer}>
+                        <Ionicons
+                            name="cube-outline"
+                            size={14}
+                            color="#666"
+                        />
+
+                        <Text style={styles.unit}>
+                            {product.unit}
+                        </Text>
+                    </View>
+
+                    {product.rating > 0 && (
+                        <View style={styles.ratingContainer}>
+                            <Ionicons
+                                name="star"
+                                size={14}
+                                color="#FF9500"
                             />
-                            {!imageLoaded && (
-                                <View style={styles.imagePlaceholder}>
-                                    <Ionicons name="image-outline" size={40} color="#CCC" />
-                                </View>
-                            )}
-                        </Animated.View>
 
-                        {/* Stock Status */}
-                        {isOutOfStock ? (
-                            <View style={[styles.stockBadge, styles.outOfStockBadge]}>
-                                <Ionicons name="close-circle" size={16} color="#FF3B30" />
-                                <Text style={styles.outOfStockText}>Out of Stock</Text>
-                            </View>
-                        ) : product.stock <= 5 && (
-                            <View style={[styles.stockBadge, styles.lowStockBadge]}>
-                                <Ionicons name="alert-circle" size={16} color="#FF9500" />
-                                <Text style={styles.lowStockText}>Only {product.stock} left in stock</Text>
-                            </View>
-                        )}
-
-                        {/* Product Name */}
-                        <Text style={styles.name}>{product.name}</Text>
-
-                        {/* Unit & Rating */}
-                        <View style={styles.metaRow}>
-                            <View style={styles.unitContainer}>
-                                <Ionicons name="cube-outline" size={14} color="#666" />
-                                <Text style={styles.unit}>{product.unit}</Text>
-                            </View>
-                            {product.rating > 0 && (
-                                <View style={styles.ratingContainer}>
-                                    <Ionicons name="star" size={14} color="#FF9500" />
-                                    <Text style={styles.rating}>{product.rating}</Text>
-                                </View>
-                            )}
-                        </View>
-
-                        {/* Price */}
-                        <Text style={styles.price}>₹{productPrice}</Text>
-
-                        {/* Description */}
-                        {(product.protext || product.description) && (
-                            <View style={styles.descriptionSection}>
-                                <Text style={styles.sectionTitle}>Description</Text>
-                                <Text style={styles.description}>
-                                    {product.protext || product.description}
-                                </Text>
-                            </View>
-                        )}
-
-                        {/* Max Order Info */}
-                        {product.maxOrderQty > 0 && (
-                            <View style={styles.infoCard}>
-                                <Ionicons name="information-circle-outline" size={18} color="#666" />
-                                <Text style={styles.infoText}>
-                                    Maximum {product.maxOrderQty} units per order
-                                </Text>
-                            </View>
-                        )}
-                    </ScrollView>
-
-                    {/* Bottom Action Button */}
-                    {!isOutOfStock && (
-                        <View style={styles.bottomContainer}>
-                            {!itemInCart ? (
-                                <TouchableOpacity
-                                    style={styles.addButton}
-                                    onPress={handleAddToCart}
-                                    activeOpacity={0.8}
-                                >
-                                    <LinearGradient
-                                        colors={["#000000", "#333333"]}
-                                        style={styles.addButtonGradient}
-                                    >
-                                        <Ionicons name="cart-outline" size={20} color="#FFF" />
-                                        <Text style={styles.addButtonText}>Add to Cart</Text>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-                            ) : (
-                                <View style={styles.qtyBox}>
-                                    <TouchableOpacity
-                                        style={styles.qtyBtn}
-                                        onPress={() => decreaseQty(product.id)}
-                                    >
-                                        <Ionicons name="remove" size={18} color="#FFF" />
-                                    </TouchableOpacity>
-                                    <Text style={styles.qtyText}>
-                                        {itemInCart.quantity}
-                                    </Text>
-                                    <TouchableOpacity
-                                        style={styles.qtyBtn}
-                                        onPress={() => increaseQty(product.id)}
-                                    >
-                                        <Ionicons name="add" size={18} color="#FFF" />
-                                    </TouchableOpacity>
-                                </View>
-                            )}
+                            <Text style={styles.rating}>
+                                {product.rating}
+                            </Text>
                         </View>
                     )}
-                </Pressable>
-            </Animated.View>
-        </Pressable>
-    );
+
+                </View>
+
+
+                {/* PRICE */}
+                <Text style={styles.price}>
+                    ₹{productPrice}
+                </Text>
+                
+
+                {/* MAX ORDER */}
+                {product.maxOrderQty > 0 && (
+                    <View style={styles.infoCard}>
+
+                        <Ionicons
+                            name="information-circle-outline"
+                            size={18}
+                            color="#666"
+                        />
+
+                        <Text style={styles.infoText}>
+                            Maximum {product.maxOrderQty} units per order
+                        </Text>
+
+                    </View>
+                )}
+                
+
+                {/* DESCRIPTION */}
+                {(product.protext || product.description) && (
+                    <View style={styles.descriptionSection}>
+
+                        <Text style={styles.sectionTitle}>
+                            Description
+                        </Text>
+
+                        <Text style={styles.description}>
+                            {product.protext || product.description}
+                        </Text>
+
+                    </View>
+                )}
+
+
+            </ScrollView>
+
+
+            {/* FIXED BOTTOM BUTTON */}
+            {!isOutOfStock && (
+                <View style={styles.bottomContainer}>
+
+                    {!itemInCart ? (
+
+                        <TouchableOpacity
+                            style={styles.addButton}
+                            onPress={handleAddToCart}
+                            activeOpacity={0.8}
+                        >
+                            <LinearGradient
+                                colors={[
+                                    "#000000",
+                                    "#333333",
+                                ]}
+                                style={styles.addButtonGradient}
+                            >
+                                <Ionicons
+                                    name="cart-outline"
+                                    size={20}
+                                    color="#FFF"
+                                />
+
+                                <Text style={styles.addButtonText}>
+                                    Add to Cart
+                                </Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                    ) : (
+
+                        <View style={styles.qtyBox}>
+
+                            <TouchableOpacity
+                                style={styles.qtyBtn}
+                                onPress={() =>
+                                    decreaseQty(product.id)
+                                }
+                            >
+                                <Ionicons
+                                    name="remove"
+                                    size={18}
+                                    color="#FFF"
+                                />
+                            </TouchableOpacity>
+
+                            <Text style={styles.qtyText}>
+                                {itemInCart.quantity}
+                            </Text>
+
+                            <TouchableOpacity
+                                style={styles.qtyBtn}
+                                onPress={() =>
+                                    increaseQty(product.id)
+                                }
+                            >
+                                <Ionicons
+                                    name="add"
+                                    size={18}
+                                    color="#FFF"
+                                />
+                            </TouchableOpacity>
+
+                        </View>
+
+                    )}
+
+                </View>
+            )}
+
+        </Animated.View>
+
+    </View>
+);
 }
 
 const styles = StyleSheet.create({
@@ -290,7 +428,7 @@ const styles = StyleSheet.create({
 
     card: {
         width: width * 0.9,
-        maxHeight: height * 0.85,
+        height: height * 0.85,
         backgroundColor: "#FFFFFF",
         borderRadius: 28,
         overflow: "hidden",
@@ -299,6 +437,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 25,
         elevation: 15,
+    },
+
+    cardContent: {
+        flex: 1,
+    },
+
+   detailsScroll: {
+    flex:1,
+},
+
+    detailsContent: {
+        paddingBottom: 30,
     },
 
     closeBtn: {
@@ -431,12 +581,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    bottomContainer: {
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: "#E8E8E8",
-        backgroundColor: "#FFF",
-    },
+  bottomContainer: {
+    height: 90,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E8E8E8",
+    backgroundColor: "#FFF",
+    justifyContent: "center",
+},
 
     addButton: {
         borderRadius: 30,
