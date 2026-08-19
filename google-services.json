@@ -22,6 +22,43 @@
           }
         },
         {
+          "client_id": "784163241119-l9uib2hdc8lfcc6748plukcttscjo8gv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poruthurstores.app",
+            "certificate_hash": "0e71e6c48c250ddc1948f3407ca417a43f2ce008"
+          }
+        },
+        {
+          "client_id": "784163241119-5oedt9ncfrddbaa92em1sr0iklhokr2h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaL5MahCEBlBuc_4tc7k0uwn3vIatB3Yc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "784163241119-5oedt9ncfrddbaa92em1sr0iklhokr2h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784163241119:android:d93b3b4727a6b7116736aa",
+        "android_client_info": {
+          "package_name": "com.sidd1428.poruthurstoresadmin"
+        }
+      },
+      "oauth_client": [
+        {
           "client_id": "784163241119-5oedt9ncfrddbaa92em1sr0iklhokr2h.apps.googleusercontent.com",
           "client_type": 3
         }
