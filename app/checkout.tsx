@@ -682,8 +682,8 @@ export default function Checkout() {
 
         <Text style={styles.deliveryInfoText}>
           Orders before{" "}
-          <Text style={styles.deliveryBold}>5 PM</Text>
-          {" → "}delivered the next working day.
+          <Text style={styles.deliveryBold}>6 PM</Text>
+          {" → "}delivered the same day.
         </Text>
       </View>
 
@@ -696,8 +696,8 @@ export default function Checkout() {
 
         <Text style={styles.deliveryInfoText}>
           Orders after{" "}
-          <Text style={styles.deliveryBold}>5 PM</Text>
-          {" → "}delivered within 2 working days.
+          <Text style={styles.deliveryBold}>6 PM</Text>
+          {" → "}delivered the next working day.
         </Text>
       </View>
 
@@ -709,7 +709,7 @@ export default function Checkout() {
         />
 
         <Text style={styles.deliveryInfoText}>
-          No delivery on Saturdays or Sundays.
+          No delivery on Sundays.
         </Text>
       </View>
     </View>
