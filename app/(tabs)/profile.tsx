@@ -1,10 +1,11 @@
+import { db } from "@/firebase/config";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Colors = {
   background: "#FFFFFF",
@@ -21,6 +22,65 @@ const Colors = {
 };
 
 export default function ProfileScreen() {
+  const [userData, setUserData]=useState<any>(null);
+
+  useEffect(() => {
+  const user = auth().currentUser;
+
+  if (!user) return;
+
+  const unsubscribe = db
+    .collection("users")
+    .doc(user.uid)
+    .onSnapshot(
+      (doc) => {
+        if (doc.exists()) {
+          setUserData(doc.data());
+        }
+      },
+      (error) => {
+        console.log("Error fetching user profile:", error);
+      }
+    );
+
+  return () => unsubscribe();
+}, []);
+
+
+const openPrivacyPolicy = async () => {
+  const url = "https://sidd-1428.github.io/phloem-customer-privacy-policy/";
+
+  try {
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Error", "Unable to open the Privacy Policy.");
+    }
+  } catch (error) {
+    console.log("Error opening Privacy Policy:", error);
+    Alert.alert("Error", "Unable to open the Privacy Policy.");
+  }
+};
+  
+const openSupportPage = async () => {
+  const url =
+    "https://sidd-1428.github.io/phloem-customer-privacy-policy/support.html";
+
+  try {
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Error", "Unable to open the Support page.");
+    }
+  } catch (error) {
+    console.log("Error opening Support page:", error);
+    Alert.alert("Error", "Unable to open the Support page.");
+  }
+};
   const handleLogout = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
@@ -53,7 +113,7 @@ export default function ProfileScreen() {
   const menuItems = [
     { icon: "bag-outline", title: "My Orders", route: "/(tabs)/orders" },
     { icon: "location-outline", title: "Delivery Address", route: "/address" },
-    { icon: "help-circle-outline", title: "Help & Support", route: "/support" },
+    { icon: "help-circle-outline", title: "Support & Bulk Orders", route: "/support" },
     { icon: "shield-checkmark-outline", title: "Privacy Policy", route: "/privacy" },
     { icon: "document-text-outline", title: "Terms & Conditions", route: "/terms" },
   ];
@@ -85,17 +145,20 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
         >
           <Text style={styles.avatarText}>
-            {auth().currentUser?.displayName?.charAt(0)?.toUpperCase() || "U"}
+            {userData?.fullName?.charAt(0)?.toUpperCase() || "U"}
           </Text>
         </LinearGradient>
 
         <View style={styles.userInfo}>
           <Text style={styles.name}>
-            {auth().currentUser?.displayName || "User"}
+            {userData?.fullName || "User"}
           </Text>
+
           <View style={styles.emailContainer}>
-            <Ionicons name="mail-outline" size={14} color={Colors.muted} />
-            <Text style={styles.email}>{auth().currentUser?.email}</Text>
+            <Ionicons name="call-outline" size={14} color={Colors.muted} />
+            <Text style={styles.email}>
+              {userData?.phone || auth().currentUser?.phoneNumber || ""}
+            </Text>
           </View>
           <View style={styles.uidContainer}>
             <Ionicons name="finger-print-outline" size={12} color={Colors.muted} />
@@ -109,13 +172,23 @@ export default function ProfileScreen() {
       {/* Menu Items */}
       <View style={styles.menuSection}>
         <Text style={styles.sectionTitle}>Account Settings</Text>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.menuItem}
-            onPress={() => handleNavigation(item.route)}
-            activeOpacity={0.7}
-          >
+       {menuItems.map((item, index) => (
+  <TouchableOpacity
+    key={index}
+    style={styles.menuItem}
+    onPress={() => {
+      if (item.title === "Privacy Policy") {
+        openPrivacyPolicy();
+      } 
+      else if (item.title === "Support & Bulk Orders") {
+    openSupportPage();
+  }
+      else {
+        handleNavigation(item.route);
+      }
+    }}
+    activeOpacity={0.7}
+  >
             <View style={styles.menuLeft}>
               <View style={styles.menuIcon}>
                 <Ionicons name={item.icon as any} size={20} color={Colors.primary} />
@@ -129,8 +202,8 @@ export default function ProfileScreen() {
 
       {/* App Info */}
       <View style={styles.appInfo}>
-        <Text style={styles.appVersion}>Namma Store v1.0.0</Text>
-        <Text style={styles.appCopy}>© 2024 Namma Store. All rights reserved.</Text>
+        <Text style={styles.appVersion}>Poruthur Stores</Text>
+        <Text style={styles.appCopy}>©Poruthur Stores. All rights reserved.</Text>
       </View>
 
       {/* Logout Button */}

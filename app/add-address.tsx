@@ -1,3 +1,7 @@
+import {
+  initializeNotifications,
+  requestNotificationPermission,
+} from "@/services/notification";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
@@ -23,7 +27,6 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { db } from "../firebase/config";
-
 
 // ── Clean Black/White/Grey Color Scheme ──
 const Colors = {
@@ -181,17 +184,42 @@ export default function AddAddressScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("Success", "Address added successfully", [
-        {
-          text: "OK",
-          onPress: () => {
-            if (isOnboarding) {
-              router.replace("/(tabs)/home");
-            } else {
-              router.back();
-            }
-          },
-        },
-      ]);
+  {
+    text: "OK",
+    onPress: () => {
+      if (isOnboarding) {
+        Alert.alert(
+          "Enable Notifications",
+          "Get order updates, delivery alerts and important notifications.",
+          [
+            {
+              text: "Not Now",
+              style: "cancel",
+              onPress: () => {
+                router.replace("/(tabs)/home");
+              },
+            },
+            {
+              text: "Allow",
+              onPress: async () => {
+                const enabled =
+                  await requestNotificationPermission();
+
+                if (enabled) {
+                  await initializeNotifications();
+                }
+
+                router.replace("/(tabs)/home");
+              },
+            },
+          ]
+        );
+      } else {
+        router.back();
+      }
+    },
+  },
+]);
     } catch (error) {
       console.log(error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

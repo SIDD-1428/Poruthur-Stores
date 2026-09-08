@@ -22,6 +22,22 @@
           }
         },
         {
+          "client_id": "784163241119-53inlaj8jkugd6tddsej40m4jrvr7erc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poruthurstores.app",
+            "certificate_hash": "2c9bd018efd19f9594c9a4986ef51fae813787a6"
+          }
+        },
+        {
+          "client_id": "784163241119-dg69hqqs5g104907vutjhd59oa4941h0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.poruthurstores.app",
+            "certificate_hash": "279d3a2bd23757ab4ddded3ba77e91e35f7ab883"
+          }
+        },
+        {
           "client_id": "784163241119-l9uib2hdc8lfcc6748plukcttscjo8gv.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -58,6 +74,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "784163241119-1ji4e3jki0f4vjhp2i9at4mkc3s7tn2n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sidd1428.poruthurstoresadmin",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
         {
           "client_id": "784163241119-5oedt9ncfrddbaa92em1sr0iklhokr2h.apps.googleusercontent.com",
           "client_type": 3

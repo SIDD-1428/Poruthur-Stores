@@ -4,17 +4,29 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import messaging from "@react-native-firebase/messaging";
 
+export async function requestNotificationPermission() {
+  try {
+    const authStatus = await messaging().requestPermission();
+
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (!enabled) {
+      console.log("Notification permission denied");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log("Notification permission error:", error);
+    return false;
+  }
+}
+
 export async function initializeNotifications() {
   try {
-    // Check current permission
-    let authStatus = await messaging().hasPermission();
-
-    if (
-      authStatus !== messaging.AuthorizationStatus.AUTHORIZED &&
-      authStatus !== messaging.AuthorizationStatus.PROVISIONAL
-    ) {
-      authStatus = await messaging().requestPermission();
-    }
+    const authStatus = await messaging().hasPermission();
 
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||

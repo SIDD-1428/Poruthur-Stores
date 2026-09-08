@@ -5,15 +5,15 @@ import firestore from "@react-native-firebase/firestore";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function PersonalInfo() {
@@ -22,6 +22,7 @@ export default function PersonalInfo() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  
   const validateEmail = (value: string) => {
     if (value.trim() === "") return true;
 
@@ -39,7 +40,12 @@ export default function PersonalInfo() {
       return;
     }
 
-    if (!validateEmail(email)) {
+    if (!email.trim()) {
+      Alert.alert("Email Address Required");
+      return;
+    }
+
+    if (!validateEmail(email.trim())) {
       Alert.alert("Please enter a valid email address.");
       return;
     }
@@ -122,7 +128,7 @@ export default function PersonalInfo() {
       />
 
       <Text style={styles.label}>
-        Email Address (Optional)
+        Email Address 
       </Text>
 
       <TextInput

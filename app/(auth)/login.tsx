@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import Animated, {
   FadeInDown,
   FadeInUp,
@@ -44,11 +44,29 @@ export default function Login() {
     transform: [{ translateY: slideAnim.value }],
   }));
 
+  
   useEffect(() => {
     fadeAnim.value = withTiming(1, { duration: 800 });
     slideAnim.value = withTiming(0, { duration: 600 });
   }, []);
 
+  const openPrivacyPolicy = async () => {
+  const url = "https://sidd-1428.github.io/phloem-customer-privacy-policy/";
+
+  try {
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Error", "Unable to open the Privacy Policy.");
+    }
+  } catch (error) {
+    console.log("Error opening Privacy Policy:", error);
+    Alert.alert("Error", "Unable to open the Privacy Policy.");
+  }
+};
+  
 
   const sendOTP=async()=>{
     if (phone.length !== 10) {
@@ -91,9 +109,14 @@ export default function Login() {
           {/* Brand Header */}
           <Animated.View entering={ZoomIn.delay(100)} style={styles.brandContainer}>
             <View style={styles.brandIcon}>
-              <Ionicons name="cart-outline" size={32} color={Colors.primary} />
+              <Image
+                source={require("../../assets/images/icon.png")}
+                style={styles.brandImage}
+                resizeMode="contain"
+              />
             </View>
-            <Text style={styles.brandName}>Poruthur Stores</Text>
+            <Text style={styles.brandName}>PHLOEM</Text>
+            <Text style={styles.subtitle}>By Poruthur Stores</Text>
           </Animated.View>
 
           {/* Welcome Section */}
@@ -147,7 +170,10 @@ export default function Login() {
             <Text style={styles.terms}>
               By continuing, you agree to our{" "}
               <Text style={styles.link}>Terms of Service</Text> and{" "}
-              <Text style={styles.link}>Privacy Policy</Text>
+              <Text style={styles.link}
+              onPress={openPrivacyPolicy}>
+                Privacy Policy
+              </Text>
             </Text>
           </Animated.View>
         </Animated.View>
@@ -207,15 +233,6 @@ const styles = StyleSheet.create({
   brandContainer: {
     alignItems: "center",
     marginBottom: 24,
-  },
-  brandIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.primaryLight,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
   },
   brandName: {
     fontSize: 22,
@@ -318,4 +335,18 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: "500",
   },
+  brandImage: {
+    width: 90,
+    height: 90,
+  },
+  brandIcon: {
+  width: 64,
+  height: 64,
+  borderRadius: 92,
+  backgroundColor: Colors.primaryLight,
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: 12,
+  overflow: "hidden",
+},
 });

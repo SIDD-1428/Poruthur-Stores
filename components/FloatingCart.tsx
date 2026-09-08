@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: 8,
+    paddingBottom: 30,
   },
 
   wrapper: {
@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 12,
+    
 
     flexDirection: "row",
     justifyContent: "space-between",

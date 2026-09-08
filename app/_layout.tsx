@@ -1,3 +1,4 @@
+import { db } from "@/firebase/config";
 import { Stack, useRouter, useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
 
@@ -43,30 +44,74 @@ export default function RootLayout() {
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    if (loading) return;
+ useEffect(() => {
+  if (loading) return;
 
-    const firstSegment = segments[0];
+  const firstSegment = segments[0];
 
-    const inAuthGroup = firstSegment === "(auth)";
-    const inTabsGroup = firstSegment === "(tabs)";
+  const inAuthGroup = firstSegment === "(auth)";
 
-    // User is NOT logged in
-    if (!user) {
-      if (!inAuthGroup) {
-        router.replace("/(auth)/login");
+  // USER NOT LOGGED IN
+  if (!user) {
+    if (!inAuthGroup) {
+      router.replace("/(auth)/login");
+    }
+
+    return;
+  }
+
+  // USER LOGGED IN
+  const checkUserProfile = async () => {
+    try {
+      const userDoc = await db
+        .collection("users")
+        .doc(user.uid)
+        .get();
+
+      // New user OR profile incomplete
+      if (
+        !userDoc.exists() ||
+        !userDoc.data()?.profileCompleted
+      ) {
+        if (firstSegment !== "personal-info") {
+          router.replace("/personal-info");
+        }
+
+        return;
+      }
+
+      // Check if user has an address
+      const addressSnapshot = await db
+        .collection("addresses")
+        .where("userId", "==", user.uid)
+        .limit(1)
+        .get();
+
+      // Profile completed but no address
+      if (addressSnapshot.empty) {
+      if (firstSegment !== "add-address") {
+        router.replace({
+          pathname: "/add-address",
+          params: {
+            onboarding: "true",
+          },
+        });
       }
 
       return;
     }
 
-    // User IS logged in
-    // If they somehow land on the login/signup screens,
-    // send them to the main app.
-    if (inAuthGroup) {
-      router.replace("/(tabs)/home");
+      // Fully registered user
+      if (inAuthGroup) {
+        router.replace("/(tabs)/home");
+      }
+    } catch (error) {
+      console.log("Profile navigation error:", error);
     }
-  }, [user, loading, segments]);
+  };
+
+  checkUserProfile();
+}, [user, loading, segments]);
 
   // Wait until Firebase has determined the authentication state.
   // This prevents the app from briefly showing the login screen
@@ -114,6 +159,8 @@ export default function RootLayout() {
                 <Stack.Screen
                   name="edit-address"
                 />
+
+                <Stack.Screen name="personal-info" />
               </>
             )}
           </Stack>
