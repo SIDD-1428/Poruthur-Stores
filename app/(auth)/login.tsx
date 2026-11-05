@@ -51,7 +51,7 @@ export default function Login() {
   }, []);
 
   const openPrivacyPolicy = async () => {
-  const url = "https://sidd-1428.github.io/phloem-customer-privacy-policy/";
+  const url = "https://bonmart-customer-privacy-policy.pages.dev/";
 
   try {
     const supported = await Linking.canOpenURL(url);
@@ -115,8 +115,8 @@ export default function Login() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.brandName}>PHLOEM</Text>
-            <Text style={styles.subtitle}>By Poruthur Stores</Text>
+            <Text style={styles.brandName}>BonMart</Text>
+            <Text style={styles.subtitle}>Shop Good, Live Good</Text>
           </Animated.View>
 
           {/* Welcome Section */}
@@ -336,8 +336,8 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   brandImage: {
-    width: 90,
-    height: 90,
+    width: 70,
+    height: 70,
   },
   brandIcon: {
   width: 64,

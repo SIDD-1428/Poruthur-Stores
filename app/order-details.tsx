@@ -390,12 +390,16 @@ export default function OrderDetails() {
             <Ionicons name="help-circle-outline" size={20} color={Colors.muted} />
             <Text style={styles.helpTitle}>Need Help?</Text>
           </View>
+          <TouchableOpacity onPress={() => router.replace("/profile")}>                                                                                                                                           
           <Text style={styles.helpText}>
             Contact our store owner for any queries related to your order
           </Text>
-          <Text style={styles.contactText}>
-            +91 9035813611 | poruthurstore@gmail.com
+          
+             <Text style={styles.contactText}>
+            Click here to reach out to the support team
           </Text>
+          </TouchableOpacity>
+         
         </View>
 
         <View style={{ height: 40 }} />

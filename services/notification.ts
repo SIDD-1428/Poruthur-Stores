@@ -17,6 +17,7 @@ export async function requestNotificationPermission() {
       return false;
     }
 
+    console.log("Notification permission granted");
     return true;
   } catch (error) {
     console.log("Notification permission error:", error);
@@ -33,14 +34,16 @@ export async function initializeNotifications() {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
-      console.log("Notification permission denied");
+      console.log("Notification permission not granted yet");
       return;
     }
 
     const token = await messaging().getToken();
+
     console.log("FCM Token:", token);
 
     const user = auth().currentUser;
+
     if (!user) return;
 
     await db.collection("users").doc(user.uid).update({
@@ -49,11 +52,11 @@ export async function initializeNotifications() {
       tokenUpdatedAt: firestore.FieldValue.serverTimestamp(),
     });
 
-    // Token refresh listener
     messaging().onTokenRefresh(async (newToken) => {
       console.log("FCM Token Refreshed:", newToken);
 
       const currentUser = auth().currentUser;
+
       if (!currentUser) return;
 
       await db.collection("users").doc(currentUser.uid).update({
@@ -62,9 +65,7 @@ export async function initializeNotifications() {
       });
     });
 
-    // Foreground notification
     messaging().onMessage(async (remoteMessage) => {
-
       console.log("Foreground Notification:", remoteMessage);
 
       showNotification({
@@ -72,23 +73,20 @@ export async function initializeNotifications() {
         body: remoteMessage.notification?.body ?? "",
         orderId: String(remoteMessage.data?.orderId ?? ""),
       });
-
     });
 
-    // App opened from notification
     messaging().onNotificationOpenedApp((remoteMessage) => {
       console.log("Opened from notification:", remoteMessage);
-
-      // Later we'll navigate to the relevant screen here.
     });
 
-    // App launched from a notification
-    const initialNotification = await messaging().getInitialNotification();
+    const initialNotification =
+      await messaging().getInitialNotification();
 
     if (initialNotification) {
-      console.log("Opened app from quit state:", initialNotification);
-
-      // Navigation logic will be added later.
+      console.log(
+        "Opened app from quit state:",
+        initialNotification
+      );
     }
 
   } catch (error) {

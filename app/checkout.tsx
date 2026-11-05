@@ -714,6 +714,106 @@ export default function Checkout() {
       </View>
     </View>
 
+    {/* Payment Terms */}
+<View style={styles.policyCard}>
+  <View style={styles.policyHeader}>
+    <View style={styles.policyIcon}>
+      <Ionicons
+        name="card-outline"
+        size={20}
+        color={Colors.textPrimary}
+      />
+    </View>
+
+    <Text style={styles.policyTitle}>
+      Payment Terms
+    </Text>
+  </View>
+
+  <View style={styles.policyRow}>
+    <Ionicons
+      name="checkmark-circle-outline"
+      size={16}
+      color={Colors.muted}
+    />
+
+    <Text style={styles.policyText}>
+      Please make the payment at the time of delivery.
+    </Text>
+  </View>
+
+  <View style={styles.policyRow}>
+    <Ionicons
+      name="close-circle-outline"
+      size={16}
+      color={Colors.muted}
+    />
+
+    <Text style={styles.policyText}>
+      We currently do not offer credit.
+    </Text>
+  </View>
+</View>
+
+{/* Returns & Exchanges */}
+<View style={styles.policyCard}>
+  <View style={styles.policyHeader}>
+    <View style={styles.policyIcon}>
+      <Ionicons
+        name="refresh-outline"
+        size={20}
+        color={Colors.textPrimary}
+      />
+    </View>
+
+    <Text style={styles.policyTitle}>
+      Returns & Exchanges
+    </Text>
+  </View>
+
+  <View style={styles.policyRow}>
+    <Ionicons
+      name="checkmark-circle-outline"
+      size={16}
+      color={Colors.muted}
+    />
+
+    <Text style={styles.policyText}>
+      Kindly check your items at the time of delivery.
+    </Text>
+  </View>
+
+  <View style={styles.policyRow}>
+    <Ionicons
+      name="keypad-outline"
+      size={16}
+      color={Colors.muted}
+    />
+
+    <Text style={styles.policyText}>
+      Please share the OTP with the delivery associate only after
+      ensuring that the products are in good condition and are not damaged.
+    </Text>
+  </View>
+
+  <View style={styles.policyRow}>
+    <Ionicons
+      name="information-circle-outline"
+      size={16}
+      color={Colors.muted}
+    />
+
+    <Text style={styles.policyText}>
+      Items tagged "No Return / Exchange" cannot be returned or exchanged
+      once the order has been accepted.
+    </Text>
+  </View>
+</View>
+
+{/* Bill Summary */}
+<View style={styles.summaryContainer}>
+</View>
+
     {/* Bill Summary */}
     <View style={styles.summaryContainer}>
       <Text style={styles.summaryTitle}>
@@ -1361,5 +1461,50 @@ deliveryInfoText: {
 deliveryBold: {
   fontWeight: "700",
   color: Colors.textPrimary,
+},
+// Payment & Return Policies
+policyCard: {
+  backgroundColor: Colors.card,
+  borderRadius: 18,
+  padding: 16,
+  marginTop: 16,
+  borderWidth: 1,
+  borderColor: Colors.separator,
+},
+
+policyHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 14,
+},
+
+policyIcon: {
+  width: 36,
+  height: 36,
+  borderRadius: 10,
+  backgroundColor: Colors.surface,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+policyTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: Colors.textPrimary,
+},
+
+policyRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  marginBottom: 10,
+},
+
+policyText: {
+  flex: 1,
+  fontSize: 13,
+  lineHeight: 19,
+  color: Colors.textSecondary,
+  marginLeft: 9,
 },
 });

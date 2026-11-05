@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import InAppNotification from "@/components/InAppNotification";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
-import { initializeNotifications } from "@/services/notification";
 import auth from "@react-native-firebase/auth";
 import { CartProvider } from "../context/CartContext";
 
@@ -16,33 +15,22 @@ export default function RootLayout() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(
-      async (currentUser) => {
-        try {
-          setUser(currentUser);
-
-          if (currentUser) {
-            try {
-              await initializeNotifications();
-            } catch (notificationError) {
-              console.log(
-                "Notification initialization error:",
-                notificationError
-              );
-            }
-          }
-        } catch (error) {
-          console.log("Auth state error:", error);
-          setUser(null);
-        } finally {
-          setLoading(false);
-        }
+useEffect(() => {
+  const unsubscribe = auth().onAuthStateChanged(
+    async (currentUser) => {
+      try {
+        setUser(currentUser);
+      } catch (error) {
+        console.log("Auth state error:", error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    );
+    }
+  );
 
-    return unsubscribe;
-  }, []);
+  return unsubscribe;
+}, []);
 
  useEffect(() => {
   if (loading) return;
@@ -89,6 +77,9 @@ export default function RootLayout() {
 
       // Profile completed but no address
       if (addressSnapshot.empty) {
+        if (firstSegment === "notification-permission"){
+          return;
+        }
       if (firstSegment !== "add-address") {
         router.replace({
           pathname: "/add-address",
@@ -161,6 +152,10 @@ export default function RootLayout() {
                 />
 
                 <Stack.Screen name="personal-info" />
+
+                <Stack.Screen
+                name="notification-permission"
+                />
               </>
             )}
           </Stack>

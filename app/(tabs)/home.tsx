@@ -15,7 +15,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
+
 
 const { width } = Dimensions.get("window");
 
@@ -36,12 +38,14 @@ const Colors = {
 };
 
 export default function CustomerHome() {
+  const insets = useSafeAreaInsets();
   const [sections, setSections] = useState<any[]>([]);
   const [address, setAddress] = useState<any>(null);
   const [greeting, setGreeting] = useState("");
   const [categories,setCategories]=useState<any[]>([]);
   const [deliveryAllowed,setDeliveryAllowed]=useState<boolean|null>(null);
   const [checkingDelivery,setCheckingDelivery]=useState(true);
+  
 
   const user = auth().currentUser;
   console.log("Current UID:", user?.uid);
@@ -243,75 +247,111 @@ export default function CustomerHome() {
     );
   }
 
-  return (
-    <View style={styles.container}>
-      {/* Header */}
-      <LinearGradient
-        colors={[Colors.primary, Colors.accent]}
-        style={styles.headerGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-      >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>{greeting}</Text>
-            <Text style={styles.welcomeText}>Welcome to Poruthur Stores</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.profileBtn}
-            onPress={() => router.push("/profile")}
-          >
-            <Ionicons name="person-outline" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
+ return (
+  <View style={styles.container}>
+    {/* Header */}
+    <LinearGradient
+      colors={[Colors.primary, Colors.accent]}
+      style={[
+        styles.headerGradient,
+        {
+          paddingTop: insets.top + 16,
+        },
+      ]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+    >
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>{greeting}</Text>
+          <Text style={styles.welcomeText}>Welcome to BonMart</Text>
         </View>
 
-        {/* Delivery Address */}
         <TouchableOpacity
-          style={styles.addressContainer}
-          onPress={handleAddressPress}
-          activeOpacity={0.8}
+          style={styles.profileBtn}
+          onPress={() => router.push("/profile")}
         >
-          <Ionicons name="location-outline" size={18} color="#FFFFFF" />
-          <Text style={styles.addressText} numberOfLines={1}>
-            {address
-              ? `${address.type}: ${address.address}`
-              : "Add delivery address"}
-          </Text>
-          <Ionicons name="chevron-down" size={16} color="#FFFFFF" />
+          <Ionicons
+            name="person-outline"
+            size={22}
+            color="#FFFFFF"
+          />
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
 
-      {/* Search Bar */}
+      {/* Delivery Address */}
       <TouchableOpacity
-        style={styles.searchBox}
-        onPress={handleSearchPress}
-        activeOpacity={0.9}
+        style={styles.addressContainer}
+        onPress={handleAddressPress}
+        activeOpacity={0.8}
       >
-        <Ionicons name="search-outline" size={20} color={Colors.muted} />
-        <Text style={styles.searchText}>Search for products</Text>
-      </TouchableOpacity>
+        <Ionicons
+          name="location-outline"
+          size={18}
+          color="#FFFFFF"
+        />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={styles.categoryGrid}>
-          {sections.map((section:any)=>(
-            <CategoryCard
+        <Text
+          style={styles.addressText}
+          numberOfLines={1}
+        >
+          {address
+            ? `${address.type}: ${address.address}`
+            : "Add delivery address"}
+        </Text>
+
+        <Ionicons
+          name="chevron-down"
+          size={16}
+          color="#FFFFFF"
+        />
+      </TouchableOpacity>
+    </LinearGradient>
+
+    {/* Search Bar */}
+    <TouchableOpacity
+      style={styles.searchBox}
+      onPress={handleSearchPress}
+      activeOpacity={0.9}
+    >
+      <Ionicons
+        name="search-outline"
+        size={20}
+        color={Colors.muted}
+      />
+
+      <Text style={styles.searchText}>
+        Search for products
+      </Text>
+    </TouchableOpacity>
+
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={[
+        styles.scrollContent,
+        {
+          paddingBottom: 100 + insets.bottom,
+        },
+      ]}
+    >
+      <View style={styles.categoryGrid}>
+        {sections.map((section: any) => (
+          <CategoryCard
             key={section.title}
             title={section.title}
             subtitle={section.subtitle}
             image={section.image}
-            onPress={()=>handleSectionPress(section.title)}/>
-          ))}
-        </View>
+            onPress={() =>
+              handleSectionPress(section.title)
+            }
+          />
+        ))}
+      </View>
+    </ScrollView>
 
-        {/* Bottom Padding */}
-        <View style={styles.bottomPadding} />
-      </ScrollView>
-      <FloatingCart/>
-    </View>
-  );
+    <FloatingCart />
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
@@ -407,10 +447,6 @@ const styles = StyleSheet.create({
     paddingHorizontal:18,
     paddingTop:8,
     paddingBottom:24,
-  },
- 
-  bottomPadding: {
-    height: 30,
   },
 
   centerContainer: {
