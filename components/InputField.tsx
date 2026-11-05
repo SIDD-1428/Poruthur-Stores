@@ -1,83 +1,52 @@
-// components/InputField.tsx
-import React from 'react';
-import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import React, { ReactNode } from "react";
+import { StyleProp, StyleSheet, TextInput, TextInputProps, View, ViewStyle } from "react-native";
 
-interface InputFieldProps extends TextInputProps {
-  placeholder: string;
-  value: string;
-  onChangeText: (text: string) => void;
+type Props = {
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
   secure?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-}
+  style?: StyleProp<ViewStyle>;
+} & TextInputProps;
 
-export default function InputField({ 
-  placeholder, 
-  value, 
-  onChangeText, 
-  secure = false,
+export default function InputField({
+  secure,
   leftIcon,
   rightIcon,
-  ...props 
-}: InputFieldProps) {
+  style,
+  ...props
+}: Props) {
   return (
-    <View style={styles.container}>
-      {leftIcon && (
-        <View style={styles.leftIcon}>
-          {leftIcon}
-        </View>
-      )}
+    <View style={[styles.container, style]}>
+      {leftIcon ? <View style={styles.icon}>{leftIcon}</View> : null}
       <TextInput
-        style={[
-          styles.input,
-          leftIcon ? styles.inputWithLeftIcon : undefined,
-          rightIcon ? styles.inputWithRightIcon : undefined,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor="#999"
-        value={value}
-        onChangeText={onChangeText}
-        secureTextEntry={secure}
-        {...props}
+       {...props}
+       secureTextEntry={secure}
+       placeholderTextColor="#828282"
+       style={styles.input}
       />
-      {rightIcon && (
-        <View style={styles.rightIcon}>
-          {rightIcon}
-        </View>
-      )}
+      {rightIcon ? <View style={styles.icon}>{rightIcon}</View> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
-    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 15,
+    height: 48,
+    backgroundColor: "#FFFFFF",
   },
   input: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: '#000',
+    flex: 1,
+    color: "#000000",
+    height: "100%",
   },
-  inputWithLeftIcon: {
-    paddingLeft: 44,
-  },
-  inputWithRightIcon: {
-    paddingRight: 44,
-  },
-  leftIcon: {
-    position: 'absolute',
-    left: 14,
-    top: 14,
-    zIndex: 1,
-  },
-  rightIcon: {
-    position: 'absolute',
-    right: 14,
-    top: 14,
-    zIndex: 1,
+  icon: {
+    marginHorizontal: 8,
   },
 });
