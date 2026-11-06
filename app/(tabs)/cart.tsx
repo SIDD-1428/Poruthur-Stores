@@ -121,7 +121,7 @@ export default function Cart() {
       <View style={styles.rightSection}>
         <TouchableOpacity
           style={styles.removeBtn}
-          onPress={() => handleRemove(item.cartKey || item.id)}
+          onPress={() => handleRemove(item.id)}
         >
           <Ionicons name="trash-outline" size={18} color={Colors.danger} />
         </TouchableOpacity>
@@ -129,7 +129,7 @@ export default function Cart() {
         <View style={styles.qtyBox}>
           <TouchableOpacity
             style={styles.qtyBtn}
-            onPress={() => handleDecrease(item.cartKey || item.id)}
+            onPress={() => handleDecrease(item.id)}
           >
             <Ionicons name="remove" size={16} color={Colors.textPrimary} />
           </TouchableOpacity>
@@ -138,7 +138,7 @@ export default function Cart() {
 
           <TouchableOpacity
             style={styles.qtyBtn}
-            onPress={() => handleIncrease(item.cartKey || item.id)}
+            onPress={() => handleIncrease(item.id)}
           >
             <Ionicons name="add" size={16} color={Colors.textPrimary} />
           </TouchableOpacity>
@@ -157,7 +157,7 @@ export default function Cart() {
         <>
           <FlatList
             data={cart}
-            keyExtractor={(item)=>item.cartKey || item.id}
+            keyExtractor={(item)=>item.id}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
             renderItem={renderCartItem}
