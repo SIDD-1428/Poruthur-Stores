@@ -23,8 +23,6 @@ type Props = {
   unit: string;
   width?: number;
   maxOrderQty?: number;
-  presetUnitsEnabled?: boolean;
-  presetUnits?: any[];
 };
 
 export default function ProductCard({
@@ -38,12 +36,10 @@ export default function ProductCard({
   unit,
   width = 120,
   maxOrderQty,
-  presetUnitsEnabled = false,
-  presetUnits = [],
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
 
-  const itemInCart = presetUnitsEnabled ? null : cart.find((item) => item.id == id);
+  const itemInCart = cart.find((item) => item.id == id);
   const isOutOfStock = stock <= 0;
   const isLowStock = !isOutOfStock && stock <= 5;
 
@@ -69,7 +65,7 @@ export default function ProductCard({
 
   const handleAddToCart = (e: any) => {
   e.stopPropagation();
-  if (presetUnitsEnabled) { handleCardPress(); return; }
+  
   if (isUpdatingRef.current) return;
   isUpdatingRef.current = true;
 
@@ -177,7 +173,7 @@ export default function ProductCard({
 
           <View style={styles.bottomRow}>
             <Text style={[styles.price, isOutOfStock && { color: "#ABABAB" }]}>
-              {presetUnitsEnabled && presetUnits.length ? `From ₹${Math.min(...presetUnits.map((option: any) => Number(option.price) || 0))}` : `₹${price}`}
+              ₹{price}
             </Text>
 
             {isOutOfStock ? (
@@ -193,7 +189,7 @@ export default function ProductCard({
                   activeOpacity={0.8}
                 >
                   <Ionicons name="add" size={12} color="#fff" />
-                  <Text style={styles.addText}>{presetUnitsEnabled ? "Choose" : "Add"}</Text>
+                  <Text style={styles.addText}>Add</Text>
                 </TouchableOpacity>
               </Animated.View>
 
