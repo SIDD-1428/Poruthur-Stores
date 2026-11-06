@@ -218,10 +218,6 @@ export default function Checkout() {
           productId: item.id,
           name: item.name,
           quantity: item.quantity,
-          unit: item.selectedUnitLabel || item.unit || "",
-          selectedUnitId: item.selectedUnitId || null,
-          baseQuantity: Number(item.baseQuantity || 1),
-          baseUnit: item.baseUnit || item.unit || "",
           unitPrice: item.price,
           totalPrice: item.price * item.quantity,
           image: item.image || "",
@@ -645,7 +641,7 @@ export default function Checkout() {
 
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.cartKey || item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
