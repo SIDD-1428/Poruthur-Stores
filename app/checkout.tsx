@@ -367,7 +367,7 @@ export default function Checkout() {
 
           <FlatList
             data={addresses}
-            keyExtractor={(item) => item.cartKey || item.id}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
@@ -645,7 +645,7 @@ export default function Checkout() {
 
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.cartKey || item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
