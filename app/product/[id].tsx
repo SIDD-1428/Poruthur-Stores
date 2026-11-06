@@ -28,7 +28,6 @@ export default function ProductDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const [product, setProduct] = useState<any>(null);
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [selectedPreset, setSelectedPreset] = useState<any>(null);
     const { cart, addToCart, increaseQty, decreaseQty } = useCart();
 
     // Animations
@@ -65,7 +64,6 @@ export default function ProductDetail() {
         try {
             const data = await getProductById(id);
             setProduct(data);
-            if (data?.presetUnitsEnabled && Array.isArray(data.presetUnits) && data.presetUnits.length) setSelectedPreset(data.presetUnits[0]);
         } catch (error) {
             console.log(error);
         }
@@ -92,16 +90,12 @@ export default function ProductDetail() {
         addToCart({
             id: product.id,
             name: product.name,
-            price: Number(product.presetUnitsEnabled ? selectedPreset?.price : product.price),
+            price: Number(product.price),
             image: product.image,
             quantity: 1,
             stock: product.stock,
             maxOrderQty: product.maxOrderQty,
-            unit: product.presetUnitsEnabled ? selectedPreset?.label : product.unit,
-            selectedUnitId: product.presetUnitsEnabled ? selectedPreset?.id : undefined,
-            selectedUnitLabel: product.presetUnitsEnabled ? selectedPreset?.label : undefined,
-            baseQuantity: product.presetUnitsEnabled ? Number(selectedPreset?.baseQuantity) : 1,
-            baseUnit: product.unit,
+            unit: product.unit,
         });
         // Button bounce animation
         Animated.sequence([
@@ -129,7 +123,7 @@ export default function ProductDetail() {
         );
     }
 
-    const itemInCart = cart.find((item) => item.id === product.id && (item.selectedUnitId || "") === (product.presetUnitsEnabled ? String(selectedPreset?.id || "") : ""));
+    const itemInCart = cart.find((item) => item.id === product.id);
     const isOutOfStock = product.stock <= 0;
     const productPrice = Number(product.price);
 
@@ -284,25 +278,9 @@ export default function ProductDetail() {
                 </View>
 
 
-                {product.presetUnitsEnabled && Array.isArray(product.presetUnits) && (
-                    <View style={{ marginHorizontal: 16, marginTop: 16 }}>
-                        <Text style={{ fontSize: 15, fontWeight: "700", color: "#111", marginBottom: 10 }}>Choose quantity</Text>
-                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                            {product.presetUnits.map((option: any) => {
-                                const available = Number(product.stock || 0) >= Number(option.baseQuantity || 0);
-                                const selected = String(selectedPreset?.id) === String(option.id);
-                                return <TouchableOpacity key={String(option.id)} disabled={!available} onPress={() => setSelectedPreset(option)} style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: selected ? "#111" : "#DDD", backgroundColor: selected ? "#111" : "#FFF", opacity: available ? 1 : 0.4 }}>
-                                    <Text style={{ color: selected ? "#FFF" : "#222", fontWeight: "700" }}>{option.label}</Text>
-                                    <Text style={{ color: selected ? "#FFF" : "#666", fontSize: 12, marginTop: 3 }}>₹{Number(option.price).toFixed(2)}</Text>
-                                </TouchableOpacity>;
-                            })}
-                        </View>
-                    </View>
-                )}
-
                 {/* PRICE */}
                 <Text style={styles.price}>
-                    ₹{product.presetUnitsEnabled ? Number(selectedPreset?.price || 0) : productPrice}
+                    ₹{productPrice}
                 </Text>
                 
 
@@ -380,7 +358,7 @@ export default function ProductDetail() {
                             <TouchableOpacity
                                 style={styles.qtyBtn}
                                 onPress={() =>
-                                    decreaseQty(itemInCart.cartKey || product.id)
+                                    decreaseQty(product.id)
                                 }
                             >
                                 <Ionicons
@@ -397,7 +375,7 @@ export default function ProductDetail() {
                             <TouchableOpacity
                                 style={styles.qtyBtn}
                                 onPress={() =>
-                                    increaseQty(itemInCart.cartKey || product.id)
+                                    increaseQty(product.id)
                                 }
                             >
                                 <Ionicons
