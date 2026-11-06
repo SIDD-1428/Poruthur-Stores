@@ -380,7 +380,7 @@ export default function ProductDetail() {
                             <TouchableOpacity
                                 style={styles.qtyBtn}
                                 onPress={() =>
-                                    decreaseQty(product.id)
+                                    decreaseQty(itemInCart.cartKey || product.id)
                                 }
                             >
                                 <Ionicons
@@ -397,7 +397,7 @@ export default function ProductDetail() {
                             <TouchableOpacity
                                 style={styles.qtyBtn}
                                 onPress={() =>
-                                    increaseQty(product.id)
+                                    increaseQty(itemInCart.cartKey || product.id)
                                 }
                             >
                                 <Ionicons
