@@ -197,8 +197,6 @@ export default function SectionScreen() {
                   rating={item.rating}
                   unit={item.unit}
                   maxOrderQty={item.maxOrderQty}
-                  presetUnitsEnabled={Boolean(item.presetUnitsEnabled)}
-                  presetUnits={item.presetUnits || []}
                 />
               </View>
             )}
