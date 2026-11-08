@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -215,6 +216,8 @@ export default function CustomerHome() {
               <View key={columnIndex} style={styles.brandColumn}>
                 {sortedBrands.slice(columnIndex * 2, columnIndex * 2 + 2).map((brand: any) => (
                   <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.82} onPress={() => handleBrandPress(brand)}>
+                    <BlurView intensity={55} tint="light" style={styles.brandGlassBackground} />
+                    <View pointerEvents="none" style={styles.brandGlassHighlight} />
                     <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
                     <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text><Text style={styles.brandExplore}>Explore brand <Ionicons name="arrow-forward" size={10} color={Colors.muted} /></Text></View>
                   </TouchableOpacity>
@@ -257,7 +260,9 @@ const styles = StyleSheet.create({
   brandHeading: { marginTop: 18 },
   brandRail: { paddingHorizontal: 16, paddingBottom: 12 },
   brandColumn: { width: 174, marginRight: 10, gap: 10 },
-  brandTile: { minHeight: 78, borderRadius: 16, backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8", padding: 11, flexDirection: "row", alignItems: "center", gap: 10 },
+  brandTile: { minHeight: 78, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.55)", borderWidth: 1, borderColor: "rgba(255,255,255,0.9)", padding: 11, flexDirection: "row", alignItems: "center", gap: 10, overflow: "hidden" },
+  brandGlassBackground: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  brandGlassHighlight: { ...StyleSheet.absoluteFillObject, borderWidth: 1, borderColor: "rgba(255,255,255,0.72)", borderRadius: 18, backgroundColor: "rgba(255,255,255,0.1)", zIndex: 0 },
   brandMonogram: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
   brandMonogramText: { fontSize: 22, fontWeight: "900", color: "#111111" },
   brandTileCopy: { flex: 1, minWidth: 0 },
