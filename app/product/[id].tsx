@@ -64,11 +64,11 @@ export default function ProductDetail() {
 
     const loadProduct = async () => {
         try {
-            const data = await getProductById(id);
+            const data: any = await getProductById(id);
             setProduct(data);
             if (data?.groupId) {
                 const groupSnapshot = await db.collection("productGroups").doc(String(data.groupId)).get();
-                if (groupSnapshot.exists) {
+                if (groupSnapshot.exists()) {
                     const groupData = groupSnapshot.data() as any;
                     const ids: string[] = Array.isArray(groupData?.productIds) ? groupData.productIds : [];
                     const snapshots = await Promise.all(ids.map((productId) => db.collection("products").doc(productId).get()));
