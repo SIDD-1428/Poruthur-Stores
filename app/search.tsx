@@ -37,6 +37,7 @@ const Colors = {
 export default function SearchScreen() {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +69,9 @@ export default function SearchScreen() {
       db.collection("products").get(),
       db.collection("productGroups").get(),
     ]);
+
+    const allProductData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setAllProducts(allProductData);
 
     const standardByGroup = new Map(
       groupsSnapshot.docs.map((doc) => [doc.id, (doc.data() as any).standardProductId])
@@ -207,6 +211,7 @@ export default function SearchScreen() {
         rating={item.rating}
         unit={item.unit}
         maxOrderQty={item.maxOrderQty}
+        availableOptions={item.groupId ? allProducts.filter((option: any) => option.groupId === item.groupId) : []}
       />
     </View>
   );
