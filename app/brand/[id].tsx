@@ -1,7 +1,6 @@
 import FloatingCart from "@/components/FloatingCart";
 import ProductCard from "@/components/ProductCard";
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
