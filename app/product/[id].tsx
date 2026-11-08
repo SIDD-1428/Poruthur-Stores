@@ -294,36 +294,46 @@ export default function ProductDetail() {
                 {/* PRODUCT SIZE / VARIANT SELECTOR */}
                 {groupVariants.length > 1 && (
                     <View style={styles.variantSection}>
-                        <Text style={styles.sectionTitle}>Available sizes</Text>
-                        <View style={styles.variantOptions}>
-                            {groupVariants.map((variant: any) => {
-                                const selected = variant.id === product.id;
-                                const unavailable = Number(variant.stock ?? 0) <= 0;
-                                return (
-                                    <TouchableOpacity
-                                        key={variant.id}
-                                        disabled={unavailable}
-                                        onPress={() => {
-                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                            setProduct(variant);
-                                            setImageLoaded(false);
-                                        }}
-                                        style={[
-                                            styles.variantOption,
-                                            selected && styles.variantOptionSelected,
-                                            unavailable && styles.variantOptionDisabled,
-                                        ]}
-                                    >
-                                        <Text style={[styles.variantUnit, selected && styles.variantTextSelected]}>
-                                            {variant.unit || variant.name}
-                                        </Text>
-                                        <Text style={[styles.variantPrice, selected && styles.variantTextSelected]}>
-                                            ₹{Number(variant.price || 0).toFixed(2)}
-                                        </Text>
-                                        {unavailable && <Text style={styles.variantUnavailable}>Out of stock</Text>}
-                                    </TouchableOpacity>
-                                );
-                            })}
+                        <View style={styles.variantHeadingRow}>
+                            <Text style={styles.sectionTitle}>Available sizes</Text>
+                            <Text style={styles.variantHint}>SELECT SIZE</Text>
+                        </View>
+                        <View style={styles.variantRail}>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.variantOptions}
+                            >
+                                {groupVariants.map((variant: any) => {
+                                    const selected = variant.id === product.id;
+                                    const unavailable = Number(variant.stock ?? 0) <= 0;
+                                    return (
+                                        <TouchableOpacity
+                                            key={variant.id}
+                                            disabled={unavailable}
+                                            onPress={() => {
+                                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                                setProduct(variant);
+                                                setImageLoaded(false);
+                                            }}
+                                            activeOpacity={0.8}
+                                            style={[
+                                                styles.variantOption,
+                                                selected && styles.variantOptionSelected,
+                                                unavailable && styles.variantOptionDisabled,
+                                            ]}
+                                        >
+                                            <Text style={[styles.variantUnit, selected && styles.variantTextSelected]} numberOfLines={1}>
+                                                {variant.unit || variant.name}
+                                            </Text>
+                                            <Text style={[styles.variantPrice, selected && styles.variantTextSelected]}>
+                                                ₹{Number(variant.price || 0).toFixed(2)}
+                                            </Text>
+                                            {unavailable && <Text style={styles.variantUnavailable}>Unavailable</Text>}
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
                         </View>
                     </View>
                 )}
@@ -404,7 +414,7 @@ export default function ProductDetail() {
                             activeOpacity={0.8}
                         >
                             <LinearGradient
-                                colors={["#315C43", "#244A34"]}
+                                colors={["#111111", "#333333"]}
                                 style={styles.addButtonGradient}
                             >
                                 <Ionicons
@@ -482,7 +492,7 @@ const styles = StyleSheet.create({
         width: 76,
         height: 76,
         borderRadius: 26,
-        backgroundColor: "#EAF0E9",
+        backgroundColor: "#F1F1F1",
         justifyContent: "center",
         alignItems: "center",
         marginBottom: 16,
@@ -505,7 +515,7 @@ const styles = StyleSheet.create({
     detailsContent: { paddingBottom: 24 },
     hero: {
         height: 252,
-        backgroundColor: "#F2F5EF",
+        backgroundColor: "#F5F5F5",
         overflow: "hidden",
     },
     heroImageWrap: {
@@ -525,7 +535,7 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#F2F5EF",
+        backgroundColor: "#F5F5F5",
     },
     heroTopRow: {
         position: "absolute",
@@ -549,7 +559,7 @@ const styles = StyleSheet.create({
         borderColor: "rgba(255,255,255,0.9)",
     },
     heroTagText: {
-        color: "#315C43",
+        color: "#222222",
         fontSize: 9,
         fontWeight: "800",
         letterSpacing: 1,
@@ -560,7 +570,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 1,
-        backgroundColor: "rgba(30,55,38,0.07)",
+        backgroundColor: "rgba(0,0,0,0.07)",
     },
     closeBtn: {
         width: 38,
@@ -569,7 +579,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(255,255,255,0.92)",
         justifyContent: "center",
         alignItems: "center",
-        shadowColor: "#203326",
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -597,7 +607,7 @@ const styles = StyleSheet.create({
         fontSize: 23,
         lineHeight: 29,
         fontWeight: "800",
-        color: "#17251D",
+        color: "#171717",
         letterSpacing: -0.55,
     },
     metaRow: {
@@ -610,12 +620,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 6,
-        backgroundColor: "#F3F5F2",
+        backgroundColor: "#F3F3F3",
         borderRadius: 20,
         paddingHorizontal: 10,
         paddingVertical: 6,
     },
-    unit: { fontSize: 11, color: "#56635A", fontWeight: "600" },
+    unit: { fontSize: 11, color: "#666666", fontWeight: "600" },
     ratingContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -632,9 +642,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 14,
         borderRadius: 18,
-        backgroundColor: "#F6F8F4",
+        backgroundColor: "#F7F7F7",
         borderWidth: 1,
-        borderColor: "#EAF0E8",
+        borderColor: "#EAEAEA",
     },
     priceMainRow: {
         flexDirection: "row",
@@ -644,7 +654,7 @@ const styles = StyleSheet.create({
     },
     priceEyebrow: {
         fontSize: 9,
-        color: "#879188",
+        color: "#888888",
         fontWeight: "800",
         letterSpacing: 1.1,
         marginBottom: 3,
@@ -653,7 +663,7 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 27,
         fontWeight: "900",
-        color: "#17251D",
+        color: "#171717",
         letterSpacing: -0.8,
     },
     mrp: {
@@ -666,70 +676,104 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 5,
-        backgroundColor: "#E5F3E8",
+        backgroundColor: "#EAEAEA",
         borderRadius: 30,
         paddingHorizontal: 10,
         paddingVertical: 8,
     },
-    savings: { color: "#24734A", fontSize: 10, fontWeight: "800" },
+    savings: { color: "#333333", fontSize: 10, fontWeight: "800" },
     priceUnitPill: {
-        backgroundColor: "#E9EEE8",
+        backgroundColor: "#EEEEEE",
         borderRadius: 30,
         paddingHorizontal: 10,
         paddingVertical: 7,
     },
-    priceUnitText: { fontSize: 10, color: "#637166", fontWeight: "700" },
+    priceUnitText: { fontSize: 10, color: "#666666", fontWeight: "700" },
     variantSection: {
         marginHorizontal: 20,
         marginTop: 20,
     },
+    variantHeadingRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 10,
+    },
+    variantHint: {
+        color: "#999999",
+        fontSize: 9,
+        fontWeight: "800",
+        letterSpacing: 1,
+    },
+    variantRail: {
+        backgroundColor: "#F1F1F1",
+        borderRadius: 15,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: "#E8E8E8",
+    },
     variantOptions: {
         flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 8,
-        marginTop: 11,
+        alignItems: "stretch",
+        gap: 3,
     },
     sectionTitle: {
         fontSize: 14,
         fontWeight: "800",
-        color: "#1B2A20",
+        color: "#1A1A1A",
         marginBottom: 2,
         letterSpacing: -0.2,
     },
     variantOption: {
-        minWidth: 92,
+        minWidth: 88,
+        maxWidth: 132,
         paddingHorizontal: 13,
-        paddingVertical: 11,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#E5EAE3",
-        backgroundColor: "#FAFBF9",
+        paddingVertical: 10,
+        borderRadius: 11,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "transparent",
     },
     variantOptionSelected: {
-        borderColor: "#315C43",
-        backgroundColor: "#315C43",
-        shadowColor: "#315C43",
-        shadowOffset: { width: 0, height: 4 },
+        backgroundColor: "#222222",
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.16,
-        shadowRadius: 8,
-        elevation: 3,
+        shadowRadius: 5,
+        elevation: 2,
     },
-    variantOptionDisabled: { opacity: 0.42 },
-    variantUnit: { color: "#344238", fontSize: 11, fontWeight: "700" },
-    variantPrice: { color: "#788279", fontSize: 11, marginTop: 5, fontWeight: "600" },
+    variantOptionDisabled: { opacity: 0.38 },
+    variantUnit: {
+        color: "#333333",
+        fontSize: 11,
+        fontWeight: "700",
+        textAlign: "center",
+    },
+    variantPrice: {
+        color: "#777777",
+        fontSize: 10,
+        marginTop: 4,
+        fontWeight: "600",
+        textAlign: "center",
+    },
     variantTextSelected: { color: "#FFFFFF" },
-    variantUnavailable: { color: "#D94A42", fontSize: 9, marginTop: 4, fontWeight: "600" },
+    variantUnavailable: {
+        color: "#D94A42",
+        fontSize: 8,
+        marginTop: 4,
+        fontWeight: "600",
+    },
     infoCard: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#F5F7F4",
+        backgroundColor: "#F5F5F5",
         marginHorizontal: 20,
         marginTop: 15,
         padding: 12,
         borderRadius: 14,
         gap: 9,
         borderWidth: 1,
-        borderColor: "#EBEFEB",
+        borderColor: "#EBEBEB",
     },
     infoText: { fontSize: 11, color: "#667168", flex: 1, fontWeight: "500" },
     descriptionSection: {
@@ -737,7 +781,7 @@ const styles = StyleSheet.create({
         marginTop: 19,
         paddingTop: 16,
         borderTopWidth: 1,
-        borderTopColor: "#EEF0ED",
+        borderTopColor: "#EEEEEE",
     },
     description: { fontSize: 13, color: "#68736A", lineHeight: 21, marginTop: 5 },
     bottomContainer: {
@@ -746,14 +790,14 @@ const styles = StyleSheet.create({
         paddingTop: 12,
         paddingBottom: 14,
         borderTopWidth: 1,
-        borderTopColor: "#EEF0ED",
+        borderTopColor: "#EEEEEE",
         backgroundColor: "rgba(255,255,255,0.98)",
         justifyContent: "center",
     },
     addButton: {
         borderRadius: 17,
         overflow: "hidden",
-        shadowColor: "#234B34",
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.18,
         shadowRadius: 10,
@@ -773,7 +817,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignSelf: "center",
         minWidth: 180,
-        backgroundColor: "#315C43",
+        backgroundColor: "#222222",
         borderRadius: 17,
         paddingHorizontal: 16,
         paddingVertical: 8,
