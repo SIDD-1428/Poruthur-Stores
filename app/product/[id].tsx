@@ -299,11 +299,7 @@ export default function ProductDetail() {
                             <Text style={styles.variantHint}>SELECT SIZE</Text>
                         </View>
                         <View style={styles.variantRail}>
-                            <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.variantOptions}
-                            >
+                            <View style={styles.variantOptions}>
                                 {groupVariants.map((variant: any) => {
                                     const selected = variant.id === product.id;
                                     const unavailable = Number(variant.stock ?? 0) <= 0;
@@ -333,7 +329,7 @@ export default function ProductDetail() {
                                         </TouchableOpacity>
                                     );
                                 })}
-                            </ScrollView>
+                            </View>
                         </View>
                     </View>
                 )}
@@ -714,8 +710,9 @@ const styles = StyleSheet.create({
     },
     variantOptions: {
         flexDirection: "row",
+        flexWrap: "wrap",
         alignItems: "stretch",
-        gap: 3,
+        gap: 4,
     },
     sectionTitle: {
         fontSize: 14,
@@ -725,10 +722,11 @@ const styles = StyleSheet.create({
         letterSpacing: -0.2,
     },
     variantOption: {
-        minWidth: 88,
-        maxWidth: 132,
-        paddingHorizontal: 13,
-        paddingVertical: 10,
+        width: "23%",
+        minWidth: 0,
+        maxWidth: "23%",
+        paddingHorizontal: 3,
+        paddingVertical: 9,
         borderRadius: 11,
         alignItems: "center",
         justifyContent: "center",
