@@ -39,6 +39,7 @@ type Props = {
   width?: number;
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
+  compactCard?: boolean;
 };
 
 export default function ProductCard({
@@ -54,6 +55,7 @@ export default function ProductCard({
   width = 120,
   maxOrderQty,
   availableOptions = [],
+  compactCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -206,6 +208,7 @@ export default function ProductCard({
       <Animated.View
         style={[
           styles.card,
+          compactCard && styles.compactCard,
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -227,7 +230,7 @@ export default function ProductCard({
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: image }}
-            style={[styles.image, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -238,17 +241,17 @@ export default function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={styles.infoContainer}>
-          <Text style={styles.name} numberOfLines={2}>{name}</Text>
-          <Text style={styles.unit}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer]}>
+          <Text style={[styles.name, compactCard && styles.compactName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
 
           <View style={styles.bottomRow}>
             <View>
               <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-                <Text style={[styles.price, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
-                {Number(mrp) > Number(price) ? <Text style={styles.mrp}>₹{mrp}</Text> : null}
+                <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
-              {Number(mrp) > Number(price) ? <Text style={styles.savings}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
+              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
             </View>
 
             {isOutOfStock ? (
@@ -260,12 +263,12 @@ export default function ProductCard({
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
                 <View style={styles.actionColumn}>
                   <TouchableOpacity
-                    style={styles.addBtn}
+                    style={[styles.addBtn, compactCard && styles.compactAddBtn]}
                     onPress={handleAddToCart}
                     activeOpacity={0.8}
                   >
                     <Ionicons name="add" size={12} color="#fff" />
-                    <Text style={styles.addText}>Add</Text>
+                    <Text style={[styles.addText, compactCard && styles.compactAddText]}>Add</Text>
                   </TouchableOpacity>
                   {otherOptions.length > 0 && (
                     <TouchableOpacity
@@ -280,10 +283,10 @@ export default function ProductCard({
               </Animated.View>
 
             ) : (
-              <View style={styles.qtyBox}>
+              <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
                 <TouchableOpacity
                 disabled={false}
-                  style={styles.qtyBtn}
+                  style={[styles.qtyBtn, compactCard && styles.compactQtyBtn]}
                   onPress={handleDecrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
@@ -291,10 +294,10 @@ export default function ProductCard({
                 </TouchableOpacity>
 
 
-                <Text style={styles.qtyText}>{itemInCart.quantity}</Text>
+                <Text style={[styles.qtyText, compactCard && styles.compactQtyText]}>{itemInCart.quantity}</Text>
                 <TouchableOpacity
                   disabled={false}
-                  style={[styles.qtyBtn, styles.qtyBtnAdd]}
+                  style={[styles.qtyBtn, compactCard && styles.compactQtyBtn, styles.qtyBtnAdd]}
                   onPress={handleIncrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
@@ -445,6 +448,20 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+
+  compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
+  compactImage: { height: 64 },
+  compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
+  compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
+  compactUnit: { fontSize: 9, marginBottom: 4 },
+  compactPrice: { fontSize: 11 },
+  compactMrp: { fontSize: 8, marginLeft: 3 },
+  compactSavings: { fontSize: 7, marginTop: 1 },
+  compactAddBtn: { paddingHorizontal: 6, paddingVertical: 4, borderRadius: 7 },
+  compactAddText: { fontSize: 9 },
+  compactQtyBox: { paddingHorizontal: 2, gap: 0 },
+  compactQtyBtn: { width: 17, height: 17 },
+  compactQtyText: { fontSize: 10, minWidth: 14 },
 
   outOfStockCard: { opacity: 0.7 },
 
