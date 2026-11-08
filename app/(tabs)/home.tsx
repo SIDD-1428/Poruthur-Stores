@@ -181,7 +181,7 @@ export default function CustomerHome() {
               <View key={columnIndex} style={styles.recommendationColumn}>
                 {[recommendedProducts[columnIndex * 2], recommendedProducts[columnIndex * 2 + 1]].filter(Boolean).map((item: any) => (
                   <View key={item.id} style={styles.recommendationCard}>
-                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={112} maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? products.filter((option: any) => option.groupId === item.groupId) : []} />
+                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} compactCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? products.filter((option: any) => option.groupId === item.groupId) : []} />
                   </View>
                 ))}
               </View>
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#34C759" },
   liveText: { fontSize: 9, fontWeight: "800", color: "#238347", letterSpacing: 0.8 },
   recommendationRail: { paddingHorizontal: 16, paddingBottom: 8 },
-  recommendationColumn: { width: 122, marginRight: 9, gap: 10 },
-  recommendationCard: { width: 112 },
+  recommendationColumn: { width: 102, marginRight: 8, gap: 6 },
+  recommendationCard: { width: 94 },
   emptyHint: { color: Colors.muted, fontSize: 12, paddingHorizontal: 18, paddingVertical: 18 },
   categoryHeading: { marginTop: 16 },
   countLabel: { color: Colors.muted, fontSize: 10, fontWeight: "600" },
