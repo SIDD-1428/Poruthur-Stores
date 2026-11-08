@@ -25,6 +25,7 @@ export default function CustomerHome() {
   const [products, setProducts] = useState<any[]>([]);
   const [productGroups, setProductGroups] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [address, setAddress] = useState<any>(null);
   const [greeting, setGreeting] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
@@ -98,13 +99,14 @@ export default function CustomerHome() {
     return counts;
   }, [products]);
 
-  // Weighted random selection: popular items appear more often, with variety on each order/catalogue update.
-  const recommendedProducts = useMemo(() => {
+  // Weighted random selection runs when product popularity or availability changes.
+  useEffect(() => {
     const pool = visibleProducts.filter((product: any) => Number(product.stock) > 0);
-    return pool.map((product: any) => {
+    const selected = pool.map((product: any) => {
       const weight = 1 + Math.log1p(popularity[product.id] || 0) * 2.5;
       return { product, sortKey: -Math.log(Math.max(Math.random(), 0.000001)) / weight };
     }).sort((a, b) => a.sortKey - b.sortKey).slice(0, 20).map(entry => entry.product);
+    setRecommendedProducts(selected);
   }, [visibleProducts, popularity]);
 
   const visibleCategories = useMemo(() => {
