@@ -214,7 +214,16 @@ export default function CustomerHome() {
             {Array.from({ length: Math.ceil(sortedBrands.length / 2) }, (_, columnIndex) => (
               <View key={columnIndex} style={styles.brandColumn}>
                 {sortedBrands.slice(columnIndex * 2, columnIndex * 2 + 2).map((brand: any) => (
-                  undefined
+                  <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
+                    {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
+                      <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
+                        <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text><Text style={styles.brandImageExplore}>Explore brand  →</Text>
+                      </LinearGradient>
+                    </ImageBackground> : <View style={styles.brandFallback}>
+                      <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
+                      <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text><Text style={styles.brandExplore}>Explore brand <Ionicons name="arrow-forward" size={10} color={Colors.muted} /></Text></View>
+                    </View>}
+                  </TouchableOpacity>
                 ))}
               </View>
             ))}
