@@ -214,8 +214,6 @@ export default function ProductCard({
           { transform: [{ scale }] },
         ]}
       >
-        {compactCard && <BlurView intensity={48} tint="light" style={styles.compactGlassBackground} />}
-        {compactCard && <View pointerEvents="none" style={styles.compactGlassHighlight} />}
         {/* Stock Badge */}
         {isOutOfStock && (
           <View style={[styles.stockBadge, styles.outOfStockBadge]}>
@@ -451,9 +449,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  compactCard: { borderRadius: 13, marginRight: 0, marginBottom: 0, backgroundColor: "rgba(255,255,255,0.58)", borderColor: "rgba(255,255,255,0.9)", shadowOpacity: 0.045, shadowRadius: 7, elevation: 2 },
-  compactGlassBackground: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
-  compactGlassHighlight: { ...StyleSheet.absoluteFillObject, borderWidth: 1, borderColor: "rgba(255,255,255,0.78)", borderRadius: 13, backgroundColor: "rgba(255,255,255,0.12)", zIndex: 0 },
+  compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
