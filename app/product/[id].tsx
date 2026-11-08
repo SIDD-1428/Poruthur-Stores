@@ -195,10 +195,6 @@ export default function ProductDetail() {
                     )}
                 </Animated.View>
                 <View style={styles.heroTopRow}>
-                    <View style={styles.heroTag}>
-                        <Ionicons name="leaf-outline" size={13} color="#315C43" />
-                        <Text style={styles.heroTagText}>FRESH PICKS</Text>
-                    </View>
                     <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.75}>
                         <Ionicons name="close" size={21} color="#17251D" />
                     </TouchableOpacity>
@@ -542,23 +538,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         zIndex: 5,
-    },
-    heroTag: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-        backgroundColor: "rgba(255,255,255,0.88)",
-        borderRadius: 30,
-        paddingHorizontal: 11,
-        paddingVertical: 8,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.9)",
-    },
-    heroTagText: {
-        color: "#222222",
-        fontSize: 9,
-        fontWeight: "800",
-        letterSpacing: 1,
     },
     heroBottomShade: {
         position: "absolute",
