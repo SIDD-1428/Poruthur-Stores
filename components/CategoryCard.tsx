@@ -41,7 +41,7 @@ export default function CategoryCard({
         style={[styles.card, compact && styles.compactCard]}
         onPress={handlePress}
         >
-       <View style={styles.imageContainer}>
+       <View style={[styles.imageContainer, compact && styles.compactImageContainer]}>
         {image ? (
             <Image
             source={{ uri: image }}
