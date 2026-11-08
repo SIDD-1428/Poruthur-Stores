@@ -1,16 +1,26 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   Animated,
   Image,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useCart } from "../context/CartContext";
+
+type ProductOption = {
+  id: string;
+  name: string;
+  price: number;
+  mrp?: number;
+  unit: string;
+  stock?: number;
+};
 
 type Props = {
   id: string;
@@ -24,6 +34,7 @@ type Props = {
   unit: string;
   width?: number;
   maxOrderQty?: number;
+  availableOptions?: ProductOption[];
 };
 
 export default function ProductCard({
@@ -38,8 +49,11 @@ export default function ProductCard({
   unit,
   width = 120,
   maxOrderQty,
+  availableOptions = [],
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
+  const [optionsVisible, setOptionsVisible] = useState(false);
+  const otherOptions = availableOptions.filter((option) => option.id !== id);
 
   const itemInCart = cart.find((item) => item.id == id);
   const isOutOfStock = stock <= 0;
@@ -190,14 +204,28 @@ export default function ProductCard({
 
             ) : !itemInCart ? (
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                <TouchableOpacity
-                  style={styles.addBtn}
-                  onPress={handleAddToCart}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="add" size={12} color="#fff" />
-                  <Text style={styles.addText}>Add</Text>
-                </TouchableOpacity>
+                <View style={styles.actionColumn}>
+                  <TouchableOpacity
+                    style={styles.addBtn}
+                    onPress={handleAddToCart}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="add" size={12} color="#fff" />
+                    <Text style={styles.addText}>Add</Text>
+                  </TouchableOpacity>
+                  {otherOptions.length > 0 && (
+                    <TouchableOpacity
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        setOptionsVisible(true);
+                      }}
+                      activeOpacity={0.7}
+                      hitSlop={6}
+                    >
+                      <Text style={styles.optionsLink}>See other options</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </Animated.View>
 
             ) : (
@@ -226,6 +254,66 @@ export default function ProductCard({
           </View>
         </View>
       </Animated.View>
+      <Modal
+        visible={optionsVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOptionsVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setOptionsVisible(false)}
+          />
+          <View style={styles.optionsPopup}>
+            <View style={styles.popupHeader}>
+              <View style={styles.popupHeading}>
+                <Text style={styles.popupTitle}>Available options</Text>
+                <Text style={styles.popupSubtitle} numberOfLines={1}>{name}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setOptionsVisible(false)}
+                hitSlop={8}
+                accessibilityLabel="Close available options"
+              >
+                <Ionicons name="close-circle" size={23} color="#999" />
+              </TouchableOpacity>
+            </View>
+
+            {otherOptions.map((option) => {
+              const outOfStock = (option.stock ?? 0) <= 0;
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  style={styles.optionRow}
+                  disabled={outOfStock}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setOptionsVisible(false);
+                    router.push({
+                      pathname: "/product/[id]",
+                      params: { id: option.id },
+                    });
+                  }}
+                >
+                  <View style={styles.optionDetails}>
+                    <Text style={styles.optionName} numberOfLines={2}>{option.name}</Text>
+                    <Text style={styles.optionUnit}>{option.unit}</Text>
+                  </View>
+                  <View style={styles.optionPriceColumn}>
+                    <Text style={styles.optionPrice}>₹{option.price}</Text>
+                    <Text style={[styles.optionStock, outOfStock && styles.optionOutOfStock]}>
+                      {outOfStock ? "Out of stock" : "Available"}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#999" />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
     </TouchableOpacity>
   );
 }
@@ -341,6 +429,89 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5,
     gap: 2,
+  },
+  actionColumn: {
+    alignItems: "flex-end",
+  },
+  optionsLink: {
+    color: "#007AFF",
+    fontSize: 9,
+    fontWeight: "600",
+    marginTop: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  optionsPopup: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 6,
+    elevation: 10,
+  },
+  popupHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  popupHeading: {
+    flex: 1,
+    marginRight: 12,
+  },
+  popupTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  popupSubtitle: {
+    fontSize: 11,
+    color: "#888888",
+    marginTop: 3,
+  },
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    paddingVertical: 12,
+    gap: 10,
+  },
+  optionDetails: {
+    flex: 1,
+  },
+  optionName: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1C1C1E",
+  },
+  optionUnit: {
+    fontSize: 11,
+    color: "#888888",
+    marginTop: 3,
+  },
+  optionPriceColumn: {
+    alignItems: "flex-end",
+  },
+  optionPrice: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+  optionStock: {
+    fontSize: 10,
+    color: "#18864B",
+    marginTop: 3,
+  },
+  optionOutOfStock: {
+    color: "#FF3B30",
   },
   addText: {
     color: "#fff",
