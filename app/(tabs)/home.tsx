@@ -173,7 +173,6 @@ export default function CustomerHome() {
         {/* Recommendations */}
         <View style={styles.sectionHeading}>
           <View style={styles.headingCopy}><Text style={styles.sectionTitle}>Recommended for you</Text><Text style={styles.sectionSubtitle}>Popular picks, refreshed as people shop</Text></View>
-          <View style={styles.livePill}><View style={styles.liveDot} /><Text style={styles.liveText}>LIVE</Text></View>
         </View>
         {recommendedProducts.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recommendationRail}>
@@ -246,9 +245,6 @@ const styles = StyleSheet.create({
   headingCopy: { flex: 1 },
   sectionTitle: { fontSize: 19, fontWeight: "800", color: Colors.textPrimary, letterSpacing: -0.45 },
   sectionSubtitle: { fontSize: 11, color: Colors.muted, marginTop: 3 },
-  livePill: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#F1F8F3", borderRadius: 20, paddingHorizontal: 9, paddingVertical: 5 },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#34C759" },
-  liveText: { fontSize: 9, fontWeight: "800", color: "#238347", letterSpacing: 0.8 },
   recommendationRail: { paddingHorizontal: 16, paddingBottom: 8 },
   recommendationColumn: { width: 102, marginRight: 8, gap: 6 },
   recommendationCard: { width: 94 },
