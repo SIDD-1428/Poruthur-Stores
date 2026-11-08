@@ -384,7 +384,7 @@ export default function ProductCard({
             </View>
           </Animated.View>
         </View>
-      </Modal>Modal>
+      </Modal>
     </TouchableOpacity>
   );
 }
