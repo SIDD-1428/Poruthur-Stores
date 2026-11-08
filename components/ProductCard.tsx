@@ -17,6 +17,7 @@ type Props = {
   name: string;
   stock?: number;
   price: number;
+  mrp?: number;
   image: string;
   protext?: string;
   rating: number;
@@ -29,6 +30,7 @@ export default function ProductCard({
   id,
   name,
   price,
+  mrp = price,
   stock = 0,
   image,
   protext = "",
@@ -84,6 +86,7 @@ export default function ProductCard({
     id,
     name,
     price,
+    mrp,
     image,
     quantity: 1,
     stock,
@@ -172,9 +175,13 @@ export default function ProductCard({
           <Text style={styles.unit}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <Text style={[styles.price, isOutOfStock && { color: "#ABABAB" }]}>
-              ₹{price}
-            </Text>
+            <View>
+              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                <Text style={[styles.price, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                {Number(mrp) > Number(price) ? <Text style={styles.mrp}>₹{mrp}</Text> : null}
+              </View>
+              {Number(mrp) > Number(price) ? <Text style={styles.savings}>Save ₹{(Number(mrp) - Number(price)).toFixed(2)} per unit</Text> : null}
+            </View>
 
             {isOutOfStock ? (
               <View style={styles.unavailableBtn}>
@@ -317,6 +324,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  mrp: { fontSize: 10, color: '#999', textDecorationLine: 'line-through', marginLeft: 5 },
+  savings: { fontSize: 9, color: '#18864B', fontWeight: '700', marginTop: 2 },
   price: {
     fontSize: 13,
     fontWeight: "700",
