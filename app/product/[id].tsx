@@ -91,6 +91,7 @@ export default function ProductDetail() {
             id: product.id,
             name: product.name,
             price: Number(product.price),
+            mrp: Number(product.mrp ?? product.price),
             image: product.image,
             quantity: 1,
             stock: product.stock,
@@ -126,6 +127,9 @@ export default function ProductDetail() {
     const itemInCart = cart.find((item) => item.id === product.id);
     const isOutOfStock = product.stock <= 0;
     const productPrice = Number(product.price);
+    const productMrp = Number(product.mrp ?? product.price);
+    const quantityInCart = itemInCart?.quantity ?? 1;
+    const totalSavings = Math.max(0, productMrp - productPrice) * quantityInCart;
 
     return (
     <View style={styles.overlay}>
@@ -279,9 +283,13 @@ export default function ProductDetail() {
 
 
                 {/* PRICE */}
-                <Text style={styles.price}>
-                    ₹{productPrice}
-                </Text>
+                <View style={{ marginTop: 4 }}>
+                  <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                    <Text style={styles.price}>₹{productPrice}</Text>
+                    {productMrp > productPrice ? <Text style={styles.mrp}>₹{productMrp}</Text> : null}
+                  </View>
+                  {productMrp > productPrice ? <Text style={styles.savings}>You save ₹{totalSavings.toFixed(2)}{quantityInCart > 1 ? ` on ${quantityInCart} items` : ""}</Text> : null}
+                </View>
                 
 
                 {/* MAX ORDER */}
@@ -541,6 +549,8 @@ const styles = StyleSheet.create({
         color: "#FF9500",
     },
 
+    mrp: { fontSize: 14, color: '#999', textDecorationLine: 'line-through', marginLeft: 8 },
+    savings: { color: '#18864B', fontSize: 13, fontWeight: '700', marginTop: 3 },
     price: {
         fontSize: 28,
         fontWeight: "800",
