@@ -315,9 +315,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 4,
   },
 
   price: {
+    flexShrink: 1,
     fontSize: 13,
     fontWeight: "700",
     color: "#1C1C1E",
@@ -329,7 +331,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#1C1C1E",
     borderRadius: 8,
-    paddingHorizontal: 9,
+    paddingHorizontal: 7,
     paddingVertical: 5,
     gap: 2,
   },
