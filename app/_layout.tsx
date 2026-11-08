@@ -77,9 +77,6 @@ useEffect(() => {
 
       // Profile completed but no address
       if (addressSnapshot.empty) {
-        if (firstSegment === "notification-permission"){
-          return;
-        }
       if (firstSegment !== "add-address") {
         router.replace({
           pathname: "/add-address",
