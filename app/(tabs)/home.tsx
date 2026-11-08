@@ -211,21 +211,17 @@ export default function CustomerHome() {
             <View style={styles.headingCopy}><Text style={styles.sectionTitle}>Shop by Favourite Brands</Text><Text style={styles.sectionSubtitle}>Discover the brands you love</Text></View>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRail}>
-            {Array.from({ length: Math.ceil(sortedBrands.length / 2) }, (_, columnIndex) => (
-              <View key={columnIndex} style={styles.brandColumn}>
-                {sortedBrands.slice(columnIndex * 2, columnIndex * 2 + 2).map((brand: any) => (
-                  <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
-                    {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
-                      <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
-                        <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text><Text style={styles.brandImageExplore}>Explore brand  →</Text>
-                      </LinearGradient>
-                    </ImageBackground> : <View style={styles.brandFallback}>
-                      <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
-                      <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text><Text style={styles.brandExplore}>Explore brand <Ionicons name="arrow-forward" size={10} color={Colors.muted} /></Text></View>
-                    </View>}
-                  </TouchableOpacity>
-                ))}
-              </View>
+            {sortedBrands.map((brand: any) => (
+              <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
+                {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
+                  <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
+                    <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
+                  </LinearGradient>
+                </ImageBackground> : <View style={styles.brandFallback}>
+                  <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
+                  <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text></View>
+                </View>}
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </>}
@@ -261,20 +257,17 @@ const styles = StyleSheet.create({
   showMoreButton: { marginHorizontal: 18, marginTop: 2, marginBottom: 14, paddingVertical: 12, borderRadius: 13, borderWidth: 1, borderColor: Colors.separator, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   showMoreText: { color: Colors.textPrimary, fontSize: 12, fontWeight: "700" },
   brandHeading: { marginTop: 18 },
-  brandRail: { paddingHorizontal: 16, paddingBottom: 12 },
-  brandColumn: { width: 174, marginRight: 10, gap: 10 },
-  brandTile: { width: 174, height: 92, borderRadius: 16, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
+  brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
+  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
   brandImageBackground: { flex: 1, width: "100%", height: "100%" },
-  brandImage: { borderRadius: 15 },
-  brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 11 },
-  brandImageName: { color: "#FFFFFF", fontSize: 14, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
-  brandImageExplore: { color: "#FFFFFFDD", fontSize: 10, fontWeight: "600", marginTop: 4 },
-  brandFallback: { flex: 1, padding: 11, flexDirection: "row", alignItems: "center", gap: 10 },
-  brandMonogram: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
-  brandMonogramText: { fontSize: 22, fontWeight: "900", color: "#111111" },
+  brandImage: { borderRadius: 13 },
+  brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 9 },
+  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
+  brandFallback: { flex: 1, paddingHorizontal: 9, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 8 },
+  brandMonogram: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
+  brandMonogramText: { fontSize: 20, fontWeight: "900", color: "#111111" },
   brandTileCopy: { flex: 1, minWidth: 0 },
-  brandName: { color: "#111111", fontSize: 13, fontWeight: "800" },
-  brandExplore: { color: Colors.muted, fontSize: 10, marginTop: 5 },
+  brandName: { color: "#111111", fontSize: 16, fontWeight: "900" },
   centerContainer: { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 30, backgroundColor: Colors.background },
   statusTitle: { fontSize: 24, fontWeight: "700", color: Colors.textPrimary, marginTop: 20, textAlign: "center" },
   statusSubtitle: { marginTop: 10, fontSize: 15, color: Colors.textSecondary, textAlign: "center", lineHeight: 22 },
