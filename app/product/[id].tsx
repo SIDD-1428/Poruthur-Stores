@@ -178,42 +178,33 @@ export default function ProductDetail() {
 
             {/* CARD */}
 
-            {/* Close Button */}
-            <TouchableOpacity
-                style={styles.closeBtn}
-                onPress={handleClose}
-            >
-                <Ionicons
-                    name="close"
-                    size={24}
-                    color="#000"
-                />
-            </TouchableOpacity>
-
-
-            {/* FIXED IMAGE */}
-            <Animated.View
-                style={{
-                    transform: [{ scale: imageScale }],
-                }}
-            >
-                <Image
-                    source={{ uri: product.image }}
-                    style={styles.image}
-                    onLoadStart={() => setImageLoaded(false)}
-                    onLoadEnd={() => setImageLoaded(true)}
-                />
-
-                {!imageLoaded && (
-                    <View style={styles.imagePlaceholder}>
-                        <Ionicons
-                            name="image-outline"
-                            size={40}
-                            color="#CCC"
-                        />
+            {/* Product image hero */}
+            <View style={styles.hero}>
+                <Animated.View style={[styles.heroImageWrap, { transform: [{ scale: imageScale }] }]}>
+                    <Image
+                        source={{ uri: product.image }}
+                        style={styles.image}
+                        resizeMode="contain"
+                        onLoadStart={() => setImageLoaded(false)}
+                        onLoadEnd={() => setImageLoaded(true)}
+                    />
+                    {!imageLoaded && (
+                        <View style={styles.imagePlaceholder}>
+                            <Ionicons name="image-outline" size={42} color="#C5C9C3" />
+                        </View>
+                    )}
+                </Animated.View>
+                <View style={styles.heroTopRow}>
+                    <View style={styles.heroTag}>
+                        <Ionicons name="leaf-outline" size={13} color="#315C43" />
+                        <Text style={styles.heroTagText}>FRESH PICKS</Text>
                     </View>
-                )}
-            </Animated.View>
+                    <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.75}>
+                        <Ionicons name="close" size={21} color="#17251D" />
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.heroBottomShade} />
+            </View>
 
 
             {/* SCROLLABLE DETAILS */}
@@ -225,6 +216,7 @@ export default function ProductDetail() {
                 directionalLockEnabled={true}
             >
 
+                <View style={styles.productIntro}>
                 {/* Stock */}
                 {isOutOfStock ? (
                     <View
@@ -264,9 +256,7 @@ export default function ProductDetail() {
 
 
                 {/* NAME */}
-                <Text style={styles.name}>
-                    {product.name}
-                </Text>
+                <Text style={styles.name}>{product.name}</Text>
 
 
                 {/* UNIT + RATING */}
@@ -299,7 +289,7 @@ export default function ProductDetail() {
                     )}
 
                 </View>
-
+                </View>
 
                 {/* PRODUCT SIZE / VARIANT SELECTOR */}
                 {groupVariants.length > 1 && (
@@ -338,13 +328,27 @@ export default function ProductDetail() {
                     </View>
                 )}
 
-                {/* PRICE */}
-                <View style={{ marginTop: 4 }}>
-                  <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-                    <Text style={styles.price}>₹{productPrice}</Text>
-                    {productMrp > productPrice ? <Text style={styles.mrp}>₹{productMrp}</Text> : null}
-                  </View>
-                  {productMrp > productPrice ? <Text style={styles.savings}>You save ₹{totalSavings.toFixed(2)}{quantityInCart > 1 ? ` on ${quantityInCart} items` : ""}</Text> : null}
+                {/* PRICE HIGHLIGHT */}
+                <View style={styles.pricePanel}>
+                    <View style={styles.priceMainRow}>
+                        <View>
+                            <Text style={styles.priceEyebrow}>OUR PRICE</Text>
+                            <View style={styles.priceLine}>
+                                <Text style={styles.price}>₹{productPrice.toFixed(2)}</Text>
+                                {productMrp > productPrice ? <Text style={styles.mrp}>₹{productMrp.toFixed(2)}</Text> : null}
+                            </View>
+                        </View>
+                        {productMrp > productPrice ? (
+                            <View style={styles.savingsPill}>
+                                <Ionicons name="pricetag" size={13} color="#24734A" />
+                                <Text style={styles.savings}>SAVE ₹{totalSavings.toFixed(2)}</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.priceUnitPill}>
+                                <Text style={styles.priceUnitText}>Per {product.unit}</Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
                 
 
@@ -386,10 +390,13 @@ export default function ProductDetail() {
 
 
             {/* FIXED BOTTOM BUTTON */}
-            {!isOutOfStock && (
-                <View style={styles.bottomContainer}>
-
-                    {!itemInCart ? (
+            <View style={styles.bottomContainer}>
+                {isOutOfStock ? (
+                    <View style={styles.outOfStockButton}>
+                        <Ionicons name="close-circle-outline" size={19} color="#9A9F9B" />
+                        <Text style={styles.outOfStockButtonText}>Currently unavailable</Text>
+                    </View>
+                ) : !itemInCart ? (
 
                         <TouchableOpacity
                             style={styles.addButton}
@@ -397,10 +404,7 @@ export default function ProductDetail() {
                             activeOpacity={0.8}
                         >
                             <LinearGradient
-                                colors={[
-                                    "#000000",
-                                    "#333333",
-                                ]}
+                                colors={["#315C43", "#244A34"]}
                                 style={styles.addButtonGradient}
                             >
                                 <Ionicons
@@ -453,8 +457,7 @@ export default function ProductDetail() {
 
                     )}
 
-                </View>
-            )}
+            </View>
 
         </Animated.View>
 
@@ -467,286 +470,332 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0,0,0,0.3)",
+        backgroundColor: "rgba(10,18,13,0.38)",
     },
-
     loadingContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#FFF",
+        backgroundColor: "#F7F8F5",
     },
     loadingIcon: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: "#F5F5F5",
+        width: 76,
+        height: 76,
+        borderRadius: 26,
+        backgroundColor: "#EAF0E9",
         justifyContent: "center",
         alignItems: "center",
         marginBottom: 16,
     },
-    loadingText: {
-        fontSize: 14,
-        color: "#999",
-    },
-
+    loadingText: { fontSize: 14, color: "#778078", fontWeight: "500" },
     card: {
-        width: width * 0.9,
-        height: height * 0.85,
+        width: width * 0.93,
+        height: height * 0.89,
         backgroundColor: "#FFFFFF",
-        borderRadius: 28,
+        borderRadius: 30,
         overflow: "hidden",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.25,
-        shadowRadius: 25,
-        elevation: 15,
+        shadowColor: "#07140C",
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.22,
+        shadowRadius: 30,
+        elevation: 20,
     },
-
-    cardContent: {
-        flex: 1,
+    cardContent: { flex: 1 },
+    detailsScroll: { flex: 1 },
+    detailsContent: { paddingBottom: 24 },
+    hero: {
+        height: 252,
+        backgroundColor: "#F2F5EF",
+        overflow: "hidden",
     },
-
-   detailsScroll: {
-    flex:1,
-},
-
-    detailsContent: {
-        paddingBottom: 30,
-    },
-
-    closeBtn: {
-        position: "absolute",
-        top: 16,
-        right: 16,
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "rgba(0,0,0,0.05)",
-        justifyContent: "center",
+    heroImageWrap: {
+        ...StyleSheet.absoluteFillObject,
         alignItems: "center",
-        zIndex: 10,
+        justifyContent: "center",
+        paddingHorizontal: 24,
+        paddingTop: 18,
+        paddingBottom: 12,
     },
-
     image: {
         width: "100%",
-        height: 280,
-        backgroundColor: "#F5F5F5",
+        height: "100%",
+        backgroundColor: "transparent",
     },
     imagePlaceholder: {
-        position: "absolute",
-        width: "100%",
-        height: 280,
+        ...StyleSheet.absoluteFillObject,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: "#F2F5EF",
     },
-
+    heroTopRow: {
+        position: "absolute",
+        top: 15,
+        left: 16,
+        right: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        zIndex: 5,
+    },
+    heroTag: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        backgroundColor: "rgba(255,255,255,0.88)",
+        borderRadius: 30,
+        paddingHorizontal: 11,
+        paddingVertical: 8,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.9)",
+    },
+    heroTagText: {
+        color: "#315C43",
+        fontSize: 9,
+        fontWeight: "800",
+        letterSpacing: 1,
+    },
+    heroBottomShade: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 1,
+        backgroundColor: "rgba(30,55,38,0.07)",
+    },
+    closeBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: "rgba(255,255,255,0.92)",
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#203326",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    productIntro: {
+        paddingHorizontal: 20,
+        paddingTop: 17,
+    },
     stockBadge: {
         flexDirection: "row",
         alignItems: "center",
         alignSelf: "flex-start",
-        marginHorizontal: 16,
-        marginTop: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
+        marginBottom: 10,
+        paddingHorizontal: 11,
+        paddingVertical: 7,
+        borderRadius: 30,
         gap: 6,
     },
-    outOfStockBadge: {
-        backgroundColor: "#FF3B3015",
-    },
-    lowStockBadge: {
-        backgroundColor: "#FF950015",
-    },
-    outOfStockText: {
-        fontSize: 12,
-        fontWeight: "600",
-        color: "#FF3B30",
-    },
-    lowStockText: {
-        fontSize: 12,
-        fontWeight: "600",
-        color: "#FF9500",
-    },
-
+    outOfStockBadge: { backgroundColor: "#FFF0EF" },
+    lowStockBadge: { backgroundColor: "#FFF5E6" },
+    outOfStockText: { fontSize: 11, fontWeight: "700", color: "#D83C32" },
+    lowStockText: { fontSize: 11, fontWeight: "700", color: "#B66A13" },
     name: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: "#000",
-        marginHorizontal: 16,
-        marginTop: 12,
+        fontSize: 23,
+        lineHeight: 29,
+        fontWeight: "800",
+        color: "#17251D",
+        letterSpacing: -0.55,
     },
-
     metaRow: {
         flexDirection: "row",
         alignItems: "center",
-        marginHorizontal: 16,
-        marginTop: 8,
-        gap: 12,
+        marginTop: 9,
+        gap: 9,
     },
     unitContainer: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 4,
+        gap: 6,
+        backgroundColor: "#F3F5F2",
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
     },
-    unit: {
-        fontSize: 13,
-        color: "#666",
-    },
+    unit: { fontSize: 11, color: "#56635A", fontWeight: "600" },
     ratingContainer: {
         flexDirection: "row",
         alignItems: "center",
         gap: 4,
+        backgroundColor: "#FFF7E9",
+        borderRadius: 20,
+        paddingHorizontal: 9,
+        paddingVertical: 6,
     },
-    rating: {
-        fontSize: 13,
-        fontWeight: "600",
-        color: "#FF9500",
+    rating: { fontSize: 11, fontWeight: "800", color: "#B87519" },
+    pricePanel: {
+        marginHorizontal: 20,
+        marginTop: 17,
+        paddingHorizontal: 15,
+        paddingVertical: 14,
+        borderRadius: 18,
+        backgroundColor: "#F6F8F4",
+        borderWidth: 1,
+        borderColor: "#EAF0E8",
     },
-
-    mrp: { fontSize: 14, color: '#999', textDecorationLine: 'line-through', marginLeft: 8 },
-    savings: { color: '#18864B', fontSize: 13, fontWeight: '700', marginTop: 3 },
-    price: {
-        fontSize: 28,
+    priceMainRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 10,
+    },
+    priceEyebrow: {
+        fontSize: 9,
+        color: "#879188",
         fontWeight: "800",
-        color: "#000",
-        marginHorizontal: 16,
-        marginTop: 12,
+        letterSpacing: 1.1,
+        marginBottom: 3,
     },
-
+    priceLine: { flexDirection: "row", alignItems: "baseline", gap: 8 },
+    price: {
+        fontSize: 27,
+        fontWeight: "900",
+        color: "#17251D",
+        letterSpacing: -0.8,
+    },
+    mrp: {
+        fontSize: 13,
+        color: "#9AA29B",
+        textDecorationLine: "line-through",
+        fontWeight: "500",
+    },
+    savingsPill: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+        backgroundColor: "#E5F3E8",
+        borderRadius: 30,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+    },
+    savings: { color: "#24734A", fontSize: 10, fontWeight: "800" },
+    priceUnitPill: {
+        backgroundColor: "#E9EEE8",
+        borderRadius: 30,
+        paddingHorizontal: 10,
+        paddingVertical: 7,
+    },
+    priceUnitText: { fontSize: 10, color: "#637166", fontWeight: "700" },
     variantSection: {
-        marginHorizontal: 16,
-        marginTop: 18,
+        marginHorizontal: 20,
+        marginTop: 20,
     },
     variantOptions: {
         flexDirection: "row",
         flexWrap: "wrap",
         gap: 8,
-        marginTop: 10,
-    },
-    variantOption: {
-        minWidth: 88,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#E5E5E5",
-        backgroundColor: "#FAFAFA",
-    },
-    variantOptionSelected: {
-        borderColor: "#000",
-        backgroundColor: "#000",
-    },
-    variantOptionDisabled: {
-        opacity: 0.4,
-    },
-    variantUnit: {
-        color: "#222",
-        fontSize: 12,
-        fontWeight: "600",
-    },
-    variantPrice: {
-        color: "#555",
-        fontSize: 12,
-        marginTop: 4,
-    },
-    variantTextSelected: {
-        color: "#FFF",
-    },
-    variantUnavailable: {
-        color: "#D00",
-        fontSize: 9,
-        marginTop: 3,
-    },
-
-    descriptionSection: {
-        marginHorizontal: 16,
-        marginTop: 16,
+        marginTop: 11,
     },
     sectionTitle: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#000",
-        marginBottom: 8,
-    },
-    description: {
         fontSize: 14,
-        color: "#666",
-        lineHeight: 20,
+        fontWeight: "800",
+        color: "#1B2A20",
+        marginBottom: 2,
+        letterSpacing: -0.2,
     },
-
+    variantOption: {
+        minWidth: 92,
+        paddingHorizontal: 13,
+        paddingVertical: 11,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: "#E5EAE3",
+        backgroundColor: "#FAFBF9",
+    },
+    variantOptionSelected: {
+        borderColor: "#315C43",
+        backgroundColor: "#315C43",
+        shadowColor: "#315C43",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.16,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    variantOptionDisabled: { opacity: 0.42 },
+    variantUnit: { color: "#344238", fontSize: 11, fontWeight: "700" },
+    variantPrice: { color: "#788279", fontSize: 11, marginTop: 5, fontWeight: "600" },
+    variantTextSelected: { color: "#FFFFFF" },
+    variantUnavailable: { color: "#D94A42", fontSize: 9, marginTop: 4, fontWeight: "600" },
     infoCard: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#F5F5F5",
-        marginHorizontal: 16,
-        marginTop: 16,
+        backgroundColor: "#F5F7F4",
+        marginHorizontal: 20,
+        marginTop: 15,
         padding: 12,
-        borderRadius: 12,
-        gap: 8,
+        borderRadius: 14,
+        gap: 9,
+        borderWidth: 1,
+        borderColor: "#EBEFEB",
     },
-    infoText: {
-        fontSize: 12,
-        color: "#666",
-        flex: 1,
+    infoText: { fontSize: 11, color: "#667168", flex: 1, fontWeight: "500" },
+    descriptionSection: {
+        marginHorizontal: 20,
+        marginTop: 19,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: "#EEF0ED",
     },
-
-  bottomContainer: {
-    height: 90,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E8E8",
-    backgroundColor: "#FFF",
-    justifyContent: "center",
-},
-
+    description: { fontSize: 13, color: "#68736A", lineHeight: 21, marginTop: 5 },
+    bottomContainer: {
+        minHeight: 86,
+        paddingHorizontal: 18,
+        paddingTop: 12,
+        paddingBottom: 14,
+        borderTopWidth: 1,
+        borderTopColor: "#EEF0ED",
+        backgroundColor: "rgba(255,255,255,0.98)",
+        justifyContent: "center",
+    },
     addButton: {
-        borderRadius: 30,
+        borderRadius: 17,
         overflow: "hidden",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
+        shadowColor: "#234B34",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.18,
+        shadowRadius: 10,
         elevation: 5,
     },
     addButtonGradient: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        paddingVertical: 14,
-        gap: 8,
+        paddingVertical: 15,
+        gap: 9,
     },
-    addButtonText: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#FFFFFF",
-    },
-
+    addButtonText: { fontSize: 15, fontWeight: "800", color: "#FFFFFF", letterSpacing: 0.1 },
     qtyBox: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#000",
-        borderRadius: 30,
+        alignSelf: "center",
+        minWidth: 180,
+        backgroundColor: "#315C43",
+        borderRadius: 17,
         paddingHorizontal: 16,
-        paddingVertical: 10,
-        gap: 20,
+        paddingVertical: 8,
+        gap: 22,
     },
     qtyBtn: {
         width: 36,
         height: 36,
-        borderRadius: 18,
-        backgroundColor: "rgba(255,255,255,0.2)",
+        borderRadius: 12,
+        backgroundColor: "rgba(255,255,255,0.18)",
         justifyContent: "center",
         alignItems: "center",
     },
-    qtyText: {
-        color: "#FFF",
-        fontSize: 18,
-        fontWeight: "600",
-        minWidth: 40,
-        textAlign: "center",
+    qtyText: { color: "#FFFFFF", fontSize: 18, fontWeight: "800", minWidth: 28, textAlign: "center" },
+    outOfStockButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        paddingVertical: 15,
+        borderRadius: 17,
+        backgroundColor: "#F1F3F0",
     },
+    outOfStockButtonText: { color: "#89928A", fontSize: 14, fontWeight: "700" },
 });
