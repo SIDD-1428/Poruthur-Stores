@@ -21,12 +21,14 @@ import {
 } from "react-native";
 import { useCart } from "../../context/CartContext";
 import { getProductById } from "../../services/products";
+import { db } from "../../firebase/config";
 
 const { width, height } = Dimensions.get("window");
 
 export default function ProductDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const [product, setProduct] = useState<any>(null);
+    const [groupVariants, setGroupVariants] = useState<any[]>([]);
     const [imageLoaded, setImageLoaded] = useState(false);
     const { cart, addToCart, increaseQty, decreaseQty } = useCart();
 
@@ -64,6 +66,23 @@ export default function ProductDetail() {
         try {
             const data = await getProductById(id);
             setProduct(data);
+            if (data?.groupId) {
+                const groupSnapshot = await db.collection("productGroups").doc(String(data.groupId)).get();
+                if (groupSnapshot.exists) {
+                    const groupData = groupSnapshot.data() as any;
+                    const ids: string[] = Array.isArray(groupData?.productIds) ? groupData.productIds : [];
+                    const snapshots = await Promise.all(ids.map((productId) => db.collection("products").doc(productId).get()));
+                    const variants = snapshots
+                        .filter((snapshot) => snapshot.exists)
+                        .map((snapshot) => ({ id: snapshot.id, ...snapshot.data() }))
+                        .sort((a: any, b: any) => {
+                            if (a.id === groupData.standardProductId) return -1;
+                            if (b.id === groupData.standardProductId) return 1;
+                            return String(a.unit ?? "").localeCompare(String(b.unit ?? ""));
+                        });
+                    setGroupVariants(variants);
+                }
+            }
         } catch (error) {
             console.log(error);
         }
@@ -281,6 +300,43 @@ export default function ProductDetail() {
 
                 </View>
 
+
+                {/* PRODUCT SIZE / VARIANT SELECTOR */}
+                {groupVariants.length > 1 && (
+                    <View style={styles.variantSection}>
+                        <Text style={styles.sectionTitle}>Available sizes</Text>
+                        <View style={styles.variantOptions}>
+                            {groupVariants.map((variant: any) => {
+                                const selected = variant.id === product.id;
+                                const unavailable = Number(variant.stock ?? 0) <= 0;
+                                return (
+                                    <TouchableOpacity
+                                        key={variant.id}
+                                        disabled={unavailable}
+                                        onPress={() => {
+                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                            setProduct(variant);
+                                            setImageLoaded(false);
+                                        }}
+                                        style={[
+                                            styles.variantOption,
+                                            selected && styles.variantOptionSelected,
+                                            unavailable && styles.variantOptionDisabled,
+                                        ]}
+                                    >
+                                        <Text style={[styles.variantUnit, selected && styles.variantTextSelected]}>
+                                            {variant.unit || variant.name}
+                                        </Text>
+                                        <Text style={[styles.variantPrice, selected && styles.variantTextSelected]}>
+                                            ₹{Number(variant.price || 0).toFixed(2)}
+                                        </Text>
+                                        {unavailable && <Text style={styles.variantUnavailable}>Out of stock</Text>}
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
 
                 {/* PRICE */}
                 <View style={{ marginTop: 4 }}>
@@ -557,6 +613,51 @@ const styles = StyleSheet.create({
         color: "#000",
         marginHorizontal: 16,
         marginTop: 12,
+    },
+
+    variantSection: {
+        marginHorizontal: 16,
+        marginTop: 18,
+    },
+    variantOptions: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+        marginTop: 10,
+    },
+    variantOption: {
+        minWidth: 88,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E5E5E5",
+        backgroundColor: "#FAFAFA",
+    },
+    variantOptionSelected: {
+        borderColor: "#000",
+        backgroundColor: "#000",
+    },
+    variantOptionDisabled: {
+        opacity: 0.4,
+    },
+    variantUnit: {
+        color: "#222",
+        fontSize: 12,
+        fontWeight: "600",
+    },
+    variantPrice: {
+        color: "#555",
+        fontSize: 12,
+        marginTop: 4,
+    },
+    variantTextSelected: {
+        color: "#FFF",
+    },
+    variantUnavailable: {
+        color: "#D00",
+        fontSize: 9,
+        marginTop: 3,
     },
 
     descriptionSection: {
