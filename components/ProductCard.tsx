@@ -180,7 +180,7 @@ export default function ProductCard({
                 <Text style={[styles.price, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={styles.mrp}>₹{mrp}</Text> : null}
               </View>
-              {Number(mrp) > Number(price) ? <Text style={styles.savings}>Save ₹{(Number(mrp) - Number(price)).toFixed(2)} per unit</Text> : null}
+              {Number(mrp) > Number(price) ? <Text style={styles.savings}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
             </View>
 
             {isOutOfStock ? (
