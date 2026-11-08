@@ -8,7 +8,7 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
@@ -214,10 +214,7 @@ export default function CustomerHome() {
             {Array.from({ length: Math.ceil(sortedBrands.length / 2) }, (_, columnIndex) => (
               <View key={columnIndex} style={styles.brandColumn}>
                 {sortedBrands.slice(columnIndex * 2, columnIndex * 2 + 2).map((brand: any) => (
-                  <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.82} onPress={() => handleBrandPress(brand)}>
-                    <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
-                    <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text><Text style={styles.brandExplore}>Explore brand <Ionicons name="arrow-forward" size={10} color={Colors.muted} /></Text></View>
-                  </TouchableOpacity>
+                  undefined
                 ))}
               </View>
             ))}
@@ -257,7 +254,13 @@ const styles = StyleSheet.create({
   brandHeading: { marginTop: 18 },
   brandRail: { paddingHorizontal: 16, paddingBottom: 12 },
   brandColumn: { width: 174, marginRight: 10, gap: 10 },
-  brandTile: { minHeight: 78, borderRadius: 16, backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8", padding: 11, flexDirection: "row", alignItems: "center", gap: 10 },
+  brandTile: { width: 174, height: 92, borderRadius: 16, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
+  brandImageBackground: { flex: 1, width: "100%", height: "100%" },
+  brandImage: { borderRadius: 15 },
+  brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 11 },
+  brandImageName: { color: "#FFFFFF", fontSize: 14, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
+  brandImageExplore: { color: "#FFFFFFDD", fontSize: 10, fontWeight: "600", marginTop: 4 },
+  brandFallback: { flex: 1, padding: 11, flexDirection: "row", alignItems: "center", gap: 10 },
   brandMonogram: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
   brandMonogramText: { fontSize: 22, fontWeight: "900", color: "#111111" },
   brandTileCopy: { flex: 1, minWidth: 0 },
