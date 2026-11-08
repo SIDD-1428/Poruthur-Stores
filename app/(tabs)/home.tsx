@@ -24,7 +24,6 @@ export default function CustomerHome() {
   const insets = useSafeAreaInsets();
   const [products, setProducts] = useState<any[]>([]);
   const [productGroups, setProductGroups] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
   const [address, setAddress] = useState<any>(null);
   const [greeting, setGreeting] = useState("");
@@ -50,12 +49,6 @@ export default function CustomerHome() {
   useEffect(() => db.collection("productGroups").onSnapshot(
     snapshot => setProductGroups(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
     error => console.log("Product groups listener:", error.message)
-  ), []);
-
-  // Recent orders provide a lightweight popularity signal. New orders refresh recommendations.
-  useEffect(() => db.collection("orders").orderBy("createdAt", "desc").limit(100).onSnapshot(
-    snapshot => setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-    error => console.log("Recommendation orders listener:", error.message)
   ), []);
 
   useEffect(() => db.collection("brands").onSnapshot(
@@ -91,14 +84,6 @@ export default function CustomerHome() {
     }, error => console.log("Delivery settings listener:", error.message));
   }, [address]);
 
-  const standardProductIds = useMemo(() => {
-    const ids = new Set<string>();
-    productGroups.forEach((group: any) => {
-      if (group.standardProductId) ids.add(String(group.standardProductId));
-    });
-    return ids;
-  }, [productGroups]);
-
   const visibleProducts = useMemo(() => products.filter((product: any) => {
     if (!product.groupId) return true;
     const group = productGroups.find((item: any) => item.id === product.groupId);
@@ -107,18 +92,11 @@ export default function CustomerHome() {
 
   const popularity = useMemo(() => {
     const counts: Record<string, number> = {};
-    const cutoff = Date.now() - 45 * 24 * 60 * 60 * 1000;
-    orders.forEach((order: any) => {
-      if (String(order.status || "").toLowerCase() === "cancelled") return;
-      const created = order.createdAt?.toDate ? order.createdAt.toDate().getTime() : 0;
-      if (created && created < cutoff) return;
-      (Array.isArray(order.items) ? order.items : []).forEach((item: any) => {
-        const id = item.productId || item.id;
-        if (id) counts[id] = (counts[id] || 0) + Math.max(1, Number(item.quantity) || 1);
-      });
+    products.forEach((product: any) => {
+      counts[product.id] = Math.max(0, Number(product.popularityCount) || 0);
     });
     return counts;
-  }, [orders]);
+  }, [products]);
 
   // Weighted random selection: popular items appear more often, with variety on each order/catalogue update.
   const recommendedProducts = useMemo(() => {
@@ -139,15 +117,11 @@ export default function CustomerHome() {
 
   const brandPopularity = useMemo(() => {
     const counts: Record<string, number> = {};
-    orders.forEach((order: any) => {
-      if (String(order.status || "").toLowerCase() === "cancelled") return;
-      (Array.isArray(order.items) ? order.items : []).forEach((item: any) => {
-        const product = products.find((entry: any) => entry.id === (item.productId || item.id));
-        if (product?.brandId) counts[product.brandId] = (counts[product.brandId] || 0) + (Number(item.quantity) || 1);
-      });
+    products.forEach((product: any) => {
+      if (product.brandId) counts[product.brandId] = (counts[product.brandId] || 0) + Math.max(0, Number(product.popularityCount) || 0);
     });
     return counts;
-  }, [orders, products]);
+  }, [products]);
 
   const sortedBrands = useMemo(() => [...brands].sort((a: any, b: any) =>
     (brandPopularity[b.id] || 0) - (brandPopularity[a.id] || 0) || String(a.name).localeCompare(String(b.name))
