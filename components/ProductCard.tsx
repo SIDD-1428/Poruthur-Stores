@@ -23,6 +23,7 @@ type ProductOption = {
   unit: string;
   stock?: number;
   image?: string;
+  maxOrderQty?: number;
 };
 
 type Props = {
@@ -89,14 +90,13 @@ export default function ProductCard({
 
     cardRef.current?.measureInWindow((x, y, cardWidth, cardHeight) => {
       const gap = 10;
-      const maxWidth = Math.min(280, screenWidth - 24);
+      // Keep the glass panel comfortably wide for product names and inline cart controls.
+      const availableWidth = Math.min(320, screenWidth - 24);
       const rightSpace = screenWidth - (x + cardWidth) - gap - 12;
       const leftSpace = x - gap - 12;
-      const placeRight = rightSpace >= Math.min(220, maxWidth) || rightSpace >= leftSpace;
-      const availableWidth = Math.max(180, Math.min(maxWidth, placeRight ? rightSpace : leftSpace));
-      const left = placeRight
-        ? Math.min(screenWidth - availableWidth - 12, x + cardWidth + gap)
-        : Math.max(12, x - availableWidth - gap);
+      const placeRight = rightSpace >= leftSpace;
+      const preferredLeft = placeRight ? x + cardWidth + gap : x - availableWidth - gap;
+      const left = Math.max(12, Math.min(screenWidth - availableWidth - 12, preferredLeft));
       const top = Math.max(12, Math.min(
         y + cardHeight / 2 - popupHeight / 2,
         screenHeight - popupHeight - 12
@@ -344,41 +344,82 @@ export default function ProductCard({
               </View>
 
               {otherOptions.map((option) => {
-                const outOfStock = (option.stock ?? 0) <= 0;
+                const optionOutOfStock = (option.stock ?? 0) <= 0;
+                const optionCartItem = cart.find((item) => item.id === option.id);
                 return (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={styles.optionRow}
-                    disabled={outOfStock}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      closeOptions();
-                      router.push({ pathname: "/product/[id]", params: { id: option.id } });
-                    }}
-                  >
-                    {option.image ? (
-                      <Image
-                        source={{ uri: option.image }}
-                        style={[styles.optionImage, outOfStock && styles.optionImageOutOfStock]}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={styles.optionImagePlaceholder}>
-                        <Ionicons name="image-outline" size={19} color="#A0A7B4" />
+                  <View key={option.id} style={styles.optionRow}>
+                    <TouchableOpacity
+                      style={styles.optionProductTap}
+                      activeOpacity={0.75}
+                      disabled={optionOutOfStock}
+                      onPress={() => {
+                        closeOptions();
+                        router.push({ pathname: "/product/[id]", params: { id: option.id } });
+                      }}
+                    >
+                      {option.image ? (
+                        <Image
+                          source={{ uri: option.image }}
+                          style={[styles.optionImage, optionOutOfStock && styles.optionImageOutOfStock]}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={styles.optionImagePlaceholder}>
+                          <Ionicons name="image-outline" size={19} color="#A0A7B4" />
+                        </View>
+                      )}
+                      <View style={styles.optionDetails}>
+                        <Text style={styles.optionName} numberOfLines={1}>{option.name}</Text>
+                        <Text style={styles.optionUnit} numberOfLines={1}>{option.unit}</Text>
                       </View>
-                    )}
-                    <View style={styles.optionDetails}>
-                      <Text style={styles.optionName} numberOfLines={2}>{option.name}</Text>
-                      <Text style={styles.optionUnit}>{option.unit}</Text>
-                    </View>
-                    <View style={styles.optionPriceColumn}>
+                    </TouchableOpacity>
+                    <View style={styles.optionActionColumn}>
                       <Text style={styles.optionPrice}>₹{option.price}</Text>
-                      <Text style={[styles.optionStock, outOfStock && styles.optionOutOfStock]}>
-                        {outOfStock ? "Out of stock" : "Available"}
-                      </Text>
+                      {optionOutOfStock ? (
+                        <Text style={[styles.optionStock, styles.optionOutOfStock]}>Out of stock</Text>
+                      ) : optionCartItem ? (
+                        <View style={styles.optionQtyBox}>
+                          <TouchableOpacity
+                            style={styles.optionQtyButton}
+                            onPress={() => decreaseQty(option.id)}
+                            hitSlop={6}
+                          >
+                            <Ionicons name="remove" size={13} color="#007AFF" />
+                          </TouchableOpacity>
+                          <Text style={styles.optionQtyText}>{optionCartItem.quantity}</Text>
+                          <TouchableOpacity
+                            style={[styles.optionQtyButton, styles.optionQtyButtonAdd]}
+                            onPress={() => increaseQty(option.id)}
+                            hitSlop={6}
+                          >
+                            <Ionicons name="add" size={13} color="#fff" />
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.optionAddButton}
+                          activeOpacity={0.8}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            addToCart({
+                              id: option.id,
+                              name: option.name,
+                              price: option.price,
+                              mrp: option.mrp ?? option.price,
+                              image: option.image ?? "",
+                              quantity: 1,
+                              stock: option.stock ?? 0,
+                              maxOrderQty: option.maxOrderQty,
+                              unit: option.unit,
+                            });
+                          }}
+                        >
+                          <Ionicons name="add" size={13} color="#fff" />
+                          <Text style={styles.optionAddText}>Add</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
-                    <Ionicons name="chevron-forward" size={15} color="#888" />
-                  </TouchableOpacity>
+                  </View>
                 );
               })}
             </View>
@@ -566,7 +607,14 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(80,95,120,0.16)",
     paddingVertical: 9,
-    gap: 9,
+    gap: 10,
+  },
+  optionProductTap: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   optionImage: {
     width: 48,
@@ -593,14 +641,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#172033",
+    flexShrink: 1,
   },
   optionUnit: {
     fontSize: 10,
     color: "#667085",
     marginTop: 3,
   },
-  optionPriceColumn: {
+  optionActionColumn: {
+    minWidth: 76,
     alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 5,
   },
   optionPrice: {
     fontSize: 12,
@@ -614,6 +666,48 @@ const styles = StyleSheet.create({
   },
   optionOutOfStock: {
     color: "#FF3B30",
+  },
+  optionAddButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1C1C1E",
+    borderRadius: 8,
+    minWidth: 62,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    gap: 3,
+  },
+  optionAddText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  optionQtyBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,122,255,0.10)",
+    borderRadius: 8,
+    padding: 2,
+    gap: 5,
+  },
+  optionQtyButton: {
+    width: 23,
+    height: 23,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,122,255,0.08)",
+  },
+  optionQtyButtonAdd: {
+    backgroundColor: "#007AFF",
+  },
+  optionQtyText: {
+    minWidth: 14,
+    textAlign: "center",
+    color: "#007AFF",
+    fontSize: 11,
+    fontWeight: "700",
   },
   addText: {
     color: "#fff",
