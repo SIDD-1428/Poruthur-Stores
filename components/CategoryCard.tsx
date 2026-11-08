@@ -15,6 +15,7 @@ type CategoryCardProps={
     subtitle?:string;
     image:string;
     onPress:()=>void;
+    compact?: boolean;
 };
 
 const {width: SCREEN_WIDTH}=Dimensions.get("window");
@@ -26,6 +27,7 @@ export default function CategoryCard({
     subtitle,
     image,
     onPress,
+    compact = false,
 }: CategoryCardProps){
     const handlePress=async()=>{
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -36,7 +38,7 @@ export default function CategoryCard({
     return(
         <TouchableOpacity
         activeOpacity={0.9}
-        style={styles.card}
+        style={[styles.card, compact && styles.compactCard]}
         onPress={handlePress}
         >
        <View style={styles.imageContainer}>
@@ -55,25 +57,25 @@ export default function CategoryCard({
         )}
         </View>
 
-        <View style={styles.textSection}>
-        <Text style={styles.title} numberOfLines={2}>
+        <View style={[styles.textSection, compact && styles.compactTextSection]}>
+        <Text style={[styles.title, compact && styles.compactTitle]} numberOfLines={2}>
          {title}
         </Text>
 
         {!!subtitle && (
-            <Text style={styles.subtitle} numberOfLines={2}>
+            <Text style={[styles.subtitle, compact && styles.compactSubtitle]} numberOfLines={2}>
             {subtitle}
         </Text>
         )}
         </View>
 
-        <View style={styles.arrowContainer}>
+        {!compact && <View style={styles.arrowContainer}>
             <Ionicons
             name="arrow-forward"
             size={18}
             color={Colors.textSecondary}
             />
-        </View>
+        </View>}
     </TouchableOpacity>
     );
 }
@@ -97,6 +99,11 @@ const styles = StyleSheet.create({
   elevation: 3,
   marginBottom: 18,
 },
+  compactCard: { width: (SCREEN_WIDTH - 48) / 3, height: 132, padding: 8, borderRadius: 14, marginBottom: 10, marginHorizontal: 3 },
+  compactImageContainer: { height: 70, borderRadius: 9, marginBottom: 7 },
+  compactTextSection: { flex: 0 },
+  compactTitle: { fontSize: 11, lineHeight: 14, letterSpacing: -0.15 },
+  compactSubtitle: { fontSize: 9, lineHeight: 12, marginTop: 2 },
   textSection: {
     flex:1,
   },
