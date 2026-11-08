@@ -193,6 +193,7 @@ export default function SearchScreen() {
         id={item.id}
         name={item.name}
         price={item.price}
+        mrp={Number(item.mrp ?? item.price)}
         stock={item.stock}
         image={item.image}
         protext={item.protext}
