@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { db } from "../firebase/config";
 import { Alert } from "react-native";
 type Product = {
     id: string;
@@ -26,6 +27,46 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
+
+    // Keep prices and stock in the cart aligned with the live product documents.
+    // The subscription set changes only when product IDs change, not when quantities change.
+    const cartProductIds = cart.map((item) => item.id).sort().join("|");
+
+    useEffect(() => {
+        if (!cartProductIds) return;
+
+        const productIds = cartProductIds.split("|");
+        const unsubscribes = productIds.map((productId) =>
+            db.collection("products").doc(productId).onSnapshot(
+                (snapshot) => {
+                    if (!snapshot.exists) return;
+
+                    const latest = snapshot.data();
+                    if (!latest) return;
+
+                    setCart((current) =>
+                        current.map((item) => {
+                            if (item.id !== productId) return item;
+
+                            const nextPrice = Number(latest.price);
+                            return {
+                                ...item,
+                                name: latest.name ?? item.name,
+                                price: Number.isFinite(nextPrice) ? nextPrice : item.price,
+                                image: latest.image ?? item.image,
+                                stock: latest.stock ?? item.stock,
+                                maxOrderQty: latest.maxOrderQty ?? item.maxOrderQty,
+                                unit: latest.unit ?? item.unit,
+                            };
+                        })
+                    );
+                },
+                (error) => console.log("Cart product listener:", error.message)
+            )
+        );
+
+        return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+    }, [cartProductIds]);
 
     const clearCart = () => setCart([]);
 
