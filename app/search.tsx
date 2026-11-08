@@ -64,14 +64,21 @@ export default function SearchScreen() {
   try {
     setIsLoading(true);
 
-    const snapshot = await db
-      .collection("products")
-      .get();
+    const [snapshot, groupsSnapshot] = await Promise.all([
+      db.collection("products").get(),
+      db.collection("productGroups").get(),
+    ]);
 
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const standardByGroup = new Map(
+      groupsSnapshot.docs.map((doc) => [doc.id, (doc.data() as any).standardProductId])
+    );
+    const data = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((item: any) => {
+        if (!item.groupId) return true;
+        const standardId = standardByGroup.get(String(item.groupId));
+        return standardId ? item.id === standardId : true;
+      });
 
     setProducts(data);
   } catch (error) {
