@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
-import { BlurView } from "expo-blur";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const Colors={
@@ -42,8 +41,6 @@ export default function CategoryCard({
         style={[styles.card, compact && styles.compactCard]}
         onPress={handlePress}
         >
-       {compact && <BlurView intensity={42} tint="light" style={styles.glassBackground} />}
-       {compact && <View pointerEvents="none" style={styles.glassHighlight} />}
        <View style={[styles.imageContainer, compact && styles.compactImageContainer]}>
         {image ? (
             <Image
@@ -102,9 +99,7 @@ const styles = StyleSheet.create({
   elevation: 3,
   marginBottom: 18,
 },
-  compactCard: { width: (SCREEN_WIDTH - 48) / 3, height: 132, padding: 8, borderRadius: 16, marginBottom: 10, marginHorizontal: 3, backgroundColor: "rgba(255,255,255,0.58)", borderColor: "rgba(255,255,255,0.88)", overflow: "hidden" },
-  glassBackground: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
-  glassHighlight: { ...StyleSheet.absoluteFillObject, borderWidth: 1, borderColor: "rgba(255,255,255,0.8)", borderRadius: 16, backgroundColor: "rgba(255,255,255,0.12)", zIndex: 0 },
+  compactCard: { width: (SCREEN_WIDTH - 48) / 3, height: 132, padding: 8, borderRadius: 14, marginBottom: 10, marginHorizontal: 3 },
   compactImageContainer: { height: 70, borderRadius: 9, marginBottom: 7 },
   compactTextSection: { flex: 0 },
   compactTitle: { fontSize: 11, lineHeight: 14, letterSpacing: -0.15 },
