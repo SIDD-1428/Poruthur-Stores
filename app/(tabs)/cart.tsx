@@ -307,8 +307,8 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 13,
-    color: Colors.muted,
-    textDecorationLine: "line-through",
+    color: Colors.textSecondary,
+    fontWeight: "500",
   },
   totalPrice: {
     fontSize: 15,
