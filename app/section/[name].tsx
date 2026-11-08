@@ -21,6 +21,7 @@ export default function SectionScreen() {
   
 
   const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   const [productGroups, setProductGroups] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const sidebarRef=useRef<FlatList<any>>(null);
@@ -35,6 +36,7 @@ export default function SectionScreen() {
           ...doc.data(),
         }));
 
+        setAllProducts(allProducts);
         const standardByGroup = new Map(productGroups.map((group: any) => [group.id, group.standardProductId]));
         const filteredProducts = allProducts.filter((item: any) => {
           if (item.category !== name) return false;
@@ -210,6 +212,7 @@ export default function SectionScreen() {
                   rating={item.rating}
                   unit={item.unit}
                   maxOrderQty={item.maxOrderQty}
+                  availableOptions={item.groupId ? allProducts.filter((option: any) => option.groupId === item.groupId) : []}
                 />
               </View>
             )}
