@@ -8,6 +8,7 @@ type Product = {
   price: number;
   mrp?: number;
   image: string;
+  thumbnailUrl?:string;
   quantity: number;
   maxOrderQty?: number;
   stock?: number;
@@ -50,6 +51,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               price: Number(data.price ?? item.price),
               mrp: Number(data.mrp ?? data.price ?? item.mrp ?? item.price),
               image: data.image ?? item.image,
+              thumbnailUrl: data.thumbnailUrl ?? data.image ?? item.thumbnailUrl ?? item.image,
               stock: data.stock == null ? item.stock : Number(data.stock),
               maxOrderQty: data.maxOrderQty == null ? undefined : Number(data.maxOrderQty),
               unit: data.unit ?? item.unit,
@@ -75,7 +77,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           return previous;
         }
         return previous.map(item => item.id === product.id
-          ? { ...item, quantity: item.quantity + 1, price: product.price, mrp: product.mrp }
+         ? {
+    ...item,
+    quantity: item.quantity + 1,
+    price: product.price,
+    mrp: product.mrp,
+    image: product.image,
+    thumbnailUrl: product.thumbnailUrl,
+  }
           : item);
       }
       if ((product.stock ?? 0) <= 0) {
