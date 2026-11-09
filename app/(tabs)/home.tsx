@@ -2,6 +2,7 @@ import CategoryCard from "@/components/CategoryCard";
 import FloatingCart from "@/components/FloatingCart";
 import ProductCard from "@/components/ProductCard";
 import PromotionalBannerSlider from "@/components/PromotionalBannerSlider";
+import PromotionalBannerSlider from "@/components/PromotionalBannerSlider";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
