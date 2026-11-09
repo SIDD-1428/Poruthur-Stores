@@ -312,8 +312,8 @@ const styles = StyleSheet.create({
   savings: { fontSize: 11, color: '#18864B', fontWeight: '700', marginTop: 2 },
   price: {
     fontSize: 13,
-    color: Colors.muted,
-    textDecorationLine: "line-through",
+    color: Colors.textSecondary,
+    fontWeight: "500",
   },
   totalPrice: {
     fontSize: 15,
