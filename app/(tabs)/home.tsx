@@ -224,11 +224,11 @@ export default function CustomerHome() {
             {sortedBrands.map((brand: any) => (
               <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
                 {brand.imageUrl ? <View style={styles.brandImageBackground}>
-                  <ExpoImage source={{ uri: brand.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={150}>
+                  <ExpoImage source={{ uri: brand.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={150} />
                   <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
                     <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
                   </LinearGradient>
-                </ImageBackground> : <View style={styles.brandFallback}>
+                </View> : <View style={styles.brandFallback}>
                   <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
                   <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text></View>
                 </View>}
