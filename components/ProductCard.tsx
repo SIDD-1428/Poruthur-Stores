@@ -234,13 +234,13 @@ function ProductCard({
         )}
 
         {/* Image */}
-        <View style={styles.imageContainer}>
+        <View style={[styles.imageContainer, uniformCard && styles.uniformImageContainer]}>
           <Image
             source={{ uri: thumbnailUrl || image }}
             cachePolicy="memory-disk"
             contentFit="cover"
             transition={120}
-            style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -464,15 +464,17 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
-  uniformCard: { height: 196 },
-  uniformInfoContainer: { flex: 1, justifyContent: "space-between" },
-  uniformName: { height: 26, minHeight: 26 },
-  uniformUnit: { height: 14, marginBottom: 3 },
-  uniformPriceBlock: { height: 25, justifyContent: "flex-start" },
-  uniformSavingsPlaceholder: { height: 9, marginTop: 1 },
-  uniformActionColumn: { height: 42, justifyContent: "flex-start" },
-  uniformOptionsLink: { height: 11, textAlign: "center" },
-  uniformOptionsPlaceholder: { height: 16 },
+  uniformCard: { height: 148 },
+  uniformImageContainer: { height: 44 },
+  uniformImage: { height: 44 },
+  uniformInfoContainer: { flex: 1, paddingHorizontal: 6, paddingTop: 4, paddingBottom: 4, justifyContent: "space-between" },
+  uniformName: { height: 22, minHeight: 22, fontSize: 9, lineHeight: 11 },
+  uniformUnit: { height: 11, fontSize: 8, marginTop: 0, marginBottom: 1 },
+  uniformPriceBlock: { height: 21, justifyContent: "flex-start" },
+  uniformSavingsPlaceholder: { height: 7, marginTop: 0 },
+  uniformActionColumn: { height: 32, justifyContent: "flex-start" },
+  uniformOptionsLink: { height: 8, fontSize: 7, marginTop: 1, textAlign: "center" },
+  uniformOptionsPlaceholder: { height: 8 },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
