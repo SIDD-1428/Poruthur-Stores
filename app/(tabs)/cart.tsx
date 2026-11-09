@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
-import { Image } from "expo-image";
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useCart } from "../../context/CartContext";
 
@@ -119,7 +119,7 @@ export default function Cart() {
             {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.mrp}>₹{Number(item.mrp).toFixed(2)}</Text> : null}
           </View>
           {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.savings}>You save ₹{((Number(item.mrp) - Number(item.price)) * item.quantity).toFixed(2)}</Text> : null}
-          {item.quantity > 1 ? <Text style={styles.totalPrice}>Line total · ₹{(item.price * item.quantity).toFixed(2)}</Text> : null}
+          {item.quantity > 1 ? <Text style={styles.totalPrice}>Total: ₹{(item.price * item.quantity).toFixed(2)}</Text> : null}
         </View>
       </View>
 
