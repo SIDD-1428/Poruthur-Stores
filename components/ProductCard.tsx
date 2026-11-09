@@ -782,3 +782,6 @@ const styles = StyleSheet.create({
     color: "#ABABAB",
   },
 });
+
+
+export default memo(ProductCard);
