@@ -26,7 +26,6 @@ export default function CustomerHome() {
   const [products, setProducts] = useState<any[]>([]);
   const [productGroups, setProductGroups] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
-  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [address, setAddress] = useState<any>(null);
   const [greeting, setGreeting] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
