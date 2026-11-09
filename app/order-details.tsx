@@ -21,14 +21,14 @@ import { db } from "../firebase/config";
 const Colors = {
   background: "#FFFFFF",
   card: "#FFFFFF",
-  surface: "#F5F5F5",
-  textPrimary: "#000000",
-  textSecondary: "#666666",
-  muted: "#999999",
-  separator: "#E8E8E8",
-  primary: "#000000",
-  accent: "#333333",
-  success: "#34C759",
+  surface: "#F2F7F3",
+  textPrimary: "#173A2A",
+  textSecondary: "#5F7568",
+  muted: "#87978C",
+  separator: "#E2ECE4",
+  primary: "#173A2A",
+  accent: "#145A3A",
+  success: "#23834F",
   warning: "#FF9500",
   danger: "#FF3B30",
 };
@@ -124,7 +124,7 @@ export default function OrderDetails() {
       case "pending":
         return Colors.warning;
       case "accepted":
-        return "#5856D6";
+        return "#176B45";
       default:
         return Colors.warning;
     }
@@ -705,17 +705,17 @@ const styles = StyleSheet.create({
   contactText: {
     fontSize: 12,
     textAlign: "center",
-    color: "#242525",
+    color: "#173A2A",
 
   },
   pinCard:{
-    backgroundColor:"#ECFDF3",
+    backgroundColor:"#EAF5EC",
     marginHorizontal:16,
     marginBottom:16,
     padding:20,
     borderRadius:20,
     borderWidth:1,
-    borderColor: "#C8F2D5",
+    borderColor: "#D4EBD8",
     alignItems:"center",
   },
 
