@@ -435,7 +435,7 @@ export default function Checkout() {
 
   const renderCartItem = ({ item, index }: { item: any; index: number }) => (
     <View style={styles.itemCard}>
-      <Image source={{ uri: item.image }} style={styles.image} cachePolicy="memory-disk" contentFit="cover" transition={120} />
+      <Image source={{ uri: item.thumbnailUrl || item.image }} style={styles.image} cachePolicy="memory-disk" contentFit="cover" transition={120} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName} numberOfLines={2}>
           {item.name}
