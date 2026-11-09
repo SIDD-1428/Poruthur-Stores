@@ -7,11 +7,11 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { Image } from "expo-image";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Modal,
   Pressable,
   StyleSheet,
@@ -186,6 +186,28 @@ export default function Checkout() {
         );
       }
       
+      // Final server-side validation prevents checkout with a stale cart price
+      // or quantity after an admin changes a product.
+      const latestProductSnapshots = await Promise.all(
+        cart.map(item => db.collection("products").doc(item.id).get())
+      );
+      latestProductSnapshots.forEach((snapshot, index) => {
+        const item = cart[index];
+        if (!snapshot.exists()) {
+          throw new Error(`${item.name} is no longer available. Please remove it from your cart.`);
+        }
+        const latest = snapshot.data() as any;
+        const latestPrice = Number(latest?.price);
+        const latestStock = Number(latest?.stock ?? 0);
+        const latestLimit = latest?.maxOrderQty == null ? Infinity : Number(latest.maxOrderQty);
+        if (!Number.isFinite(latestPrice) || latestPrice !== Number(item.price)) {
+          throw new Error(`The price of ${item.name} has changed. Your cart is being refreshed; please review the updated total and try again.`);
+        }
+        if (latestStock < item.quantity || latestLimit < item.quantity) {
+          throw new Error(`${item.name} no longer has enough stock for the selected quantity. Please review your cart.`);
+        }
+      });
+
       const orderRef = db.collection("orders").doc();
       
       const user=auth().currentUser;
@@ -412,7 +434,7 @@ export default function Checkout() {
 
   const renderCartItem = ({ item, index }: { item: any; index: number }) => (
     <View style={styles.itemCard}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={{ uri: item.image }} style={styles.image} cachePolicy="memory-disk" contentFit="cover" transition={120} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName} numberOfLines={2}>
           {item.name}
@@ -558,7 +580,8 @@ export default function Checkout() {
         <Image
           source={{ uri: qrCodeUrl }}
           style={styles.qrImage}
-          resizeMode="contain"
+          contentFit="contain"
+          cachePolicy="memory-disk"
         />
       </View>
 
