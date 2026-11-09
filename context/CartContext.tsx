@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { db } from "../firebase/config";
 import { Alert } from "react-native";
 type Product = {
     id: string;
@@ -27,6 +28,40 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
+
+    // Keep items already in the cart synchronized with the live product document.
+    const cartProductIds = cart.map(item => item.id).sort().join("|");
+
+    useEffect(() => {
+        if (!cartProductIds) return;
+
+        const ids = cartProductIds.split("|");
+        const unsubscribers = ids.map(id =>
+            db.collection("products").doc(id).onSnapshot(snapshot => {
+                if (!snapshot.exists) return;
+                const data = snapshot.data() as any;
+                if (!data) return;
+
+                setCart(prev => prev.map(item => {
+                    if (item.id !== id) return item;
+                    const nextPrice = Number(data.price);
+                    const nextMrp = Number(data.mrp);
+                    return {
+                        ...item,
+                        name: typeof data.name === "string" ? data.name : item.name,
+                        price: Number.isFinite(nextPrice) ? nextPrice : item.price,
+                        mrp: Number.isFinite(nextMrp) ? nextMrp : item.mrp,
+                        image: typeof data.image === "string" ? data.image : item.image,
+                        stock: data.stock != null ? Number(data.stock) : item.stock,
+                        maxOrderQty: data.maxOrderQty != null ? Number(data.maxOrderQty) : item.maxOrderQty,
+                        unit: typeof data.unit === "string" ? data.unit : item.unit,
+                    };
+                }));
+            }, error => console.log("Cart product listener:", error.message))
+        );
+
+        return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+    }, [cartProductIds]);
 
     const clearCart = () => setCart([]);
 
