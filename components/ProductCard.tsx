@@ -42,7 +42,6 @@ type Props = {
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
   compactCard?: boolean;
-  uniformCard?: boolean;
 };
 
 function ProductCard({
@@ -60,7 +59,6 @@ function ProductCard({
   maxOrderQty,
   availableOptions = [],
   compactCard = false,
-  uniformCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -215,7 +213,6 @@ function ProductCard({
         style={[
           styles.card,
           compactCard && styles.compactCard,
-          uniformCard && styles.uniformCard,
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -234,13 +231,13 @@ function ProductCard({
         )}
 
         {/* Image */}
-        <View style={[styles.imageContainer, uniformCard && styles.uniformImageContainer]}>
+        <View style={styles.imageContainer}>
           <Image
             source={{ uri: thumbnailUrl || image }}
             cachePolicy="memory-disk"
             contentFit="cover"
             transition={120}
-            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -251,17 +248,17 @@ function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer]}>
-          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName]} numberOfLines={2}>{name}</Text>
-          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit]} numberOfLines={1}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer]}>
+          <Text style={[styles.name, compactCard && styles.compactName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <View style={[styles.priceBlock, uniformCard && styles.uniformPriceBlock]}>
+            <View style={styles.priceBlock}>
               <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
                 <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
-              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : uniformCard ? <View style={styles.uniformSavingsPlaceholder} /> : null}
+              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
             </View>
 
             {isOutOfStock ? (
@@ -271,7 +268,7 @@ function ProductCard({
 
             ) : !itemInCart ? (
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
+                <View style={styles.actionColumn}>
                   <TouchableOpacity
                     style={[styles.addBtn, compactCard && styles.compactAddBtn]}
                     onPress={handleAddToCart}
@@ -280,21 +277,20 @@ function ProductCard({
                     <Ionicons name="add" size={12} color="#fff" />
                     <Text style={[styles.addText, compactCard && styles.compactAddText]}>Add</Text>
                   </TouchableOpacity>
-                  {otherOptions.length > 0 ? (
+                  {otherOptions.length > 0 && (
                     <TouchableOpacity
                       onPress={openOptions}
                       activeOpacity={0.7}
                       hitSlop={6}
                     >
-                      <Text style={[styles.optionsLink, uniformCard && styles.uniformOptionsLink]}>See other options</Text>
+                      <Text style={styles.optionsLink}>See other options</Text>
                     </TouchableOpacity>
-                  ) : uniformCard ? <View style={styles.uniformOptionsPlaceholder} /> : null}
+                  )}
                 </View>
               </Animated.View>
 
             ) : (
-              <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
-                <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
+              <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
                 <TouchableOpacity
                 disabled={false}
                   style={[styles.qtyBtn, compactCard && styles.compactQtyBtn]}
@@ -314,7 +310,6 @@ function ProductCard({
                 >
                   <Ionicons name="add" size={10} color="#fff" />
                 </TouchableOpacity>
-                </View>
               </View>
             )}
           </View>
@@ -464,17 +459,6 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
-  uniformCard: { height: 148 },
-  uniformImageContainer: { height: 44 },
-  uniformImage: { height: 44 },
-  uniformInfoContainer: { flex: 1, paddingHorizontal: 6, paddingTop: 4, paddingBottom: 4, justifyContent: "space-between" },
-  uniformName: { height: 22, minHeight: 22, fontSize: 9, lineHeight: 11 },
-  uniformUnit: { height: 11, fontSize: 8, marginTop: 0, marginBottom: 1 },
-  uniformPriceBlock: { height: 21, justifyContent: "flex-start" },
-  uniformSavingsPlaceholder: { height: 7, marginTop: 0 },
-  uniformActionColumn: { height: 35, justifyContent: "flex-start" },
-  uniformOptionsLink: { height: 10, fontSize: 7, marginTop: 1, textAlign: "center" },
-  uniformOptionsPlaceholder: { height: 10 },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
