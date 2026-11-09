@@ -561,7 +561,8 @@ const styles = StyleSheet.create({
   },
 
   addBtn: {
-    minWidth: 88,
+    width: "100%",
+    minWidth: 0,
     minHeight: 32,
     flexDirection: "row",
     justifyContent: "center",
@@ -573,7 +574,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   actionColumn: {
-    alignItems: "flex-end",
+    width: "100%",
+    alignItems: "stretch",
     alignSelf: "stretch",
     maxWidth: "100%",
   },
@@ -582,6 +584,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "600",
     marginTop: 5,
+    textAlign: "center",
   },
   modalOverlay: {
     flex: 1,
@@ -748,7 +751,9 @@ const styles = StyleSheet.create({
   },
 
   qtyBox: {
-    minWidth: 88,
+    width: "100%",
+    minWidth: 0,
+    alignSelf: "stretch",
     minHeight: 32,
     flexDirection: "row",
     alignItems: "center",
@@ -781,6 +786,8 @@ const styles = StyleSheet.create({
   },
 
   unavailableBtn: {
+    width: "100%",
+    alignItems: "center",
     backgroundColor: "#F5F5F7",
     paddingHorizontal: 9,
     paddingVertical: 5,
