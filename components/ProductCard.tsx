@@ -42,6 +42,7 @@ type Props = {
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
   compactCard?: boolean;
+  uniformCard?: boolean;
 };
 
 function ProductCard({
@@ -59,6 +60,7 @@ function ProductCard({
   maxOrderQty,
   availableOptions = [],
   compactCard = false,
+  uniformCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -213,6 +215,7 @@ function ProductCard({
         style={[
           styles.card,
           compactCard && styles.compactCard,
+          uniformCard && styles.uniformCard,
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -248,12 +251,12 @@ function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer]}>
-          <Text style={[styles.name, compactCard && styles.compactName]} numberOfLines={2}>{name}</Text>
-          <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer]}>
+          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit]} numberOfLines={1}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <View style={styles.priceBlock}>
+            <View style={[styles.priceBlock, uniformCard && styles.uniformPriceBlock]}>
               <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
                 <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
@@ -268,7 +271,7 @@ function ProductCard({
 
             ) : !itemInCart ? (
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                <View style={styles.actionColumn}>
+                <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
                   <TouchableOpacity
                     style={[styles.addBtn, compactCard && styles.compactAddBtn]}
                     onPress={handleAddToCart}
@@ -283,14 +286,15 @@ function ProductCard({
                       activeOpacity={0.7}
                       hitSlop={6}
                     >
-                      <Text style={styles.optionsLink}>See other options</Text>
+                      <Text style={[styles.optionsLink, uniformCard && styles.uniformOptionsLink]}>See other options</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               </Animated.View>
 
             ) : (
-              <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
+              <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
+                <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
                 <TouchableOpacity
                 disabled={false}
                   style={[styles.qtyBtn, compactCard && styles.compactQtyBtn]}
@@ -310,6 +314,7 @@ function ProductCard({
                 >
                   <Ionicons name="add" size={10} color="#fff" />
                 </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>
@@ -459,6 +464,13 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
+  uniformCard: { height: 190 },
+  uniformInfoContainer: { flex: 1, justifyContent: "space-between" },
+  uniformName: { height: 26, minHeight: 26 },
+  uniformUnit: { height: 14, marginBottom: 3 },
+  uniformPriceBlock: { minHeight: 27, justifyContent: "flex-start" },
+  uniformActionColumn: { minHeight: 42, justifyContent: "flex-start" },
+  uniformOptionsLink: { minHeight: 11, textAlign: "center" },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
