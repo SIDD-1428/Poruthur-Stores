@@ -200,7 +200,8 @@ export default function Checkout() {
         const latestPrice = Number(latest?.price);
         const latestStock = Number(latest?.stock ?? 0);
         const latestLimit = latest?.maxOrderQty == null ? Infinity : Number(latest.maxOrderQty);
-        if (!Number.isFinite(latestPrice) || latestPrice !== Number(item.price)) {
+        const latestMrp = Number(latest?.mrp ?? latest?.price ?? item.mrp ?? item.price);
+        if (!Number.isFinite(latestPrice) || Math.abs(latestPrice - Number(item.price)) > 0.0001 || Math.abs(latestMrp - Number(item.mrp ?? item.price)) > 0.0001) {
           throw new Error(`The price of ${item.name} has changed. Your cart is being refreshed; please review the updated total and try again.`);
         }
         if (latestStock < item.quantity || latestLimit < item.quantity) {
