@@ -255,7 +255,7 @@ function ProductCard({
           <View style={styles.bottomRow}>
             <View style={styles.priceBlock}>
               <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
-                <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#8A9A90" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
               {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
@@ -297,7 +297,7 @@ function ProductCard({
                   onPress={handleDecrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
-                  <Ionicons name="remove" size={10} color="#007AFF" />
+                  <Ionicons name="remove" size={10} color="#176B45" />
                 </TouchableOpacity>
 
 
@@ -376,7 +376,7 @@ function ProductCard({
                         />
                       ) : (
                         <View style={styles.optionImagePlaceholder}>
-                          <Ionicons name="image-outline" size={19} color="#A0A7B4" />
+                          <Ionicons name="image-outline" size={19} color="#93A399" />
                         </View>
                       )}
                       <View style={styles.optionDetails}>
@@ -395,7 +395,7 @@ function ProductCard({
                             onPress={() => decreaseQty(option.id)}
                             hitSlop={6}
                           >
-                            <Ionicons name="remove" size={13} color="#007AFF" />
+                            <Ionicons name="remove" size={13} color="#176B45" />
                           </TouchableOpacity>
                           <Text style={styles.optionQtyText}>{optionCartItem.quantity}</Text>
                           <TouchableOpacity
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#F0F0F0",
+    borderColor: "#E4EDE5",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
 
   imageContainer: {
     position: "relative",
-    backgroundColor: "#F7F7F9",
+    backgroundColor: "#F1F6F1",
   },
   image: {
     width: "100%",
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#1C1C1E",
+    color: "#173A2A",
     lineHeight: 16,
     minHeight: 32,
     letterSpacing: -0.1,
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
 
   unit: {
     fontSize: 10,
-    color: "#ABABAB",
+    color: "#8A9A90",
     fontWeight: "500",
     marginTop: 1,
     marginBottom: 6,
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#1C1C1E",
+    color: "#173A2A",
     letterSpacing: -0.2,
   },
 
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1C1C1E",
+    backgroundColor: "#173A2A",
     borderRadius: 9,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
   },
   optionsLink: {
-    color: "#007AFF",
+    color: "#176B45",
     fontSize: 9,
     fontWeight: "600",
     marginTop: 5,
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.82)",
     backgroundColor: "rgba(248,250,255,0.72)",
-    shadowColor: "#243047",
+    shadowColor: "#234B35",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.22,
     shadowRadius: 24,
@@ -628,12 +628,12 @@ const styles = StyleSheet.create({
   popupTitle: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#172033",
+    color: "#173A2A",
     letterSpacing: -0.25,
   },
   popupSubtitle: {
     fontSize: 11,
-    color: "#667085",
+    color: "#6A7D70",
     marginTop: 2,
   },
   optionRow: {
@@ -675,12 +675,12 @@ const styles = StyleSheet.create({
   optionName: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#172033",
+    color: "#173A2A",
     flexShrink: 1,
   },
   optionUnit: {
     fontSize: 10,
-    color: "#667085",
+    color: "#6A7D70",
     marginTop: 3,
   },
   optionActionColumn: {
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
   optionPrice: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#172033",
+    color: "#173A2A",
   },
   optionStock: {
     fontSize: 9,
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1C1C1E",
+    backgroundColor: "#173A2A",
     borderRadius: 8,
     minWidth: 62,
     paddingHorizontal: 10,
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
   optionQtyBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(0,122,255,0.10)",
+    backgroundColor: "rgba(23,107,69,0.12)",
     borderRadius: 8,
     padding: 2,
     gap: 5,
@@ -732,15 +732,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(0,122,255,0.08)",
+    backgroundColor: "rgba(23,107,69,0.08)",
   },
   optionQtyButtonAdd: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#176B45",
   },
   optionQtyText: {
     minWidth: 14,
     textAlign: "center",
-    color: "#007AFF",
+    color: "#176B45",
     fontSize: 11,
     fontWeight: "700",
   },
@@ -758,9 +758,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F1F3F5",
+    backgroundColor: "#EEF5EF",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#DCE9DE",
     borderRadius: 9,
     paddingHorizontal: 3,
     paddingVertical: 2,
@@ -770,15 +770,15 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     borderRadius: 7,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: "#DCE9DE",
     justifyContent: "center",
     alignItems: "center",
   },
   qtyBtnAdd: {
-    backgroundColor: "#1C1C1E",
+    backgroundColor: "#173A2A",
   },
   qtyText: {
-    color: "#1C1C1E",
+    color: "#173A2A",
     fontSize: 12,
     fontWeight: "700",
     minWidth: 18,
@@ -788,17 +788,17 @@ const styles = StyleSheet.create({
   unavailableBtn: {
     width: "100%",
     alignItems: "center",
-    backgroundColor: "#F5F5F7",
+    backgroundColor: "#F2F7F3",
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#E8E8E8",
+    borderColor: "#E2ECE4",
   },
   unavailableText: {
     fontSize: 10,
     fontWeight: "600",
-    color: "#ABABAB",
+    color: "#8A9A90",
   },
 });
 
