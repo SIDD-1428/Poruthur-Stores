@@ -23,6 +23,7 @@ type ProductOption = {
   unit: string;
   stock?: number;
   image?: string;
+  thumbnailUrl?: string;
   maxOrderQty?: number;
 };
 
@@ -33,6 +34,7 @@ type Props = {
   price: number;
   mrp?: number;
   image: string;
+  thumbnailUrl?: string;
   protext?: string;
   rating: number;
   unit: string;
@@ -49,6 +51,7 @@ function ProductCard({
   mrp = price,
   stock = 0,
   image,
+  thumbnailUrl,
   protext = "",
   rating,
   unit,
@@ -229,7 +232,7 @@ function ProductCard({
         {/* Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: image }}
+            source={{ uri: thumbnailUrl || image }}
             cachePolicy="memory-disk"
             contentFit="cover"
             transition={120}
@@ -365,7 +368,7 @@ function ProductCard({
                     >
                       {option.image ? (
                         <Image
-                          source={{ uri: option.image }}
+                          source={{ uri: option.thumbnailUrl || option.image }}
                           style={[styles.optionImage, optionOutOfStock && styles.optionImageOutOfStock]}
                           contentFit="cover"
                           cachePolicy="memory-disk"
