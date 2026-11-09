@@ -102,7 +102,7 @@ export default function CustomerHome() {
 
   // Deterministic ranking avoids re-randomizing the whole rail on every
   // Firestore snapshot, reducing unnecessary work and visual movement.
-  const recommendedProducts = useMemo(() => visibleProducts
+  const recommendedProducts = useMemo(() => [...visibleProducts]
     .filter((product: any) => Number(product.stock) > 0)
     .sort((a: any, b: any) =>
       (popularity[b.id] || 0) - (popularity[a.id] || 0) ||
