@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { Image } from "expo-image";
 import React, {
     useEffect,
     useRef,
@@ -20,8 +20,8 @@ import {
     View,
 } from "react-native";
 import { useCart } from "../../context/CartContext";
-import { getProductById } from "../../services/products";
 import { db } from "../../firebase/config";
+import { getProductById } from "../../services/products";
 
 const { width, height } = Dimensions.get("window");
 
@@ -340,7 +340,7 @@ export default function ProductDetail() {
                             <Text style={styles.priceEyebrow}>OUR PRICE</Text>
                             <View style={styles.priceLine}>
                                 <Text style={styles.price}>₹{productPrice.toFixed(2)}</Text>
-                                {productMrp > productPrice ? <Text style={styles.mrp}>₹{productMrp.toFixed(2)}</Text> : null}
+                                {productMrp > productPrice ? <Text style={styles.mrp}>MRP ₹{productMrp.toFixed(2)}</Text> : null}
                             </View>
                         </View>
                         {productMrp > productPrice ? (
