@@ -8,7 +8,8 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image as ExpoImage } from "expo-image";
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
@@ -99,15 +100,24 @@ export default function CustomerHome() {
     return counts;
   }, [products]);
 
-  // Weighted random selection runs when product popularity or availability changes.
-  useEffect(() => {
-    const pool = visibleProducts.filter((product: any) => Number(product.stock) > 0);
-    const selected = pool.map((product: any) => {
-      const weight = 1 + Math.log1p(popularity[product.id] || 0) * 2.5;
-      return { product, sortKey: -Math.log(Math.max(Math.random(), 0.000001)) / weight };
-    }).sort((a, b) => a.sortKey - b.sortKey).slice(0, 20).map(entry => entry.product);
-    setRecommendedProducts(selected);
-  }, [visibleProducts, popularity]);
+  // Deterministic ranking avoids re-randomizing the whole rail on every
+  // Firestore snapshot, reducing unnecessary work and visual movement.
+  const recommendedProducts = useMemo(() => visibleProducts
+    .filter((product: any) => Number(product.stock) > 0)
+    .sort((a: any, b: any) =>
+      (popularity[b.id] || 0) - (popularity[a.id] || 0) ||
+      String(a.name).localeCompare(String(b.name))
+    )
+    .slice(0, 12), [visibleProducts, popularity]);
+
+  const optionsByGroup = useMemo(() => {
+    const grouped: Record<string, any[]> = {};
+    products.forEach((product: any) => {
+      if (!product.groupId) return;
+      (grouped[product.groupId] ||= []).push(product);
+    });
+    return grouped;
+  }, [products]);
 
   const visibleCategories = useMemo(() => {
     const used = new Set(products.map((product: any) => product.category));
@@ -180,7 +190,7 @@ export default function CustomerHome() {
               <View key={columnIndex} style={styles.recommendationColumn}>
                 {[recommendedProducts[columnIndex * 2], recommendedProducts[columnIndex * 2 + 1]].filter(Boolean).map((item: any) => (
                   <View key={item.id} style={styles.recommendationCard}>
-                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} compactCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? products.filter((option: any) => option.groupId === item.groupId) : []} />
+                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} compactCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? optionsByGroup[item.groupId] ?? [] : []} />
                   </View>
                 ))}
               </View>
@@ -213,7 +223,8 @@ export default function CustomerHome() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRail}>
             {sortedBrands.map((brand: any) => (
               <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
-                {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
+                {brand.imageUrl ? <View style={styles.brandImageBackground}>
+                  <ExpoImage source={{ uri: brand.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={150}>
                   <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
                     <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
                   </LinearGradient>
