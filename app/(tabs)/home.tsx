@@ -1,6 +1,7 @@
 import CategoryCard from "@/components/CategoryCard";
 import FloatingCart from "@/components/FloatingCart";
 import ProductCard from "@/components/ProductCard";
+import PromotionalBannerSlider from "@/components/PromotionalBannerSlider";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
@@ -179,6 +180,7 @@ export default function CustomerHome() {
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
+        <PromotionalBannerSlider />
         {/* Recommendations */}
         <View style={styles.sectionHeading}>
           <View style={styles.headingCopy}><Text style={styles.sectionTitle}>Recommended for you</Text><Text style={styles.sectionSubtitle}>Popular picks, refreshed as people shop</Text></View>
