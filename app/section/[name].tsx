@@ -120,7 +120,7 @@ export default function SectionScreen() {
     <View style={styles.container}>
       {/* ── Header ── */}
       <LinearGradient
-        colors={["#000000", "#333333"]}
+        colors={["#173A2A", "#145A3A"]}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
@@ -301,15 +301,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 12,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#F2F7F3",
     borderWidth: 1,
-    borderColor: "#E8E8E8",
+    borderColor: "#E2ECE4",
     minHeight: 70,
     justifyContent: "center",
   },
   selectedCategory: {
-    backgroundColor: "#000000",
-    borderColor: "#000000",
+    backgroundColor: "#173A2A",
+    borderColor: "#173A2A",
   },
   categoryImage: {
     width: 38,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 9,
     textAlign: "center",
-    color: "#444444",
+    color: "#466252",
     lineHeight: 12,
     maxWidth: 60,
   },
@@ -360,6 +360,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: "#999999",
+    color: "#87978C",
   },
 });
