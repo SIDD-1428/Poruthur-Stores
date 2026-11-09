@@ -6,9 +6,9 @@ import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 
 const Colors={
     card:"#FFFFFF",
-    textPrimary:"#000000",
-    textSecondary:"#666666",
-    separator:"#E8E8E8",
+    textPrimary:"#173A2A",
+    textSecondary:"#5F7568",
+    separator:"#E2ECE4",
 };
 
 type CategoryCardProps={
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   borderRadius: 18,
   padding: 16,
   borderWidth: 1,
-  borderColor: "#F0F0F0",
+  borderColor: "#E4EDE5",
   shadowColor: "#000",
   shadowOffset: {
     width: 0,
@@ -115,13 +115,13 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
     letterSpacing:-0.5,
-    color: "#1C1C1E",
+    color: "#173A2A",
   },
 
   subtitle: {
     marginTop:6,
     fontSize: 12,
-    color: "#8E8E93",
+    color: "#75877B",
     lineHeight: 20,
   },
   content:{
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 125,
     borderRadius: 13,
-    backgroundColor: "#F8F8F8",
+    backgroundColor: "#F3F8F4",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 18,
