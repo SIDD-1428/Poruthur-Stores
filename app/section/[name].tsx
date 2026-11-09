@@ -21,6 +21,8 @@ export default function SectionScreen() {
   
 
   const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [productGroups, setProductGroups] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const sidebarRef=useRef<FlatList<any>>(null);
 
@@ -34,9 +36,14 @@ export default function SectionScreen() {
           ...doc.data(),
         }));
 
-        const filteredProducts = allProducts.filter(
-          (item: any) => item.category === name
-        );
+        setAllProducts(allProducts);
+        const standardByGroup = new Map(productGroups.map((group: any) => [group.id, group.standardProductId]));
+        const filteredProducts = allProducts.filter((item: any) => {
+          if (item.category !== name) return false;
+          if (!item.groupId) return true;
+          const standardId = standardByGroup.get(String(item.groupId));
+          return standardId ? item.id === standardId : true;
+        });
 
         setProducts(filteredProducts);
       },
@@ -46,8 +53,15 @@ export default function SectionScreen() {
     );
 
   return unsubscribe;
-}, [name]);
+}, [name, productGroups]);
     
+  useEffect(() => {
+    const unsubscribe = db.collection("productGroups").onSnapshot((snapshot) => {
+      setProductGroups(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    }, (error) => console.log("Product groups listener:", error.message));
+    return unsubscribe;
+  }, []);
+
   useEffect(() => {
     loadCategories();
 }, [name]);
@@ -191,12 +205,14 @@ export default function SectionScreen() {
                   id={item.id}
                   name={item.name}
                   price={item.price}
+        mrp={Number(item.mrp ?? item.price)}
                   stock={item.stock}
                   image={item.image}
                   protext={item.protext ?? item.description}
                   rating={item.rating}
                   unit={item.unit}
                   maxOrderQty={item.maxOrderQty}
+                  availableOptions={item.groupId ? allProducts.filter((option: any) => option.groupId === item.groupId) : []}
                 />
               </View>
             )}

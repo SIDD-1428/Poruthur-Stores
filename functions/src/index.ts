@@ -90,6 +90,7 @@ export const restoreStockAfterCancellation = onDocumentUpdated(
             db.collection("products").doc(item.productId),
             {
               stock: admin.firestore.FieldValue.increment(item.quantity),
+              popularityCount: admin.firestore.FieldValue.increment(-Number(item.quantity || 0)),
             }
           );
         }
@@ -176,8 +177,10 @@ export const processNewOrder = onDocumentCreated(
         }
 
         for (const update of updates) {
+          const orderedItem = (latestOrder.items || []).find((item: any) => item.productId === update.ref.id);
           transaction.update(update.ref, {
             stock: update.newStock,
+            popularityCount: admin.firestore.FieldValue.increment(Number(orderedItem?.quantity || 0)),
           });
         }
 

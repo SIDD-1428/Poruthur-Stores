@@ -53,6 +53,7 @@ export default function Checkout() {
     0
   );
 
+  const totalSavings = cart.reduce((sum, item) => sum + Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity, 0);
   const deliveryCharge = subtotal >= 999 ? 0 : 30;
   const discount = 0;
   const grandTotal = subtotal + deliveryCharge - discount;
@@ -219,11 +220,14 @@ export default function Checkout() {
           name: item.name,
           quantity: item.quantity,
           unitPrice: item.price,
+          mrp: Number(item.mrp ?? item.price),
           totalPrice: item.price * item.quantity,
+          savings: Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity,
           image: item.image || "",
         })),
         pricing: {
           subtotal,
+          savings: cart.reduce((sum, item) => sum + Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity, 0),
           deliveryCharge,
           discount,
           grandTotal,
@@ -820,6 +824,7 @@ export default function Checkout() {
         Bill Summary
       </Text>
 
+      {totalSavings > 0 ? <View style={styles.summaryRow}><Text style={styles.summaryLabel}>You save</Text><Text style={[styles.summaryValue, { color: "#18864B" }]}>₹{totalSavings.toFixed(2)}</Text></View> : null}
       <View style={styles.summaryRow}>
         <Text style={styles.summaryLabel}>
           Subtotal

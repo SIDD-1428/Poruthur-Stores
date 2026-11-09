@@ -37,6 +37,7 @@ const Colors = {
 export default function SearchScreen() {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,14 +65,24 @@ export default function SearchScreen() {
   try {
     setIsLoading(true);
 
-    const snapshot = await db
-      .collection("products")
-      .get();
+    const [snapshot, groupsSnapshot] = await Promise.all([
+      db.collection("products").get(),
+      db.collection("productGroups").get(),
+    ]);
 
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const allProductData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setAllProducts(allProductData);
+
+    const standardByGroup = new Map(
+      groupsSnapshot.docs.map((doc) => [doc.id, (doc.data() as any).standardProductId])
+    );
+    const data = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((item: any) => {
+        if (!item.groupId) return true;
+        const standardId = standardByGroup.get(String(item.groupId));
+        return standardId ? item.id === standardId : true;
+      });
 
     setProducts(data);
   } catch (error) {
@@ -193,12 +204,14 @@ export default function SearchScreen() {
         id={item.id}
         name={item.name}
         price={item.price}
+        mrp={Number(item.mrp ?? item.price)}
         stock={item.stock}
         image={item.image}
         protext={item.protext}
         rating={item.rating}
         unit={item.unit}
         maxOrderQty={item.maxOrderQty}
+        availableOptions={item.groupId ? allProducts.filter((option: any) => option.groupId === item.groupId) : []}
       />
     </View>
   );

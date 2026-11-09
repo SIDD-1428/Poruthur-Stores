@@ -1,10 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useRef } from "react";
+import { BlurView } from "expo-blur";
+import React, { useRef, useState } from "react";
 import {
   Animated,
+  Dimensions,
   Image,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -12,23 +15,38 @@ import {
 } from "react-native";
 import { useCart } from "../context/CartContext";
 
+type ProductOption = {
+  id: string;
+  name: string;
+  price: number;
+  mrp?: number;
+  unit: string;
+  stock?: number;
+  image?: string;
+  maxOrderQty?: number;
+};
+
 type Props = {
   id: string;
   name: string;
   stock?: number;
   price: number;
+  mrp?: number;
   image: string;
   protext?: string;
   rating: number;
   unit: string;
   width?: number;
   maxOrderQty?: number;
+  availableOptions?: ProductOption[];
+  compactCard?: boolean;
 };
 
 export default function ProductCard({
   id,
   name,
   price,
+  mrp = price,
   stock = 0,
   image,
   protext = "",
@@ -36,8 +54,16 @@ export default function ProductCard({
   unit,
   width = 120,
   maxOrderQty,
+  availableOptions = [],
+  compactCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
+  const [optionsVisible, setOptionsVisible] = useState(false);
+  const [popupFrame, setPopupFrame] = useState({ left: 12, top: 100, width: 260 });
+  const cardRef = useRef<View>(null);
+  const popupScale = useRef(new Animated.Value(0.88)).current;
+  const popupOpacity = useRef(new Animated.Value(0)).current;
+  const otherOptions = availableOptions.filter((option) => option.id !== id);
 
   const itemInCart = cart.find((item) => item.id == id);
   const isOutOfStock = stock <= 0;
@@ -56,6 +82,51 @@ export default function ProductCard({
       Animated.spring(btnScale, { toValue: 1.2, useNativeDriver: true }),
       Animated.spring(btnScale, { toValue: 1, useNativeDriver: true }),
     ]).start();
+
+  const openOptions = (event: any) => {
+    event.stopPropagation();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+    const popupHeight = Math.min(430, 94 + otherOptions.length * 76);
+
+    cardRef.current?.measureInWindow((x, y, cardWidth, cardHeight) => {
+      const gap = 10;
+      // Keep the glass panel comfortably wide for product names and inline cart controls.
+      const availableWidth = Math.min(320, screenWidth - 24);
+      const rightSpace = screenWidth - (x + cardWidth) - gap - 12;
+      const leftSpace = x - gap - 12;
+      const placeRight = rightSpace >= leftSpace;
+      const preferredLeft = placeRight ? x + cardWidth + gap : x - availableWidth - gap;
+      const left = Math.max(12, Math.min(screenWidth - availableWidth - 12, preferredLeft));
+      const top = Math.max(12, Math.min(
+        y + cardHeight / 2 - popupHeight / 2,
+        screenHeight - popupHeight - 12
+      ));
+
+      setPopupFrame({ left, top, width: availableWidth });
+      popupScale.setValue(0.88);
+      popupOpacity.setValue(0);
+      setOptionsVisible(true);
+      requestAnimationFrame(() => {
+        Animated.parallel([
+          Animated.spring(popupScale, {
+            toValue: 1, damping: 17, stiffness: 210, mass: 0.75, useNativeDriver: true,
+          }),
+          Animated.timing(popupOpacity, {
+            toValue: 1, duration: 180, useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    });
+  };
+
+  const closeOptions = () => {
+    Animated.parallel([
+      Animated.timing(popupScale, { toValue: 0.94, duration: 120, useNativeDriver: true }),
+      Animated.timing(popupOpacity, { toValue: 0, duration: 120, useNativeDriver: true }),
+    ]).start(() => setOptionsVisible(false));
+  };
 
   const handleCardPress = () => {
     if (isOutOfStock) return;
@@ -84,6 +155,7 @@ export default function ProductCard({
     id,
     name,
     price,
+    mrp,
     image,
     quantity: 1,
     stock,
@@ -127,6 +199,7 @@ export default function ProductCard({
 
   return (
     <TouchableOpacity
+      ref={cardRef}
       activeOpacity={1}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
@@ -135,6 +208,7 @@ export default function ProductCard({
       <Animated.View
         style={[
           styles.card,
+          compactCard && styles.compactCard,
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -156,7 +230,7 @@ export default function ProductCard({
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: image }}
-            style={[styles.image, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -167,14 +241,18 @@ export default function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={styles.infoContainer}>
-          <Text style={styles.name} numberOfLines={2}>{name}</Text>
-          <Text style={styles.unit}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer]}>
+          <Text style={[styles.name, compactCard && styles.compactName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <Text style={[styles.price, isOutOfStock && { color: "#ABABAB" }]}>
-              ₹{price}
-            </Text>
+            <View>
+              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
+              </View>
+              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
+            </View>
 
             {isOutOfStock ? (
               <View style={styles.unavailableBtn}>
@@ -183,21 +261,32 @@ export default function ProductCard({
 
             ) : !itemInCart ? (
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                <TouchableOpacity
-                  style={styles.addBtn}
-                  onPress={handleAddToCart}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="add" size={12} color="#fff" />
-                  <Text style={styles.addText}>Add</Text>
-                </TouchableOpacity>
+                <View style={styles.actionColumn}>
+                  <TouchableOpacity
+                    style={[styles.addBtn, compactCard && styles.compactAddBtn]}
+                    onPress={handleAddToCart}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="add" size={12} color="#fff" />
+                    <Text style={[styles.addText, compactCard && styles.compactAddText]}>Add</Text>
+                  </TouchableOpacity>
+                  {otherOptions.length > 0 && (
+                    <TouchableOpacity
+                      onPress={openOptions}
+                      activeOpacity={0.7}
+                      hitSlop={6}
+                    >
+                      <Text style={styles.optionsLink}>See other options</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </Animated.View>
 
             ) : (
-              <View style={styles.qtyBox}>
+              <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
                 <TouchableOpacity
                 disabled={false}
-                  style={styles.qtyBtn}
+                  style={[styles.qtyBtn, compactCard && styles.compactQtyBtn]}
                   onPress={handleDecrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
@@ -205,10 +294,10 @@ export default function ProductCard({
                 </TouchableOpacity>
 
 
-                <Text style={styles.qtyText}>{itemInCart.quantity}</Text>
+                <Text style={[styles.qtyText, compactCard && styles.compactQtyText]}>{itemInCart.quantity}</Text>
                 <TouchableOpacity
                   disabled={false}
-                  style={[styles.qtyBtn, styles.qtyBtnAdd]}
+                  style={[styles.qtyBtn, compactCard && styles.compactQtyBtn, styles.qtyBtnAdd]}
                   onPress={handleIncrease}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
@@ -219,6 +308,127 @@ export default function ProductCard({
           </View>
         </View>
       </Animated.View>
+      <Modal
+        visible={optionsVisible}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={closeOptions}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={closeOptions}
+          />
+          <Animated.View
+            style={[
+              styles.optionsPopup,
+              {
+                left: popupFrame.left,
+                top: popupFrame.top,
+                width: popupFrame.width,
+                opacity: popupOpacity,
+                transform: [{ scale: popupScale }],
+              },
+            ]}
+          >
+            <BlurView intensity={85} tint="light" style={StyleSheet.absoluteFill} />
+            <View style={styles.glassHighlight} />
+            <View style={styles.popupContent}>
+              <View style={styles.popupHeader}>
+                <View style={styles.popupHeading}>
+                  <Text style={styles.popupTitle}>Available options</Text>
+                  <Text style={styles.popupSubtitle} numberOfLines={1}>{name}</Text>
+                </View>
+                <TouchableOpacity onPress={closeOptions} hitSlop={8} accessibilityLabel="Close available options">
+                  <Ionicons name="close-circle" size={23} color="#777" />
+                </TouchableOpacity>
+              </View>
+
+              {otherOptions.map((option) => {
+                const optionOutOfStock = (option.stock ?? 0) <= 0;
+                const optionCartItem = cart.find((item) => item.id === option.id);
+                return (
+                  <View key={option.id} style={styles.optionRow}>
+                    <TouchableOpacity
+                      style={styles.optionProductTap}
+                      activeOpacity={0.75}
+                      disabled={optionOutOfStock}
+                      onPress={() => {
+                        closeOptions();
+                        router.push({ pathname: "/product/[id]", params: { id: option.id } });
+                      }}
+                    >
+                      {option.image ? (
+                        <Image
+                          source={{ uri: option.image }}
+                          style={[styles.optionImage, optionOutOfStock && styles.optionImageOutOfStock]}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={styles.optionImagePlaceholder}>
+                          <Ionicons name="image-outline" size={19} color="#A0A7B4" />
+                        </View>
+                      )}
+                      <View style={styles.optionDetails}>
+                        <Text style={styles.optionName} numberOfLines={1}>{option.name}</Text>
+                        <Text style={styles.optionUnit} numberOfLines={1}>{option.unit}</Text>
+                      </View>
+                    </TouchableOpacity>
+                    <View style={styles.optionActionColumn}>
+                      <Text style={styles.optionPrice}>₹{option.price}</Text>
+                      {optionOutOfStock ? (
+                        <Text style={[styles.optionStock, styles.optionOutOfStock]}>Out of stock</Text>
+                      ) : optionCartItem ? (
+                        <View style={styles.optionQtyBox}>
+                          <TouchableOpacity
+                            style={styles.optionQtyButton}
+                            onPress={() => decreaseQty(option.id)}
+                            hitSlop={6}
+                          >
+                            <Ionicons name="remove" size={13} color="#007AFF" />
+                          </TouchableOpacity>
+                          <Text style={styles.optionQtyText}>{optionCartItem.quantity}</Text>
+                          <TouchableOpacity
+                            style={[styles.optionQtyButton, styles.optionQtyButtonAdd]}
+                            onPress={() => increaseQty(option.id)}
+                            hitSlop={6}
+                          >
+                            <Ionicons name="add" size={13} color="#fff" />
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.optionAddButton}
+                          activeOpacity={0.8}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            addToCart({
+                              id: option.id,
+                              name: option.name,
+                              price: option.price,
+                              mrp: option.mrp ?? option.price,
+                              image: option.image ?? "",
+                              quantity: 1,
+                              stock: option.stock ?? 0,
+                              maxOrderQty: option.maxOrderQty,
+                              unit: option.unit,
+                            });
+                          }}
+                        >
+                          <Ionicons name="add" size={13} color="#fff" />
+                          <Text style={styles.optionAddText}>Add</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </TouchableOpacity>
   );
 }
@@ -238,6 +448,20 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+
+  compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
+  compactImage: { height: 64 },
+  compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
+  compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
+  compactUnit: { fontSize: 9, marginBottom: 4 },
+  compactPrice: { fontSize: 11 },
+  compactMrp: { fontSize: 8, marginLeft: 3 },
+  compactSavings: { fontSize: 7, marginTop: 1 },
+  compactAddBtn: { paddingHorizontal: 6, paddingVertical: 4, borderRadius: 7 },
+  compactAddText: { fontSize: 9 },
+  compactQtyBox: { paddingHorizontal: 2, gap: 0 },
+  compactQtyBtn: { width: 17, height: 17 },
+  compactQtyText: { fontSize: 10, minWidth: 14 },
 
   outOfStockCard: { opacity: 0.7 },
 
@@ -315,9 +539,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 4,
   },
 
+  mrp: { fontSize: 10, color: '#999', textDecorationLine: 'line-through', marginLeft: 5 },
+  savings: { fontSize: 9, color: '#18864B', fontWeight: '700', marginTop: 2 },
   price: {
+    flexShrink: 1,
     fontSize: 13,
     fontWeight: "700",
     color: "#1C1C1E",
@@ -329,9 +557,176 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#1C1C1E",
     borderRadius: 8,
-    paddingHorizontal: 9,
+    paddingHorizontal: 7,
     paddingVertical: 5,
     gap: 2,
+  },
+  actionColumn: {
+    alignItems: "flex-end",
+  },
+  optionsLink: {
+    color: "#007AFF",
+    fontSize: 9,
+    fontWeight: "600",
+    marginTop: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(20,25,35,0.08)",
+  },
+  optionsPopup: {
+    position: "absolute",
+    overflow: "hidden",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.82)",
+    backgroundColor: "rgba(248,250,255,0.72)",
+    shadowColor: "#243047",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
+    elevation: 18,
+  },
+  glassHighlight: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.55)",
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  popupContent: {
+    paddingHorizontal: 13,
+    paddingTop: 13,
+    paddingBottom: 5,
+  },
+  popupHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  popupHeading: {
+    flex: 1,
+    marginRight: 12,
+  },
+  popupTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#172033",
+    letterSpacing: -0.25,
+  },
+  popupSubtitle: {
+    fontSize: 11,
+    color: "#667085",
+    marginTop: 2,
+  },
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(80,95,120,0.16)",
+    paddingVertical: 9,
+    gap: 10,
+  },
+  optionProductTap: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  optionImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.7)",
+  },
+  optionImagePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.65)",
+  },
+  optionImageOutOfStock: {
+    opacity: 0.45,
+  },
+  optionDetails: {
+    flex: 1,
+    minWidth: 0,
+  },
+  optionName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#172033",
+    flexShrink: 1,
+  },
+  optionUnit: {
+    fontSize: 10,
+    color: "#667085",
+    marginTop: 3,
+  },
+  optionActionColumn: {
+    minWidth: 76,
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 5,
+  },
+  optionPrice: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#172033",
+  },
+  optionStock: {
+    fontSize: 9,
+    color: "#18864B",
+    marginTop: 3,
+  },
+  optionOutOfStock: {
+    color: "#FF3B30",
+  },
+  optionAddButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1C1C1E",
+    borderRadius: 8,
+    minWidth: 62,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    gap: 3,
+  },
+  optionAddText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  optionQtyBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,122,255,0.10)",
+    borderRadius: 8,
+    padding: 2,
+    gap: 5,
+  },
+  optionQtyButton: {
+    width: 23,
+    height: 23,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,122,255,0.08)",
+  },
+  optionQtyButtonAdd: {
+    backgroundColor: "#007AFF",
+  },
+  optionQtyText: {
+    minWidth: 14,
+    textAlign: "center",
+    color: "#007AFF",
+    fontSize: 11,
+    fontWeight: "700",
   },
   addText: {
     color: "#fff",

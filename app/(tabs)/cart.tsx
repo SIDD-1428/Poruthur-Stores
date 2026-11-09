@@ -27,6 +27,7 @@ export default function Cart() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalSavings = cart.reduce((sum, item) => sum + Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity, 0);
 
   const handleIncrease = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -86,6 +87,7 @@ export default function Cart() {
     <View style={styles.bottomBar}>
       <View style={styles.totalContainer}>
         <Text style={styles.totalLabel}>Total Amount</Text>
+        {totalSavings > 0 ? <Text style={styles.savings}>You save ₹{totalSavings.toFixed(2)} on this cart</Text> : null}
         <Text style={styles.total}>₹{total.toLocaleString()}</Text>
       </View>
       <TouchableOpacity
@@ -111,7 +113,8 @@ export default function Cart() {
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.unit}>{item.unit || "1 kg"}</Text>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>₹{item.price}</Text>
+          <View style={{ flexDirection: "row", alignItems: "baseline" }}><Text style={styles.price}>₹{item.price}</Text>{Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.mrp}>₹{item.mrp}</Text> : null}</View>
+          {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.savings}>You save ₹{((Number(item.mrp) - Number(item.price)) * item.quantity).toFixed(2)}</Text> : null}
           <Text style={styles.totalPrice}>
             ₹{item.price * item.quantity}
           </Text>
@@ -305,10 +308,12 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     gap: 8,
   },
+  mrp: { fontSize: 11, color: '#999', textDecorationLine: 'line-through', marginLeft: 6 },
+  savings: { fontSize: 11, color: '#18864B', fontWeight: '700', marginTop: 2 },
   price: {
     fontSize: 13,
-    color: Colors.muted,
-    textDecorationLine: "line-through",
+    color: Colors.textSecondary,
+    fontWeight: "500",
   },
   totalPrice: {
     fontSize: 15,
