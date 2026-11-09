@@ -35,16 +35,16 @@ export default function BrandProductsScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#000000", "#333333"]} style={styles.header}>
+      <LinearGradient colors={["#173A2A", "#145A3A"]} style={styles.header}>
         <View style={styles.headerRow}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}><Ionicons name="chevron-back" size={23} color="#FFFFFF" /></TouchableOpacity>
           <View style={{ flex: 1 }}><Text style={styles.title} numberOfLines={1}>{name || "Brand"}</Text><Text style={styles.subtitle}>{products.length} products</Text></View>
         </View>
       </LinearGradient>
-      {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#000000" /></View> : (
+      {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#173A2A" /></View> : (
         <FlatList data={products} keyExtractor={item => item.id} numColumns={2} columnWrapperStyle={styles.row} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <View style={styles.cardWrap}><ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? allProducts.filter(option => option.groupId === item.groupId) : []} /></View>}
-          ListEmptyComponent={<View style={styles.empty}><Ionicons name="pricetag-outline" size={44} color="#999999" /><Text style={styles.emptyTitle}>No products available</Text><Text style={styles.emptyText}>There are currently no products listed under this brand.</Text></View>}
+          ListEmptyComponent={<View style={styles.empty}><Ionicons name="pricetag-outline" size={44} color="#87978C" /><Text style={styles.emptyTitle}>No products available</Text><Text style={styles.emptyText}>There are currently no products listed under this brand.</Text></View>}
         />
       )}
       <FloatingCart />
@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
   cardWrap: { width: "48%" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 35, paddingTop: 100 },
-  emptyTitle: { color: "#111111", fontSize: 17, fontWeight: "700", marginTop: 12 },
-  emptyText: { color: "#999999", fontSize: 12, textAlign: "center", marginTop: 6, lineHeight: 18 },
+  emptyTitle: { color: "#173A2A", fontSize: 17, fontWeight: "700", marginTop: 12 },
+  emptyText: { color: "#87978C", fontSize: 12, textAlign: "center", marginTop: 6, lineHeight: 18 },
 });
