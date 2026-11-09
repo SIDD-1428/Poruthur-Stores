@@ -8,12 +8,9 @@ export default function TabLayout(){
   return(
     <Tabs screenOptions={{
       headerShown:false,
-      tabBarActiveTintColor: "black",
-      tabBarInactiveTintColor: "gray",
-      tabBarStyle: {
-        height:60, 
-        paddingBottom: 8
-      },
+      tabBarActiveTintColor: "#176B45",
+      tabBarInactiveTintColor: "#87978C",
+      tabBarStyle: { height: 64, paddingBottom: 8, paddingTop: 6, backgroundColor: "#FFFFFF", borderTopColor: "#E2ECE4", borderTopWidth: 1, elevation: 10, shadowColor: "#145A3A", shadowOpacity: 0.06, shadowRadius: 12 },
     }}>
 
       {/*Home screen*/}
