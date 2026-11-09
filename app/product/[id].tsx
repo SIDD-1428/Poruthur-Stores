@@ -112,6 +112,7 @@ export default function ProductDetail() {
             price: Number(product.price),
             mrp: Number(product.mrp ?? product.price),
             image: product.image,
+            thumbnailUrl: product.thumbnailUrl,
             quantity: 1,
             stock: product.stock,
             maxOrderQty: product.maxOrderQty,
