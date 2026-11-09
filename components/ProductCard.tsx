@@ -261,7 +261,7 @@ function ProductCard({
                 <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
-              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
+              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : uniformCard ? <View style={styles.uniformSavingsPlaceholder} /> : null}
             </View>
 
             {isOutOfStock ? (
@@ -280,7 +280,7 @@ function ProductCard({
                     <Ionicons name="add" size={12} color="#fff" />
                     <Text style={[styles.addText, compactCard && styles.compactAddText]}>Add</Text>
                   </TouchableOpacity>
-                  {otherOptions.length > 0 && (
+                  {otherOptions.length > 0 ? (
                     <TouchableOpacity
                       onPress={openOptions}
                       activeOpacity={0.7}
@@ -288,7 +288,7 @@ function ProductCard({
                     >
                       <Text style={[styles.optionsLink, uniformCard && styles.uniformOptionsLink]}>See other options</Text>
                     </TouchableOpacity>
-                  )}
+                  ) : uniformCard ? <View style={styles.uniformOptionsPlaceholder} /> : null}
                 </View>
               </Animated.View>
 
@@ -464,13 +464,15 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
-  uniformCard: { height: 190 },
+  uniformCard: { height: 196 },
   uniformInfoContainer: { flex: 1, justifyContent: "space-between" },
   uniformName: { height: 26, minHeight: 26 },
   uniformUnit: { height: 14, marginBottom: 3 },
-  uniformPriceBlock: { minHeight: 27, justifyContent: "flex-start" },
-  uniformActionColumn: { minHeight: 42, justifyContent: "flex-start" },
-  uniformOptionsLink: { minHeight: 11, textAlign: "center" },
+  uniformPriceBlock: { height: 25, justifyContent: "flex-start" },
+  uniformSavingsPlaceholder: { height: 9, marginTop: 1 },
+  uniformActionColumn: { height: 42, justifyContent: "flex-start" },
+  uniformOptionsLink: { height: 11, textAlign: "center" },
+  uniformOptionsPlaceholder: { height: 16 },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
