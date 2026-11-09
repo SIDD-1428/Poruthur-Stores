@@ -3,7 +3,8 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useCart } from "../../context/CartContext";
 
 // ── Clean Black/White/Grey Color Scheme ──
@@ -108,16 +109,17 @@ export default function Cart() {
 
   const renderCartItem = ({ item, index }: { item: any; index: number }) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={{ uri: item.image }} style={styles.image} cachePolicy="memory-disk" contentFit="cover" transition={120} />
       <View style={styles.info}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.unit}>{item.unit || "1 kg"}</Text>
         <View style={styles.priceContainer}>
-          <View style={{ flexDirection: "row", alignItems: "baseline" }}><Text style={styles.price}>₹{item.price}</Text>{Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.mrp}>₹{item.mrp}</Text> : null}</View>
+          <View style={styles.unitPriceRow}>
+            <Text style={styles.price}>₹{Number(item.price).toFixed(2)}</Text>
+            {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.mrp}>₹{Number(item.mrp).toFixed(2)}</Text> : null}
+          </View>
           {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.savings}>You save ₹{((Number(item.mrp) - Number(item.price)) * item.quantity).toFixed(2)}</Text> : null}
-          <Text style={styles.totalPrice}>
-            ₹{item.price * item.quantity}
-          </Text>
+          <Text style={styles.totalPrice}>₹{(item.price * item.quantity).toFixed(2)}</Text>
         </View>
       </View>
 
@@ -304,16 +306,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   priceContainer: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 8,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    marginTop: 2,
   },
+  unitPriceRow: { flexDirection: "row", alignItems: "baseline", gap: 6 },
   mrp: { fontSize: 11, color: '#999', textDecorationLine: 'line-through', marginLeft: 6 },
   savings: { fontSize: 11, color: '#18864B', fontWeight: '700', marginTop: 2 },
   price: {
-    fontSize: 13,
-    color: Colors.muted,
-    textDecorationLine: "line-through",
+    fontSize: 14,
+    fontWeight: "700",
+    color: Colors.textPrimary,
+    textDecorationLine: "none",
   },
   totalPrice: {
     fontSize: 15,
