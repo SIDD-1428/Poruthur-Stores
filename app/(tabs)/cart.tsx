@@ -119,7 +119,7 @@ export default function Cart() {
             {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.mrp}>₹{Number(item.mrp).toFixed(2)}</Text> : null}
           </View>
           {Number(item.mrp ?? item.price) > Number(item.price) ? <Text style={styles.savings}>You save ₹{((Number(item.mrp) - Number(item.price)) * item.quantity).toFixed(2)}</Text> : null}
-          <Text style={styles.totalPrice}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+          {item.quantity > 1 ? <Text style={styles.totalPrice}>Line total · ₹{(item.price * item.quantity).toFixed(2)}</Text> : null}
         </View>
       </View>
 
