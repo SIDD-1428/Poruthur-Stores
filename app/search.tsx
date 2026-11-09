@@ -25,13 +25,13 @@ import { db } from "../firebase/config";
 const Colors = {
   background: "#FFFFFF",
   card: "#FFFFFF",
-  surface: "#F5F5F5",
-  textPrimary: "#000000",
-  textSecondary: "#666666",
-  muted: "#999999",
-  separator: "#E8E8E8",
-  primary: "#000000",
-  accent: "#333333",
+  surface: "#F2F7F3",
+  textPrimary: "#173A2A",
+  textSecondary: "#5F7568",
+  muted: "#87978C",
+  separator: "#E2ECE4",
+  primary: "#173A2A",
+  accent: "#145A3A",
 };
 
 export default function SearchScreen() {
