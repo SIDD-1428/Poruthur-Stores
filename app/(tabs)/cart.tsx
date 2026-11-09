@@ -109,7 +109,7 @@ export default function Cart() {
 
   const renderCartItem = ({ item, index }: { item: any; index: number }) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} cachePolicy="memory-disk" contentFit="cover" transition={120} />
+      <Image source={{ uri: item.thumbnailUrl || item.image }} style={styles.image} cachePolicy="memory-disk" contentFit="cover" transition={120} />
       <View style={styles.info}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.unit}>{item.unit || "1 kg"}</Text>
