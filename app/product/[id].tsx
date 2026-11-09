@@ -409,7 +409,7 @@ export default function ProductDetail() {
                             activeOpacity={0.8}
                         >
                             <LinearGradient
-                                colors={["#111111", "#333333"]}
+                                colors={["#111111", "#145A3A"]}
                                 style={styles.addButtonGradient}
                             >
                                 <Ionicons
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     detailsContent: { paddingBottom: 24 },
     hero: {
         height: 252,
-        backgroundColor: "#F5F5F5",
+        backgroundColor: "#F2F7F3",
         overflow: "hidden",
     },
     heroImageWrap: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: "#F2F7F3",
     },
     heroTopRow: {
         position: "absolute",
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(255,255,255,0.92)",
         justifyContent: "center",
         alignItems: "center",
-        shadowColor: "#000000",
+        shadowColor: "#173A2A",
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
         fontSize: 23,
         lineHeight: 29,
         fontWeight: "800",
-        color: "#171717",
+        color: "#173A2A",
         letterSpacing: -0.55,
     },
     metaRow: {
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 6,
     },
-    unit: { fontSize: 11, color: "#666666", fontWeight: "600" },
+    unit: { fontSize: 11, color: "#5F7568", fontWeight: "600" },
     ratingContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 14,
         borderRadius: 18,
-        backgroundColor: "#F7F7F7",
+        backgroundColor: "#F4F8F4",
         borderWidth: 1,
         borderColor: "#EAEAEA",
     },
@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 27,
         fontWeight: "900",
-        color: "#171717",
+        color: "#173A2A",
         letterSpacing: -0.8,
     },
     mrp: {
@@ -659,14 +659,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 8,
     },
-    savings: { color: "#333333", fontSize: 10, fontWeight: "800" },
+    savings: { color: "#145A3A", fontSize: 10, fontWeight: "800" },
     priceUnitPill: {
         backgroundColor: "#EEEEEE",
         borderRadius: 30,
         paddingHorizontal: 10,
         paddingVertical: 7,
     },
-    priceUnitText: { fontSize: 10, color: "#666666", fontWeight: "700" },
+    priceUnitText: { fontSize: 10, color: "#5F7568", fontWeight: "700" },
     variantSection: {
         marginHorizontal: 20,
         marginTop: 20,
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     variantHint: {
-        color: "#999999",
+        color: "#87978C",
         fontSize: 9,
         fontWeight: "800",
         letterSpacing: 1,
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         padding: 4,
         borderWidth: 1,
-        borderColor: "#E8E8E8",
+        borderColor: "#E2ECE4",
     },
     variantOptions: {
         flexDirection: "row",
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 14,
         fontWeight: "800",
-        color: "#1A1A1A",
+        color: "#173A2A",
         marginBottom: 2,
         letterSpacing: -0.2,
     },
@@ -715,8 +715,8 @@ const styles = StyleSheet.create({
         backgroundColor: "transparent",
     },
     variantOptionSelected: {
-        backgroundColor: "#222222",
-        shadowColor: "#000000",
+        backgroundColor: "#234B35",
+        shadowColor: "#173A2A",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.16,
         shadowRadius: 5,
@@ -724,7 +724,7 @@ const styles = StyleSheet.create({
     },
     variantOptionDisabled: { opacity: 0.38 },
     variantUnit: {
-        color: "#333333",
+        color: "#145A3A",
         fontSize: 11,
         fontWeight: "700",
         textAlign: "center",
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
     infoCard: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: "#F2F7F3",
         marginHorizontal: 20,
         marginTop: 15,
         padding: 12,
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
     addButton: {
         borderRadius: 17,
         overflow: "hidden",
-        shadowColor: "#000000",
+        shadowColor: "#173A2A",
         shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.18,
         shadowRadius: 10,
@@ -797,7 +797,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignSelf: "center",
         minWidth: 180,
-        backgroundColor: "#222222",
+        backgroundColor: "#234B35",
         borderRadius: 17,
         paddingHorizontal: 16,
         paddingVertical: 8,
