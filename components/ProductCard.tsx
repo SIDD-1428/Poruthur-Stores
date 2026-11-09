@@ -42,6 +42,7 @@ type Props = {
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
   compactCard?: boolean;
+  squareCard?: boolean;
 };
 
 function ProductCard({
@@ -59,6 +60,7 @@ function ProductCard({
   maxOrderQty,
   availableOptions = [],
   compactCard = false,
+  squareCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -213,6 +215,7 @@ function ProductCard({
         style={[
           styles.card,
           compactCard && styles.compactCard,
+          squareCard && styles.squareCard,
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -231,13 +234,13 @@ function ProductCard({
         )}
 
         {/* Image */}
-        <View style={styles.imageContainer}>
+        <View style={[styles.imageContainer, squareCard && styles.squareImageContainer]}>
           <Image
             source={{ uri: thumbnailUrl || image }}
             cachePolicy="memory-disk"
             contentFit="cover"
             transition={120}
-            style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, squareCard && styles.squareImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -248,17 +251,17 @@ function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer]}>
-          <Text style={[styles.name, compactCard && styles.compactName]} numberOfLines={2}>{name}</Text>
-          <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, squareCard && styles.squareInfoContainer]}>
+          <Text style={[styles.name, compactCard && styles.compactName, squareCard && styles.squareName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit, squareCard && styles.squareUnit]} numberOfLines={1}>{unit}</Text>
 
-          <View style={styles.bottomRow}>
-            <View style={styles.priceBlock}>
+          <View style={[styles.bottomRow, squareCard && styles.squareBottomRow]}>
+            <View style={[styles.priceBlock, squareCard && styles.squarePriceBlock]}>
               <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
-                <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
-                {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
+                <Text style={[styles.price, compactCard && styles.compactPrice, squareCard && styles.squarePrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp, squareCard && styles.squareMrp]}>₹{mrp}</Text> : null}
               </View>
-              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
+              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings, squareCard && styles.squareSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
             </View>
 
             {isOutOfStock ? (
@@ -268,14 +271,14 @@ function ProductCard({
 
             ) : !itemInCart ? (
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                <View style={styles.actionColumn}>
+                <View style={[styles.actionColumn, squareCard && styles.squareActionColumn]}>
                   <TouchableOpacity
-                    style={[styles.addBtn, compactCard && styles.compactAddBtn]}
+                    style={[styles.addBtn, compactCard && styles.compactAddBtn, squareCard && styles.squareAddBtn]}
                     onPress={handleAddToCart}
                     activeOpacity={0.8}
                   >
                     <Ionicons name="add" size={12} color="#fff" />
-                    <Text style={[styles.addText, compactCard && styles.compactAddText]}>Add</Text>
+                    <Text style={[styles.addText, compactCard && styles.compactAddText, squareCard && styles.squareAddText]}>Add</Text>
                   </TouchableOpacity>
                   {otherOptions.length > 0 && (
                     <TouchableOpacity
@@ -283,14 +286,14 @@ function ProductCard({
                       activeOpacity={0.7}
                       hitSlop={6}
                     >
-                      <Text style={styles.optionsLink}>See other options</Text>
+                      <Text style={[styles.optionsLink, squareCard && styles.squareOptionsLink]}>See other options</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               </Animated.View>
 
             ) : (
-              <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
+              <View style={[styles.qtyBox, compactCard && styles.compactQtyBox, squareCard && styles.squareQtyBox]}>
                 <TouchableOpacity
                 disabled={false}
                   style={[styles.qtyBtn, compactCard && styles.compactQtyBtn]}
@@ -459,8 +462,17 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
+  squareCard: { height: 120, borderRadius: 12 },
   compactImage: { height: 64 },
+  squareImageContainer: { height: 42 },
+  squareImage: { height: 42 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
+  squareInfoContainer: { flex: 1, paddingHorizontal: 6, paddingTop: 4, paddingBottom: 5, justifyContent: "space-between" },
+  squareName: { fontSize: 9, lineHeight: 11, minHeight: 22 },
+  squareUnit: { fontSize: 8, marginTop: 0, marginBottom: 2 },
+  squarePrice: { fontSize: 10 },
+  squareMrp: { fontSize: 7, marginLeft: 2 },
+  squareSavings: { fontSize: 6, marginTop: 0 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
   compactUnit: { fontSize: 9, marginBottom: 4 },
   compactPrice: { fontSize: 11 },
@@ -468,6 +480,13 @@ const styles = StyleSheet.create({
   compactSavings: { fontSize: 7, marginTop: 1 },
   compactAddBtn: { minWidth: 66, minHeight: 25, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   compactAddText: { fontSize: 9 },
+  squareBottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 3 },
+  squarePriceBlock: { flex: 1, width: "auto", minWidth: 0 },
+  squareActionColumn: { width: 48, alignItems: "stretch", flexShrink: 0 },
+  squareAddBtn: { width: 48, minWidth: 0, minHeight: 22, paddingHorizontal: 2, paddingVertical: 2, borderRadius: 7, gap: 1 },
+  squareAddText: { fontSize: 8 },
+  squareOptionsLink: { fontSize: 6, marginTop: 2, textAlign: "center" },
+  squareQtyBox: { width: 48, minWidth: 0, minHeight: 22, paddingHorizontal: 1, paddingVertical: 1, gap: 0, borderRadius: 7 },
   compactQtyBox: { minWidth: 66, minHeight: 25, paddingHorizontal: 2, paddingVertical: 2, gap: 1 },
   compactQtyBtn: { width: 20, height: 20, borderRadius: 6 },
   compactQtyText: { fontSize: 10, minWidth: 14 },
