@@ -2,11 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
-import React, { useRef, useState } from "react";
+import React, { memo, useRef, useState } from "react";
+import { Image } from "expo-image";
 import {
   Animated,
   Dimensions,
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -42,7 +42,7 @@ type Props = {
   compactCard?: boolean;
 };
 
-export default function ProductCard({
+function ProductCard({
   id,
   name,
   price,
@@ -230,6 +230,9 @@ export default function ProductCard({
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: image }}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            transition={120}
             style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
@@ -246,8 +249,8 @@ export default function ProductCard({
           <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <View>
-              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+            <View style={styles.priceBlock}>
+              <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
                 <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
@@ -364,7 +367,8 @@ export default function ProductCard({
                         <Image
                           source={{ uri: option.image }}
                           style={[styles.optionImage, optionOutOfStock && styles.optionImageOutOfStock]}
-                          resizeMode="cover"
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
                         />
                       ) : (
                         <View style={styles.optionImagePlaceholder}>
@@ -536,10 +540,11 @@ const styles = StyleSheet.create({
   },
 
   bottomRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 5,
   },
+  priceBlock: { width: "100%", minWidth: 0 },
 
   mrp: { fontSize: 10, color: '#999', textDecorationLine: 'line-through', marginLeft: 5 },
   savings: { fontSize: 9, color: '#18864B', fontWeight: '700', marginTop: 2 },
@@ -552,6 +557,7 @@ const styles = StyleSheet.create({
 
   addBtn: {
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#1C1C1E",
     borderRadius: 8,
@@ -561,6 +567,8 @@ const styles = StyleSheet.create({
   },
   actionColumn: {
     alignItems: "flex-end",
+    alignSelf: "flex-end",
+    maxWidth: "100%",
   },
   optionsLink: {
     color: "#007AFF",
