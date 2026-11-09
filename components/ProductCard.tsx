@@ -2,11 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
-import React, { useRef, useState } from "react";
+import React, { memo, useRef, useState } from "react";
+import { Image } from "expo-image";
 import {
   Animated,
   Dimensions,
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -23,6 +23,7 @@ type ProductOption = {
   unit: string;
   stock?: number;
   image?: string;
+  thumbnailUrl?: string;
   maxOrderQty?: number;
 };
 
@@ -33,6 +34,7 @@ type Props = {
   price: number;
   mrp?: number;
   image: string;
+  thumbnailUrl?: string;
   protext?: string;
   rating: number;
   unit: string;
@@ -42,13 +44,14 @@ type Props = {
   compactCard?: boolean;
 };
 
-export default function ProductCard({
+function ProductCard({
   id,
   name,
   price,
   mrp = price,
   stock = 0,
   image,
+  thumbnailUrl,
   protext = "",
   rating,
   unit,
@@ -157,6 +160,7 @@ export default function ProductCard({
     price,
     mrp,
     image,
+    thumbnailUrl,
     quantity: 1,
     stock,
     maxOrderQty,
@@ -229,7 +233,10 @@ export default function ProductCard({
         {/* Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: image }}
+            source={{ uri: thumbnailUrl || image }}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            transition={120}
             style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
@@ -246,8 +253,8 @@ export default function ProductCard({
           <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <View>
-              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+            <View style={styles.priceBlock}>
+              <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
                 <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
@@ -362,9 +369,10 @@ export default function ProductCard({
                     >
                       {option.image ? (
                         <Image
-                          source={{ uri: option.image }}
+                          source={{ uri: option.thumbnailUrl || option.image }}
                           style={[styles.optionImage, optionOutOfStock && styles.optionImageOutOfStock]}
-                          resizeMode="cover"
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
                         />
                       ) : (
                         <View style={styles.optionImagePlaceholder}>
@@ -410,6 +418,7 @@ export default function ProductCard({
                               price: option.price,
                               mrp: option.mrp ?? option.price,
                               image: option.image ?? "",
+                              thumbnailUrl: option.thumbnailUrl,
                               quantity: 1,
                               stock: option.stock ?? 0,
                               maxOrderQty: option.maxOrderQty,
@@ -457,10 +466,10 @@ const styles = StyleSheet.create({
   compactPrice: { fontSize: 11 },
   compactMrp: { fontSize: 8, marginLeft: 3 },
   compactSavings: { fontSize: 7, marginTop: 1 },
-  compactAddBtn: { paddingHorizontal: 6, paddingVertical: 4, borderRadius: 7 },
+  compactAddBtn: { minWidth: 66, minHeight: 25, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   compactAddText: { fontSize: 9 },
-  compactQtyBox: { paddingHorizontal: 2, gap: 0 },
-  compactQtyBtn: { width: 17, height: 17 },
+  compactQtyBox: { minWidth: 66, minHeight: 25, paddingHorizontal: 2, paddingVertical: 2, gap: 1 },
+  compactQtyBtn: { width: 20, height: 20, borderRadius: 6 },
   compactQtyText: { fontSize: 10, minWidth: 14 },
 
   outOfStockCard: { opacity: 0.7 },
@@ -536,10 +545,11 @@ const styles = StyleSheet.create({
   },
 
   bottomRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 5,
   },
+  priceBlock: { width: "100%", minWidth: 0 },
 
   mrp: { fontSize: 10, color: '#999', textDecorationLine: 'line-through', marginLeft: 5 },
   savings: { fontSize: 9, color: '#18864B', fontWeight: '700', marginTop: 2 },
@@ -551,22 +561,30 @@ const styles = StyleSheet.create({
   },
 
   addBtn: {
+    width: "100%",
+    minWidth: 0,
+    minHeight: 32,
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#1C1C1E",
-    borderRadius: 8,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    gap: 2,
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 3,
   },
   actionColumn: {
-    alignItems: "flex-end",
+    width: "100%",
+    alignItems: "stretch",
+    alignSelf: "stretch",
+    maxWidth: "100%",
   },
   optionsLink: {
     color: "#007AFF",
     fontSize: 9,
     fontWeight: "600",
     marginTop: 5,
+    textAlign: "center",
   },
   modalOverlay: {
     flex: 1,
@@ -733,34 +751,43 @@ const styles = StyleSheet.create({
   },
 
   qtyBox: {
+    width: "100%",
+    minWidth: 0,
+    alignSelf: "stretch",
+    minHeight: 32,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#EBF4FF",
-    borderRadius: 8,
+    justifyContent: "space-between",
+    backgroundColor: "#F1F3F5",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 9,
     paddingHorizontal: 3,
     paddingVertical: 2,
-    gap: 1,
+    gap: 3,
   },
   qtyBtn: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    backgroundColor: "#EBF4FF",
+    width: 25,
+    height: 25,
+    borderRadius: 7,
+    backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
   },
   qtyBtnAdd: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#1C1C1E",
   },
   qtyText: {
-    color: "#007AFF",
-    fontSize: 11,
+    color: "#1C1C1E",
+    fontSize: 12,
     fontWeight: "700",
     minWidth: 18,
     textAlign: "center",
   },
 
   unavailableBtn: {
+    width: "100%",
+    alignItems: "center",
     backgroundColor: "#F5F5F7",
     paddingHorizontal: 9,
     paddingVertical: 5,
@@ -774,3 +801,6 @@ const styles = StyleSheet.create({
     color: "#ABABAB",
   },
 });
+
+
+export default memo(ProductCard);

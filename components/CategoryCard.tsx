@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React from "react";
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { memo } from "react";
+import { Image } from "expo-image";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const Colors={
     card:"#FFFFFF",
@@ -22,7 +23,7 @@ const {width: SCREEN_WIDTH}=Dimensions.get("window");
 
 const CARD_WIDTH=(SCREEN_WIDTH-54)/2;
 
-export default function CategoryCard({
+function CategoryCard({
     title,
     subtitle,
     image,
@@ -46,7 +47,9 @@ export default function CategoryCard({
             <Image
             source={{ uri: image }}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={120}
             />
         ) : (
             <Ionicons
@@ -152,3 +155,5 @@ image: {
     height: "100%",
 },
 });
+
+export default memo(CategoryCard);

@@ -3,6 +3,7 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
+import { Image } from "expo-image";
 import React, {
     useEffect,
     useRef,
@@ -11,7 +12,6 @@ import React, {
 import {
     Animated,
     Dimensions,
-    Image,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -112,6 +112,7 @@ export default function ProductDetail() {
             price: Number(product.price),
             mrp: Number(product.mrp ?? product.price),
             image: product.image,
+            thumbnailUrl: product.thumbnailUrl,
             quantity: 1,
             stock: product.stock,
             maxOrderQty: product.maxOrderQty,
@@ -184,7 +185,9 @@ export default function ProductDetail() {
                     <Image
                         source={{ uri: product.image }}
                         style={styles.image}
-                        resizeMode="contain"
+                        contentFit="contain"
+                        cachePolicy="memory-disk"
+                        transition={150}
                         onLoadStart={() => setImageLoaded(false)}
                         onLoadEnd={() => setImageLoaded(true)}
                     />
