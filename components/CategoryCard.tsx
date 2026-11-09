@@ -155,3 +155,5 @@ image: {
     height: "100%",
 },
 });
+
+export default memo(CategoryCard);
