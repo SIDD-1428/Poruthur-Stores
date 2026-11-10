@@ -4,7 +4,7 @@
     "slug": "grocery-app",
     "version": "1.0.0",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "updates": {
       "url": "https://u.expo.dev/701a9af0-98d1-45e6-b6cc-723f8255793d"
