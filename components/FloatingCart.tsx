@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
-import { Animated, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const Colors = {
   background: "#FFFFFF",
@@ -105,7 +105,7 @@ export default function FloatingCart() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Animated.View
         style={[
           styles.wrapper,
@@ -143,7 +143,7 @@ export default function FloatingCart() {
           </View>
         </TouchableOpacity>
       </Animated.View>
-    </SafeAreaView>
+    </View>
   );
 }
 
