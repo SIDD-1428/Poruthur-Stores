@@ -16,8 +16,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#777777",
         tabBarStyle: {
           position: "absolute",
-          left: "10%",
-          right: "10%",
+          left: "15%",
+          right: "15%",
           width: undefined,
           bottom: 18,
           height: 64,
@@ -26,14 +26,14 @@ export default function TabLayout() {
           borderRadius: 32,
           borderTopWidth: 0,
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.72)",
+          borderColor: "rgba(255,255,255,0.82)",
           backgroundColor: "transparent",
           overflow: "hidden",
           shadowColor: "#172033",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.18,
-          shadowRadius: 24,
-          elevation: 18,
+          shadowOffset: { width: 0, height: 9 },
+          shadowOpacity: 0.2,
+          shadowRadius: 26,
+          elevation: 20,
         },
         tabBarBackground: () => (
           <View style={StyleSheet.absoluteFill}>
@@ -43,8 +43,9 @@ export default function TabLayout() {
               experimentalBlurMethod="dimezisBlurView"
               style={StyleSheet.absoluteFill}
             />
-            <View pointerEvents="none" style={styles.glassTint} />
-            <View pointerEvents="none" style={styles.glassHighlight} />
+            <View pointerEvents="none" style={styles.glassMilk} />
+            <View pointerEvents="none" style={styles.glassTopSheen} />
+            <View pointerEvents="none" style={styles.glassLowerEdge} />
           </View>
         ),
         tabBarLabelStyle: {
@@ -103,17 +104,26 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  glassTint: {
+  glassMilk: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(245, 249, 255, 0.12)",
+    backgroundColor: "rgba(246, 249, 255, 0.16)",
   },
-  glassHighlight: {
+  glassTopSheen: {
     position: "absolute",
     top: 1,
-    left: 18,
-    right: 18,
+    left: 22,
+    right: 22,
     height: 1,
     borderRadius: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+  },
+  glassLowerEdge: {
+    position: "absolute",
+    bottom: 1,
+    left: 26,
+    right: 26,
+    height: 1,
+    borderRadius: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.42)",
   },
 });
