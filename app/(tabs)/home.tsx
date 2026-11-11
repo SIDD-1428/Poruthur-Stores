@@ -7,10 +7,11 @@ import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
+import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
@@ -302,17 +303,22 @@ export default function CustomerHome() {
             <View style={styles.headingCopy}><Text style={styles.sectionTitle}>Shop by Favourite Brands</Text><Text style={styles.sectionSubtitle}>Discover the brands you love</Text></View>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRail}>
-            {sortedBrands.map((brand: any) => (
-              <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
-                {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
-                  <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
-                    <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
-                  </LinearGradient>
-                </ImageBackground> : <View style={styles.brandFallback}>
-                  <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
-                  <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text></View>
-                </View>}
-              </TouchableOpacity>
+            {Array.from({ length: Math.ceil(sortedBrands.length / 3) }, (_, columnIndex) => (
+              <View key={columnIndex} style={styles.brandColumn}>
+                {sortedBrands.slice(columnIndex * 3, columnIndex * 3 + 3).map((brand: any) => (
+                  <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
+                    {brand.imageUrl ? <View style={styles.brandImageBackground}>
+                      <ExpoImage source={{ uri: brand.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={150} />
+                      <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
+                        <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
+                      </LinearGradient>
+                    </View> : <View style={styles.brandFallback}>
+                      <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
+                      <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text></View>
+                    </View>}
+                  </TouchableOpacity>
+                ))}
+              </View>
             ))}
           </ScrollView>
         </>}
@@ -360,8 +366,9 @@ const styles = StyleSheet.create({
   showMoreButton: { marginHorizontal: 18, marginTop: 2, marginBottom: 14, paddingVertical: 12, borderRadius: 13, borderWidth: 1, borderColor: Colors.separator, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   showMoreText: { color: Colors.textPrimary, fontSize: 12, fontWeight: "700" },
   brandHeading: { marginTop: 18 },
-  brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
+  brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10, alignItems: "flex-start" },
+  brandColumn: { gap: 10 },
+  brandTile: { width: Math.min(164, width * 0.43), height: 68, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
   brandImageBackground: { flex: 1, width: "100%", height: "100%" },
   brandImage: { borderRadius: 13 },
   brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 9 },
