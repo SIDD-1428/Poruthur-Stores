@@ -230,7 +230,7 @@ export default function CustomerHome() {
             <Ionicons
               name={deliveryNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
               size={17}
-              color={deliveryNotice.type === "delivered" ? "#23834F" : "#145A3A"}
+              color={deliveryNotice.type === "delivered" ? "#333333" : "#222222"}
             />
           </View>
           <View style={styles.deliveryStripCopy}>
@@ -254,7 +254,7 @@ export default function CustomerHome() {
               <Text style={styles.deliveryPinValue}>{deliveryNotice.order.delivery?.pin || "----"}</Text>
             </View>
           )}
-          <Ionicons name="chevron-forward" size={15} color="#789084" />
+          <Ionicons name="chevron-forward" size={15} color="#777777" />
         </TouchableOpacity>
       )}
 
