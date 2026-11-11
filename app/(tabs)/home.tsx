@@ -32,6 +32,7 @@ export default function CustomerHome() {
   const [categories, setCategories] = useState<any[]>([]);
   const [deliveryAllowed, setDeliveryAllowed] = useState<boolean | null>(null);
   const [checkingDelivery, setCheckingDelivery] = useState(true);
+  const [deliveryMessage, setDeliveryMessage] = useState("Checking delivery availability...");
   const [showMoreCategories, setShowMoreCategories] = useState(false);
   const [orderNotices, setOrderNotices] = useState<any[]>([]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
@@ -138,17 +139,23 @@ export default function CustomerHome() {
   ), []);
 
   useEffect(() => {
-    if (!address?.pincode) { setCheckingDelivery(false); setDeliveryAllowed(false); return; }
+    if (!address?.pincode) { setCheckingDelivery(false); setDeliveryAllowed(false); setDeliveryMessage("Add a delivery address to check whether we serve your area."); return; }
+    setCheckingDelivery(true);
     return db.collection("settings").doc("delivery").onSnapshot(snapshot => {
-      if (!snapshot.exists) return;
+      if (!snapshot.exists) { setDeliveryAllowed(false); setDeliveryMessage("Delivery availability is currently unavailable. You can browse, but orders are disabled."); setCheckingDelivery(false); return; }
       const data = snapshot.data() as any;
-      if (!data) return;
+      if (!data) { setDeliveryAllowed(false); setDeliveryMessage("Delivery availability is currently unavailable. You can browse, but orders are disabled."); setCheckingDelivery(false); return; }
       const distance = calculateDistance(data.shopLatitude, data.shopLongitude, address.latitude, address.longitude);
       const insideRadius = distance <= data.radiusKm;
       const insidePincode = data.serviceablePincodes?.includes(String(address.pincode)) ?? false;
       setDeliveryAllowed(insideRadius && insidePincode);
+      setDeliveryMessage(!insidePincode
+        ? "We do not deliver to this pincode yet. You can browse products, but ordering is unavailable."
+        : !insideRadius
+          ? "Your address is outside our delivery radius. You can browse products, but ordering is unavailable."
+          : "Delivery is available to your address.");
       setCheckingDelivery(false);
-    }, error => console.log("Delivery settings listener:", error.message));
+    }, error => { console.log("Delivery settings listener:", error.message); setDeliveryAllowed(false); setDeliveryMessage("We could not verify delivery availability. Ordering is temporarily disabled."); setCheckingDelivery(false); });
   }, [address]);
 
   const visibleProducts = useMemo(() => products.filter((product: any) => {
@@ -203,16 +210,6 @@ export default function CustomerHome() {
     router.push({ pathname: "/brand/[id]", params: { id: brand.id, name: brand.name } });
   };
 
-  if (checkingDelivery) return <View style={styles.centerContainer}><Text style={styles.statusTitle}>Checking delivery availability to your area...<Text style={styles.statusSubtitle}>\nHang on...</Text></Text></View>;
-  if (!deliveryAllowed) return (
-    <View style={styles.centerContainer}>
-      <Ionicons name="location-outline" size={70} color={Colors.danger} />
-      <Text style={styles.statusTitle}>Delivery Unavailable</Text>
-      <Text style={styles.statusSubtitle}>We currently don't deliver to your selected address. Please choose another delivery address.</Text>
-      <TouchableOpacity style={styles.changeAddressButton} onPress={() => router.push("/address")}><Text style={styles.changeAddressText}>Change Address</Text></TouchableOpacity>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       {/* Header, address and search are intentionally unchanged. */}
@@ -227,6 +224,19 @@ export default function CustomerHome() {
           <Ionicons name="chevron-down" size={16} color="#FFFFFF" />
         </TouchableOpacity>
       </LinearGradient>
+
+      {!deliveryAllowed && (
+        <View style={styles.deliveryAvailabilityBanner}>
+          <Ionicons name="information-circle" size={20} color="#9A5B00" />
+          <View style={styles.deliveryAvailabilityCopy}>
+            <Text style={styles.deliveryAvailabilityTitle}>{checkingDelivery ? "Checking delivery availability" : "Browsing only — delivery unavailable"}</Text>
+            <Text style={styles.deliveryAvailabilityText}>{checkingDelivery ? "Please wait while we verify your selected address." : deliveryMessage}</Text>
+          </View>
+          <TouchableOpacity onPress={handleAddressPress} style={styles.deliveryAvailabilityAction}>
+            <Text style={styles.deliveryAvailabilityActionText}>Change</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <TouchableOpacity style={styles.searchBox} onPress={handleSearchPress} activeOpacity={0.9}>
         <Ionicons name="search-outline" size={20} color={Colors.muted} /><Text style={styles.searchText}>Search for products</Text>
@@ -382,6 +392,12 @@ const styles = StyleSheet.create({
   profileBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.2)", justifyContent: "center", alignItems: "center" },
   addressContainer: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.15)", paddingHorizontal: 14, paddingVertical: 10, borderRadius: 30, alignSelf: "flex-start" },
   addressText: { fontSize: 13, color: "#FFFFFF", fontWeight: "500", maxWidth: width - 120 },
+  deliveryAvailabilityBanner: { marginHorizontal: 14, marginTop: 10, marginBottom: 5, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: "#FFF6E5", borderWidth: 1, borderColor: "#F3D49A", flexDirection: "row", alignItems: "center", gap: 8 },
+  deliveryAvailabilityCopy: { flex: 1, minWidth: 0 },
+  deliveryAvailabilityTitle: { color: "#805000", fontSize: 12, fontWeight: "800" },
+  deliveryAvailabilityText: { color: "#805000", fontSize: 10, lineHeight: 14, marginTop: 2 },
+  deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
+  deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
