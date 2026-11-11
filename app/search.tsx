@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   StyleSheet,
   Text,
@@ -20,6 +21,9 @@ import {
 
 import ProductCard from "../components/ProductCard";
 import { db } from "../firebase/config";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const PRODUCT_CARD_WIDTH = (SCREEN_WIDTH - 24) * 0.48;
 
 // ── Clean Black/White/Grey Color Scheme ──
 const Colors = {
@@ -202,6 +206,8 @@ export default function SearchScreen() {
     <View style={styles.productCardWrapper}>
       <ProductCard
         id={item.id}
+        width={PRODUCT_CARD_WIDTH}
+        categoryGridCard
         name={item.name}
         price={item.price}
         mrp={Number(item.mrp ?? item.price)}
