@@ -238,7 +238,7 @@ export default function CustomerHome() {
         </View>
       )}
 
-      <TouchableOpacity style={styles.searchBox} onPress={handleSearchPress} activeOpacity={0.9}>
+      <TouchableOpacity style={[styles.searchBox, !deliveryAllowed && styles.searchBoxBelowDeliveryBanner]} onPress={handleSearchPress} activeOpacity={0.9}>
         <Ionicons name="search-outline" size={20} color={Colors.muted} /><Text style={styles.searchText}>Search for products</Text>
       </TouchableOpacity>
 
@@ -399,6 +399,7 @@ const styles = StyleSheet.create({
   deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
   deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
+  searchBoxBelowDeliveryBanner: { marginTop: 8 },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
   noticePage: { width },
