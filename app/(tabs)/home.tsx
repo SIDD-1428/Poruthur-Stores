@@ -11,6 +11,7 @@ import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
+import { Animated, Easing } from "react-native";
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
@@ -34,7 +35,10 @@ export default function CustomerHome() {
   const [deliveryAllowed, setDeliveryAllowed] = useState<boolean | null>(null);
   const [checkingDelivery, setCheckingDelivery] = useState(true);
   const [showMoreCategories, setShowMoreCategories] = useState(false);
-  const [deliveryNotice, setDeliveryNotice] = useState<any>(null);
+  const [orderNotices, setOrderNotices] = useState<any[]>([]);
+  const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
+  const [dismissedNoticeIds, setDismissedNoticeIds] = useState<Set<string>>(() => new Set());
+  const noticeSlide = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -44,11 +48,11 @@ export default function CustomerHome() {
     else setGreeting(`Good evening, ${name}`);
   }, []);
 
-  // Keep the home-screen delivery strip synced with the customer's live order.
+  // Live order notifications: delivery updates and rejected orders.
   useEffect(() => {
     const user = auth().currentUser;
     if (!user) {
-      setDeliveryNotice(null);
+      setOrderNotices([]);
       return;
     }
 
@@ -61,33 +65,72 @@ export default function CustomerHome() {
           if (value instanceof Date) return value.getTime();
           return typeof value?.seconds === "number" ? value.seconds * 1000 : 0;
         };
-        const newestFirst = (a: any, b: any) =>
-          timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
+        const newestFirst = (a: any, b: any) => timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
 
-        const outForDelivery = customerOrders
+        const activeDelivery = customerOrders
           .filter((order: any) => order.status === "Out For Delivery")
-          .sort(newestFirst)[0];
+          .sort(newestFirst)
+          .map((order: any) => ({ type: "out-for-delivery", order }));
 
-        if (outForDelivery) {
-          setDeliveryNotice({ type: "out-for-delivery", order: outForDelivery });
-          return;
-        }
-
-        const deliveredRecently = customerOrders
+        const delivered = customerOrders
           .filter((order: any) => order.status === "Delivered" && order.delivery?.verified === true)
           .filter((order: any) => {
             const verifiedMillis = timestampMillis(order.delivery?.verifiedAt);
             return verifiedMillis > Date.now() - 15 * 60 * 1000;
           })
-          .sort((a: any, b: any) =>
-            timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt)
-          )[0];
+          .sort((a: any, b: any) => timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt))
+          .map((order: any) => ({ type: "delivered", order }));
 
-        setDeliveryNotice(deliveredRecently ? { type: "delivered", order: deliveredRecently } : null);
+        const rejected = customerOrders
+          .filter((order: any) => String(order.status || "").toLowerCase().includes("reject"))
+          .sort(newestFirst)
+          .map((order: any) => ({ type: "rejected", order }));
+
+        const nextNotices = [...rejected, ...activeDelivery, ...delivered]
+          .filter((notice: any) => !dismissedNoticeIds.has(notice.order.id));
+        setOrderNotices(nextNotices);
       },
-      error => console.log("Delivery status listener:", error.message)
+      error => console.log("Order notification listener:", error.message)
     );
-  }, []);
+  }, [dismissedNoticeIds]);
+
+  const activeNotice = orderNotices.length
+    ? orderNotices[activeNoticeIndex % orderNotices.length]
+    : null;
+
+  // Rotate through notifications; delivered notices auto-collapse after 3 seconds.
+  useEffect(() => {
+    if (orderNotices.length < 2) return;
+    const interval = setInterval(() => {
+      Animated.timing(noticeSlide, {
+        toValue: -1,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
+        setActiveNoticeIndex(index => (index + 1) % orderNotices.length);
+        noticeSlide.setValue(1);
+        Animated.timing(noticeSlide, {
+          toValue: 0,
+          duration: 260,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [orderNotices.length, noticeSlide]);
+
+  useEffect(() => {
+    if (activeNotice?.type !== "delivered") return;
+    const orderId = activeNotice.order.id;
+    const timeout = setTimeout(() => {
+      setDismissedNoticeIds(current => new Set(current).add(orderId));
+      setOrderNotices(current => current.filter(notice => notice.order.id !== orderId));
+      setActiveNoticeIndex(0);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [activeNotice?.type, activeNotice?.order?.id]);
 
   // Product catalogue stays live so stock, price and availability remain current.
   useEffect(() => db.collection("products").onSnapshot(
@@ -214,50 +257,78 @@ export default function CustomerHome() {
         <Ionicons name="search-outline" size={20} color={Colors.muted} /><Text style={styles.searchText}>Search for products</Text>
       </TouchableOpacity>
 
-      {deliveryNotice && (
-        <TouchableOpacity
-          activeOpacity={0.88}
-          onPress={() => router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } })}
-          style={[
-            styles.deliveryStrip,
-            deliveryNotice.type === "delivered" && styles.deliveryStripDelivered,
-          ]}
+      {activeNotice && (
+        <Animated.View
+          style={{
+            opacity: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
+            transform: [{ translateX: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [-24, 0, 24] }) }],
+          }}
         >
-          <BlurView intensity={48} tint="light" style={StyleSheet.absoluteFill} />
-          <View style={styles.deliveryStripWash} />
-          <View style={[
-            styles.deliveryStripIcon,
-            deliveryNotice.type === "delivered" && styles.deliveryStripIconDelivered,
-          ]}>
-            <Ionicons
-              name={deliveryNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
-              size={17}
-              color={deliveryNotice.type === "delivered" ? "#333333" : "#222222"}
-            />
-          </View>
-          <View style={styles.deliveryStripCopy}>
-            <Text style={[
-              styles.deliveryStripLabel,
-              deliveryNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => {
+              const orderId = activeNotice.order.id;
+              if (activeNotice.type === "rejected") {
+                setDismissedNoticeIds(current => new Set(current).add(orderId));
+                setOrderNotices(current => current.filter(notice => notice.order.id !== orderId));
+                setActiveNoticeIndex(0);
+              }
+              router.push({ pathname: "/order-details", params: { id: orderId } });
+            }}
+            style={[
+              styles.deliveryStrip,
+              activeNotice.type === "out-for-delivery" && styles.deliveryStripInTransit,
+              activeNotice.type === "delivered" && styles.deliveryStripDelivered,
+              activeNotice.type === "rejected" && styles.deliveryStripRejected,
+            ]}
+          >
+            <View style={[
+              styles.deliveryStripIcon,
+              activeNotice.type === "out-for-delivery" && styles.deliveryStripIconInTransit,
+              activeNotice.type === "delivered" && styles.deliveryStripIconDelivered,
+              activeNotice.type === "rejected" && styles.deliveryStripIconRejected,
             ]}>
-              {deliveryNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
-            </Text>
-            <Text style={styles.deliveryStripDetail} numberOfLines={1}>
-              {deliveryNotice.type === "delivered"
-                ? "Order has been delivered"
-                : deliveryNotice.order.delivery?.associateName
-                  ? `${deliveryNotice.order.delivery.associateName} · ${deliveryNotice.order.delivery.associatePhone || "Contact unavailable"}`
-                  : "Delivery associate details will appear shortly"}
-            </Text>
-          </View>
-          {deliveryNotice.type === "out-for-delivery" && (
-            <View style={styles.deliveryPinBadge}>
-              <Text style={styles.deliveryPinLabel}>OTP</Text>
-              <Text style={styles.deliveryPinValue}>{deliveryNotice.order.delivery?.pin || "----"}</Text>
+              <Ionicons
+                name={activeNotice.type === "rejected" ? "close-circle" : activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
+                size={20}
+                color={activeNotice.type === "rejected" ? "#B42318" : "#16803C"}
+              />
             </View>
-          )}
-          <Ionicons name="chevron-forward" size={15} color="#777777" />
-        </TouchableOpacity>
+            <View style={styles.deliveryStripCopy}>
+              <Text style={[
+                styles.deliveryStripLabel,
+                activeNotice.type === "out-for-delivery" && styles.deliveryStripLabelInTransit,
+                activeNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
+                activeNotice.type === "rejected" && styles.deliveryStripLabelRejected,
+              ]}>
+                {activeNotice.type === "rejected" ? "ORDER REJECTED" : activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
+              </Text>
+              <Text style={styles.deliveryStripDetail} numberOfLines={1}>
+                {activeNotice.type === "rejected"
+                  ? (activeNotice.order.rejectionReason || activeNotice.order.rejection?.reason || activeNotice.order.statusReason || "Please tap to view the order details")
+                  : activeNotice.type === "delivered"
+                    ? "Your order has been delivered successfully"
+                    : activeNotice.order.delivery?.associateName
+                      ? `${activeNotice.order.delivery.associateName} · ${activeNotice.order.delivery.associatePhone || "Contact unavailable"}`
+                      : "Your order is on its way"}
+              </Text>
+              <Text style={styles.deliveryOrderId} numberOfLines={1}>
+                Order ID: {activeNotice.order.orderNumber || activeNotice.order.orderId || activeNotice.order.id}
+              </Text>
+            </View>
+            {activeNotice.type === "out-for-delivery" && (
+              <View style={styles.deliveryPinBadge}>
+                <Text style={styles.deliveryPinLabel}>OTP</Text>
+                <Text style={styles.deliveryPinValue}>{activeNotice.order.delivery?.pin || "----"}</Text>
+              </View>
+            )}
+            {activeNotice.type === "rejected" ? (
+              <View style={styles.markReadButton}>
+                <Text style={styles.markReadText}>Mark read</Text>
+              </View>
+            ) : <Ionicons name="chevron-forward" size={17} color={activeNotice.type === "rejected" ? "#B42318" : "#16803C"} />}
+          </TouchableOpacity>
+        </Animated.View>
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
@@ -339,18 +410,26 @@ const styles = StyleSheet.create({
   addressText: { fontSize: 13, color: "#FFFFFF", fontWeight: "500", maxWidth: width - 120 },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
-  deliveryStrip: { minHeight: 64, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 15, overflow: "hidden", borderWidth: 1, borderColor: "rgba(90,90,90,0.22)", backgroundColor: "rgba(250,250,250,0.78)", flexDirection: "row", alignItems: "center", gap: 8 },
-  deliveryStripDelivered: { minHeight: 46, borderColor: "rgba(35,35,35,0.18)", backgroundColor: "rgba(248,248,248,0.82)" },
-  deliveryStripWash: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.30)" },
-  deliveryStripIcon: { width: 31, height: 31, borderRadius: 11, backgroundColor: "rgba(20,20,20,0.07)", alignItems: "center", justifyContent: "center" },
-  deliveryStripIconDelivered: { backgroundColor: "rgba(20,20,20,0.08)" },
+  deliveryStrip: { minHeight: 68, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16, overflow: "hidden", borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 9 },
+  deliveryStripInTransit: { borderColor: "#B7E4C7", backgroundColor: "#F0FBF3" },
+  deliveryStripDelivered: { borderColor: "#A8DDBB", backgroundColor: "#EAF8EF" },
+  deliveryStripRejected: { borderColor: "#F2B8B5", backgroundColor: "#FFF1F0" },
+  deliveryStripIcon: { width: 34, height: 34, borderRadius: 11, alignItems: "center", justifyContent: "center" },
+  deliveryStripIconInTransit: { backgroundColor: "#D8F3E1" },
+  deliveryStripIconDelivered: { backgroundColor: "#D1F0DC" },
+  deliveryStripIconRejected: { backgroundColor: "#FDE0DE" },
   deliveryStripCopy: { flex: 1, minWidth: 0, justifyContent: "center" },
-  deliveryStripLabel: { color: "#202020", fontSize: 9, fontWeight: "900", letterSpacing: 0.65 },
-  deliveryStripLabelDelivered: { color: "#303030" },
-  deliveryStripDetail: { color: "#555555", fontSize: 10, fontWeight: "600", marginTop: 2 },
-  deliveryPinBadge: { minWidth: 52, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 9, backgroundColor: "rgba(20,20,20,0.07)", alignItems: "center", justifyContent: "center" },
-  deliveryPinLabel: { color: "#777777", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
-  deliveryPinValue: { color: "#171717", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
+  deliveryStripLabel: { fontSize: 10, fontWeight: "900", letterSpacing: 0.55 },
+  deliveryStripLabelInTransit: { color: "#16743A" },
+  deliveryStripLabelDelivered: { color: "#16743A" },
+  deliveryStripLabelRejected: { color: "#B42318" },
+  deliveryStripDetail: { color: "#3F5145", fontSize: 10, fontWeight: "600", marginTop: 2 },
+  deliveryOrderId: { color: "#718078", fontSize: 8, fontWeight: "700", marginTop: 3 },
+  markReadButton: { paddingHorizontal: 7, paddingVertical: 6, borderRadius: 8, backgroundColor: "#FDE0DE" },
+  markReadText: { color: "#B42318", fontSize: 9, fontWeight: "800" },
+  deliveryPinBadge: { minWidth: 48, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 9, backgroundColor: "#D8F3E1", alignItems: "center", justifyContent: "center" },
+  deliveryPinLabel: { color: "#34734A", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
+  deliveryPinValue: { color: "#14532D", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
   scrollContent: { paddingBottom: 20, paddingTop: 2 },
   sectionHeading: { paddingHorizontal: 18, marginTop: 8, marginBottom: 13, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headingCopy: { flex: 1 },
