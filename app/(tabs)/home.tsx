@@ -1,31 +1,32 @@
 import CategoryCard from "@/components/CategoryCard";
 import FloatingCart from "@/components/FloatingCart";
 import ProductCard from "@/components/ProductCard";
-import PromotionalBannerSlider from "@/components/PromotionalBannerSlider";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
-import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
 const { width } = Dimensions.get("window");
 const Colors = {
-  background: "#FFFFFF", card: "#FFFFFF", surface: "#F2F7F3",
-  textPrimary: "#173A2A", textSecondary: "#5F7568", muted: "#87978C",
-  separator: "#E2ECE4", primary: "#173A2A", primaryLight: "#173A2A10",
-  accent: "#145A3A", success: "#23834F", warning: "#FF9500", danger: "#FF3B30",
+  background: "#FFFFFF", card: "#FFFFFF", surface: "#F5F5F5",
+  textPrimary: "#000000", textSecondary: "#666666", muted: "#999999",
+  separator: "#E8E8E8", primary: "#000000", primaryLight: "#00000010",
+  accent: "#333333", success: "#34C759", warning: "#FF9500", danger: "#FF3B30",
 };
 
 export default function CustomerHome() {
+  const insets = useSafeAreaInsets();
   const [products, setProducts] = useState<any[]>([]);
   const [productGroups, setProductGroups] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [address, setAddress] = useState<any>(null);
   const [greeting, setGreeting] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
@@ -42,7 +43,6 @@ export default function CustomerHome() {
     else setGreeting(`Good evening, ${name}`);
   }, []);
 
-  // Keep the home-screen delivery strip synced with the customer's live order.
   useEffect(() => {
     const user = auth().currentUser;
     if (!user) {
@@ -145,24 +145,15 @@ export default function CustomerHome() {
     return counts;
   }, [products]);
 
-  // Deterministic ranking avoids re-randomizing the whole rail on every
-  // Firestore snapshot, reducing unnecessary work and visual movement.
-  const recommendedProducts = useMemo(() => [...visibleProducts]
-    .filter((product: any) => Number(product.stock) > 0)
-    .sort((a: any, b: any) =>
-      (popularity[b.id] || 0) - (popularity[a.id] || 0) ||
-      String(a.name).localeCompare(String(b.name))
-    )
-    .slice(0, 12), [visibleProducts, popularity]);
-
-  const optionsByGroup = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
-    products.forEach((product: any) => {
-      if (!product.groupId) return;
-      (grouped[product.groupId] ||= []).push(product);
-    });
-    return grouped;
-  }, [products]);
+  // Weighted random selection runs when product popularity or availability changes.
+  useEffect(() => {
+    const pool = visibleProducts.filter((product: any) => Number(product.stock) > 0);
+    const selected = pool.map((product: any) => {
+      const weight = 1 + Math.log1p(popularity[product.id] || 0) * 2.5;
+      return { product, sortKey: -Math.log(Math.max(Math.random(), 0.000001)) / weight };
+    }).sort((a, b) => a.sortKey - b.sortKey).slice(0, 20).map(entry => entry.product);
+    setRecommendedProducts(selected);
+  }, [visibleProducts, popularity]);
 
   const visibleCategories = useMemo(() => {
     const used = new Set(products.map((product: any) => product.category));
@@ -208,7 +199,7 @@ export default function CustomerHome() {
   return (
     <View style={styles.container}>
       {/* Header, address and search are intentionally unchanged. */}
-      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: insets.top + 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
         <View style={styles.header}>
           <View><Text style={styles.greeting}>{greeting}</Text><Text style={styles.welcomeText}>Welcome to BonMart</Text></View>
           <TouchableOpacity style={styles.profileBtn} onPress={() => router.push("/profile")}><Ionicons name="person-outline" size={22} color="#FFFFFF" /></TouchableOpacity>
@@ -270,8 +261,7 @@ export default function CustomerHome() {
         </TouchableOpacity>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}>
-        <PromotionalBannerSlider />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
         {/* Recommendations */}
         <View style={styles.sectionHeading}>
           <View style={styles.headingCopy}><Text style={styles.sectionTitle}>Recommended for you</Text><Text style={styles.sectionSubtitle}>Popular picks, refreshed as people shop</Text></View>
@@ -282,7 +272,7 @@ export default function CustomerHome() {
               <View key={columnIndex} style={styles.recommendationColumn}>
                 {[recommendedProducts[columnIndex * 2], recommendedProducts[columnIndex * 2 + 1]].filter(Boolean).map((item: any) => (
                   <View key={item.id} style={styles.recommendationCard}>
-                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} compactCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? optionsByGroup[item.groupId] ?? [] : []} />
+                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} compactCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? products.filter((option: any) => option.groupId === item.groupId) : []} />
                   </View>
                 ))}
               </View>
@@ -315,12 +305,11 @@ export default function CustomerHome() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRail}>
             {sortedBrands.map((brand: any) => (
               <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
-                {brand.imageUrl ? <View style={styles.brandImageBackground}>
-                  <ExpoImage source={{ uri: brand.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={150} />
+                {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
                   <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
                     <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
                   </LinearGradient>
-                </View> : <View style={styles.brandFallback}>
+                </ImageBackground> : <View style={styles.brandFallback}>
                   <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
                   <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text></View>
                 </View>}
@@ -373,11 +362,11 @@ const styles = StyleSheet.create({
   showMoreText: { color: Colors.textPrimary, fontSize: 12, fontWeight: "700" },
   brandHeading: { marginTop: 18 },
   brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F4F8F4", borderWidth: 1, borderColor: "#E2ECE4" },
+  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
   brandImageBackground: { flex: 1, width: "100%", height: "100%" },
   brandImage: { borderRadius: 13 },
   brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 9 },
-  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#173A2A88", textShadowRadius: 5 },
+  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
   brandFallback: { flex: 1, paddingHorizontal: 9, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 8 },
   brandMonogram: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
   brandMonogramText: { fontSize: 20, fontWeight: "900", color: "#111111" },
