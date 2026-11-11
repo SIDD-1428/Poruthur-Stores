@@ -150,10 +150,9 @@ export default function FloatingCart() {
 const styles = StyleSheet.create({
   safeArea: {
     position: "absolute",
-    bottom: 0,
+    bottom: 76,
     left: 0,
     right: 0,
-    paddingBottom: 30,
   },
 
   wrapper: {
@@ -162,10 +161,10 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    backgroundColor: Colors.background,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
     
 
     flexDirection: "row",
@@ -182,10 +181,12 @@ const styles = StyleSheet.create({
       width: 0,
       height: 8,
     },
-    elevation: 8,
+    elevation: 12,
+    zIndex: 30,
 
-    width: "70%",
-    maxWidth: 400,
+    width: "72%",
+    maxWidth: 360,
+    minHeight: 48,
   },
 
   left: {
