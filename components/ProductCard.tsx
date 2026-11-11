@@ -292,7 +292,7 @@ export default function ProductCard({
             </View>
           ) : (
             <View style={styles.bottomRow}>
-              <View style={[styles.priceBlock, uniformCard && styles.uniformPriceBlock]}>
+              <View>
                 <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
                   <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                   {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
