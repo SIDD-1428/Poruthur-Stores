@@ -16,9 +16,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#777777",
         tabBarStyle: {
           position: "absolute",
-          left: "10%",
-          right: "10%",
-          width: undefined,
+          width: "65%",
+          left: "17.5%",
           bottom: 18,
           height: 64,
           paddingTop: 7,
