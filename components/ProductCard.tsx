@@ -43,6 +43,7 @@ type Props = {
   availableOptions?: ProductOption[];
   compactCard?: boolean;
   uniformCard?: boolean;
+  categoryGridCard?: boolean;
 };
 
 export default function ProductCard({
@@ -61,6 +62,7 @@ export default function ProductCard({
   availableOptions = [],
   compactCard = false,
   uniformCard = false,
+  categoryGridCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -215,6 +217,7 @@ export default function ProductCard({
           styles.card,
           compactCard && styles.compactCard,
           uniformCard && styles.uniformCard,
+          categoryGridCard && [styles.categoryGridCard, { height: width * 0.75 }],
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -236,7 +239,7 @@ export default function ProductCard({
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: thumbnailUrl || image }}
-            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, categoryGridCard && styles.categoryGridImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -247,11 +250,39 @@ export default function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer]}>
-          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName]} numberOfLines={2}>{name}</Text>
-          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit]} numberOfLines={1}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer, categoryGridCard && styles.categoryGridInfo]}>
+          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName, categoryGridCard && styles.categoryGridName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit, categoryGridCard && styles.categoryGridUnit]} numberOfLines={1}>{unit}</Text>
 
-          {uniformCard ? (
+          {categoryGridCard ? (
+            <View style={styles.categoryGridContent}>
+              <View style={styles.categoryGridDetails}>
+                <View style={styles.categoryGridNamePrice}>
+                  <Text style={[styles.categoryGridPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                  {Number(mrp) > Number(price) ? <Text style={styles.categoryGridMrp}>₹{mrp}</Text> : null}
+                </View>
+                {Number(mrp) > Number(price) ? <Text style={styles.categoryGridSavings}>Save ₹{(Number(mrp) - Number(price)).toFixed(0)}</Text> : null}
+              </View>
+              <View style={styles.categoryGridAction}>
+                {isOutOfStock ? (
+                  <View style={styles.categoryGridUnavailable}><Text style={styles.categoryGridUnavailableText}>Out of Stock</Text></View>
+                ) : !itemInCart ? (
+                  <Animated.View style={{ transform: [{ scale: btnScale }], width: "100%" }}>
+                    <TouchableOpacity style={styles.categoryGridAddBtn} onPress={handleAddToCart} activeOpacity={0.8}>
+                      <Ionicons name="add" size={13} color="#fff" /><Text style={styles.categoryGridAddText}>Add</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                ) : (
+                  <View style={styles.categoryGridQtyBox}>
+                    <TouchableOpacity style={styles.categoryGridQtyBtn} onPress={handleDecrease}><Ionicons name="remove" size={12} color="#007AFF" /></TouchableOpacity>
+                    <Text style={styles.categoryGridQtyText}>{itemInCart.quantity}</Text>
+                    <TouchableOpacity style={[styles.categoryGridQtyBtn, styles.categoryGridQtyBtnAdd]} onPress={handleIncrease}><Ionicons name="add" size={12} color="#fff" /></TouchableOpacity>
+                  </View>
+                )}
+                {otherOptions.length > 0 && !isOutOfStock && <TouchableOpacity onPress={openOptions} activeOpacity={0.7}><Text style={styles.categoryGridOptions}>Other options</Text></TouchableOpacity>}
+              </View>
+            </View>
+          ) : uniformCard ? (
             <View style={styles.uniformContent}>
               <View style={styles.uniformPriceBlock}>
                 <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
@@ -500,6 +531,27 @@ const styles = StyleSheet.create({
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
   uniformCard: { height: 210 },
+  categoryGridCard: { borderRadius: 12, marginRight: 0, marginBottom: 0, padding: 0, justifyContent: "flex-start" },
+  categoryGridImage: { height: 34, width: "100%" },
+  categoryGridInfo: { flex: 1, paddingHorizontal: 7, paddingTop: 3, paddingBottom: 5, justifyContent: "space-between" },
+  categoryGridName: { fontSize: 10, lineHeight: 12, minHeight: 24, fontWeight: "700" },
+  categoryGridUnit: { fontSize: 8, marginTop: 0, marginBottom: 1 },
+  categoryGridContent: { flex: 1, justifyContent: "space-between" },
+  categoryGridDetails: { minHeight: 22 },
+  categoryGridNamePrice: { flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", gap: 3 },
+  categoryGridPrice: { fontSize: 11, fontWeight: "800", color: "#1C1C1E" },
+  categoryGridMrp: { fontSize: 8, color: "#999", textDecorationLine: "line-through" },
+  categoryGridSavings: { fontSize: 7, color: "#18864B", fontWeight: "700" },
+  categoryGridAction: { width: "100%", alignItems: "center", gap: 1 },
+  categoryGridAddBtn: { width: "100%", minHeight: 20, borderRadius: 6, backgroundColor: "#1C1C1E", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 2 },
+  categoryGridAddText: { color: "#fff", fontSize: 9, fontWeight: "700" },
+  categoryGridUnavailable: { width: "100%", minHeight: 20, borderRadius: 6, backgroundColor: "#F5F5F7", alignItems: "center", justifyContent: "center" },
+  categoryGridUnavailableText: { fontSize: 8, color: "#999", fontWeight: "600" },
+  categoryGridQtyBox: { width: "100%", minHeight: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "#EBF4FF", borderRadius: 6, paddingHorizontal: 5 },
+  categoryGridQtyBtn: { width: 17, height: 17, borderRadius: 5, alignItems: "center", justifyContent: "center", backgroundColor: "#DCEBFF" },
+  categoryGridQtyBtnAdd: { backgroundColor: "#007AFF" },
+  categoryGridQtyText: { fontSize: 9, color: "#007AFF", fontWeight: "700" },
+  categoryGridOptions: { color: "#007AFF", fontSize: 7, fontWeight: "600" },
   uniformImage: { height: 70 },
   uniformInfoContainer: { flex: 1, justifyContent: "flex-start" },
   uniformName: { height: 30, minHeight: 30 },
