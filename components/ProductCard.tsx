@@ -307,7 +307,7 @@ export default function ProductCard({
   
               ) : !itemInCart ? (
                 <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                  <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
+                  <View style={[styles.actionColumn, ]}>
                     <TouchableOpacity
                       style={[styles.addBtn, compactCard && styles.compactAddBtn]}
                       onPress={handleAddToCart}
@@ -324,12 +324,12 @@ export default function ProductCard({
                       >
                         <Text style={[styles.optionsLink, uniformCard && styles.uniformOptionsLink]}>See other options</Text>
                       </TouchableOpacity>
-                    ) : uniformCard ? <View style={styles.uniformOptionsPlaceholder} /> : null}
+                    ) : null}
                   </View>
                 </Animated.View>
   
               ) : (
-                <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
+                <View style={[styles.actionColumn, ]}>
                 <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
                   <TouchableOpacity
                   disabled={false}
