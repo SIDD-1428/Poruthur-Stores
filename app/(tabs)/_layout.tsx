@@ -1,14 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { BlurView } from "expo-blur";
 import { useCart } from "../../context/CartContext";
 
 export default function TabLayout() {
   const { cart } = useCart();
   const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const { width: screenWidth } = useWindowDimensions();
-  const sideInset = screenWidth * 0.09;
 
   return (
     <Tabs
@@ -18,10 +16,9 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#777777",
         tabBarStyle: {
           position: "absolute",
-          left: sideInset,
-          right: sideInset,
-          width: undefined,
-          alignSelf: undefined,
+          left: "9%",
+          width: "82%",
+          right: undefined,
           bottom: 18,
           height: 64,
           paddingTop: 7,
