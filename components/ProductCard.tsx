@@ -162,6 +162,7 @@ export default function ProductCard({
     price,
     mrp,
     image,
+    thumbnailUrl,
     quantity: 1,
     stock,
     maxOrderQty,
