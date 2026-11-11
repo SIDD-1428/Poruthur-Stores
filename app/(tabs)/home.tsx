@@ -78,18 +78,18 @@ export default function CustomerHome() {
           const queue: any[] = [];
           // Only the latest order can produce a rejection notice. This prevents an old,
           // previously rejected order from resurfacing after a newer order is placed.
-          if (latestOrder?.status === "Cancelled" &&
+          if (String(latestOrder?.status || "").trim().toLowerCase() === "cancelled" &&
               latestOrder.cancellationSource === "admin" &&
               String(latestOrder.cancellationReason || "").trim().length > 0 &&
               latestOrder.id !== dismissedRejectionIdRef.current) {
             queue.push({ type: "rejected", order: latestOrder });
           }
 
-          const outForDelivery = sortedOrders.find((order: any) => order.status === "Out For Delivery");
+          const outForDelivery = sortedOrders.find((order: any) => String(order.status || "").trim().toLowerCase() === "out for delivery");
           if (outForDelivery) queue.push({ type: "out-for-delivery", order: outForDelivery });
 
           const deliveredRecently = sortedOrders.find((order: any) =>
-            order.status === "Delivered" &&
+            String(order.status || "").trim().toLowerCase() === "delivered" &&
             order.delivery?.verified === true &&
             timestampMillis(order.delivery?.verifiedAt) > Date.now() - 15 * 60 * 1000
           );
