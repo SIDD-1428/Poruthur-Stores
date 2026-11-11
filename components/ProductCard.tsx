@@ -84,11 +84,23 @@ export default function ProductCard({
     Animated.spring(scale, { toValue: 0.955, useNativeDriver: true }).start();
   const onPressOut = () =>
     Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
-  const animateBtn = () =>
+  const animateBtn = () => {
+    // Always start and finish at the base scale. The Add view can unmount
+    // while the cart counter is shown, interrupting an in-flight animation.
+    btnScale.stopAnimation();
+    btnScale.setValue(1);
     Animated.sequence([
-      Animated.spring(btnScale, { toValue: 1.2, useNativeDriver: true }),
-      Animated.spring(btnScale, { toValue: 1, useNativeDriver: true }),
-    ]).start();
+      Animated.spring(btnScale, { toValue: 1.08, speed: 28, bounciness: 5, useNativeDriver: true }),
+      Animated.spring(btnScale, { toValue: 1, speed: 24, bounciness: 0, useNativeDriver: true }),
+    ]).start(() => btnScale.setValue(1));
+  };
+
+  useEffect(() => {
+    if (!itemInCart) {
+      btnScale.stopAnimation();
+      btnScale.setValue(1);
+    }
+  }, [!!itemInCart]);
 
   const openOptions = (event: any) => {
     event.stopPropagation();
