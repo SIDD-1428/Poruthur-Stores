@@ -16,8 +16,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#777777",
         tabBarStyle: {
           position: "absolute",
-          left: "15%",
-          right: "15%",
+          left: "10%",
+          right: "10%",
           width: undefined,
           bottom: 18,
           height: 64,
@@ -26,7 +26,7 @@ export default function TabLayout() {
           borderRadius: 32,
           borderTopWidth: 0,
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.82)",
+          borderColor: "rgba(255,255,255,0.78)",
           backgroundColor: "transparent",
           overflow: "hidden",
           shadowColor: "#172033",
@@ -40,6 +40,7 @@ export default function TabLayout() {
             <BlurView
               intensity={100}
               tint="light"
+              blurReductionFactor={1}
               experimentalBlurMethod="dimezisBlurView"
               style={StyleSheet.absoluteFill}
             />
@@ -106,7 +107,7 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   glassMilk: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(246, 249, 255, 0.16)",
+    backgroundColor: "rgba(246, 249, 255, 0.08)",
   },
   glassTopSheen: {
     position: "absolute",
