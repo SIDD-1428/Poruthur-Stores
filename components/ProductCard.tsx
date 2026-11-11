@@ -236,7 +236,7 @@ export default function ProductCard({
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: thumbnailUrl || image }}
-            style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -499,7 +499,8 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
-  uniformCard: { height: 196 },
+  uniformCard: { height: 210 },
+  uniformImage: { height: 70 },
   uniformInfoContainer: { flex: 1, justifyContent: "flex-start" },
   uniformName: { height: 30, minHeight: 30 },
   uniformUnit: { height: 14, marginBottom: 3 },
