@@ -1,28 +1,28 @@
 import CategoryCard from "@/components/CategoryCard";
 import FloatingCart from "@/components/FloatingCart";
 import ProductCard from "@/components/ProductCard";
-import PromotionalBannerSlider from "@/components/PromotionalBannerSlider";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
-import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
 const { width } = Dimensions.get("window");
 const Colors = {
-  background: "#FFFFFF", card: "#FFFFFF", surface: "#F2F7F3",
-  textPrimary: "#173A2A", textSecondary: "#5F7568", muted: "#87978C",
-  separator: "#E2ECE4", primary: "#173A2A", primaryLight: "#173A2A10",
-  accent: "#145A3A", success: "#23834F", warning: "#FF9500", danger: "#FF3B30",
+  background: "#FFFFFF", card: "#FFFFFF", surface: "#F5F5F5",
+  textPrimary: "#000000", textSecondary: "#666666", muted: "#999999",
+  separator: "#E8E8E8", primary: "#000000", primaryLight: "#00000010",
+  accent: "#333333", success: "#34C759", warning: "#FF9500", danger: "#FF3B30",
 };
 
 export default function CustomerHome() {
+  const insets = useSafeAreaInsets();
   const [products, setProducts] = useState<any[]>([]);
   const [productGroups, setProductGroups] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
@@ -139,28 +139,16 @@ export default function CustomerHome() {
 
   const popularity = useMemo(() => {
     const counts: Record<string, number> = {};
-    products.forEach((product: any) => {
-      counts[product.id] = Math.max(0, Number(product.popularityCount) || 0);
-    });
+    products.forEach((product: any) => { counts[product.id] = Math.max(0, Number(product.popularityCount) || 0); });
     return counts;
   }, [products]);
-
-  // Deterministic ranking avoids re-randomizing the whole rail on every
-  // Firestore snapshot, reducing unnecessary work and visual movement.
   const recommendedProducts = useMemo(() => [...visibleProducts]
     .filter((product: any) => Number(product.stock) > 0)
-    .sort((a: any, b: any) =>
-      (popularity[b.id] || 0) - (popularity[a.id] || 0) ||
-      String(a.name).localeCompare(String(b.name))
-    )
+    .sort((a: any, b: any) => (popularity[b.id] || 0) - (popularity[a.id] || 0) || String(a.name).localeCompare(String(b.name)))
     .slice(0, 12), [visibleProducts, popularity]);
-
   const optionsByGroup = useMemo(() => {
     const grouped: Record<string, any[]> = {};
-    products.forEach((product: any) => {
-      if (!product.groupId) return;
-      (grouped[product.groupId] ||= []).push(product);
-    });
+    products.forEach((product: any) => { if (product.groupId) (grouped[product.groupId] ||= []).push(product); });
     return grouped;
   }, [products]);
 
@@ -208,7 +196,7 @@ export default function CustomerHome() {
   return (
     <View style={styles.container}>
       {/* Header, address and search are intentionally unchanged. */}
-      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: insets.top + 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
         <View style={styles.header}>
           <View><Text style={styles.greeting}>{greeting}</Text><Text style={styles.welcomeText}>Welcome to BonMart</Text></View>
           <TouchableOpacity style={styles.profileBtn} onPress={() => router.push("/profile")}><Ionicons name="person-outline" size={22} color="#FFFFFF" /></TouchableOpacity>
@@ -270,8 +258,7 @@ export default function CustomerHome() {
         </TouchableOpacity>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}>
-        <PromotionalBannerSlider />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
         {/* Recommendations */}
         <View style={styles.sectionHeading}>
           <View style={styles.headingCopy}><Text style={styles.sectionTitle}>Recommended for you</Text><Text style={styles.sectionSubtitle}>Popular picks, refreshed as people shop</Text></View>
@@ -282,7 +269,7 @@ export default function CustomerHome() {
               <View key={columnIndex} style={styles.recommendationColumn}>
                 {[recommendedProducts[columnIndex * 2], recommendedProducts[columnIndex * 2 + 1]].filter(Boolean).map((item: any) => (
                   <View key={item.id} style={styles.recommendationCard}>
-                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} compactCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? optionsByGroup[item.groupId] ?? [] : []} />
+                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} uniformCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? optionsByGroup[item.groupId] ?? [] : []} />
                   </View>
                 ))}
               </View>
@@ -315,12 +302,11 @@ export default function CustomerHome() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.brandRail}>
             {sortedBrands.map((brand: any) => (
               <TouchableOpacity key={brand.id} style={styles.brandTile} activeOpacity={0.84} onPress={() => handleBrandPress(brand)}>
-                {brand.imageUrl ? <View style={styles.brandImageBackground}>
-                  <ExpoImage source={{ uri: brand.imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={150} />
+                {brand.imageUrl ? <ImageBackground source={{ uri: brand.imageUrl }} style={styles.brandImageBackground} imageStyle={styles.brandImage} resizeMode="cover">
                   <LinearGradient colors={["rgba(0,0,0,0.08)", "rgba(0,0,0,0.78)"]} start={{ x: 0, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.brandImageGradient}>
                     <Text style={styles.brandImageName} numberOfLines={1}>{brand.name}</Text>
                   </LinearGradient>
-                </View> : <View style={styles.brandFallback}>
+                </ImageBackground> : <View style={styles.brandFallback}>
                   <View style={styles.brandMonogram}><Text style={styles.brandMonogramText}>{String(brand.name || "B").trim().charAt(0).toUpperCase()}</Text></View>
                   <View style={styles.brandTileCopy}><Text style={styles.brandName} numberOfLines={1}>{brand.name}</Text></View>
                 </View>}
@@ -345,18 +331,18 @@ const styles = StyleSheet.create({
   addressText: { fontSize: 13, color: "#FFFFFF", fontWeight: "500", maxWidth: width - 120 },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
-  deliveryStrip: { minHeight: 64, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 15, overflow: "hidden", borderWidth: 1, borderColor: "rgba(150,190,165,0.65)", backgroundColor: "rgba(244,252,247,0.72)", flexDirection: "row", alignItems: "center", gap: 8 },
-  deliveryStripDelivered: { minHeight: 46, borderColor: "rgba(35,131,79,0.28)", backgroundColor: "rgba(239,250,243,0.78)" },
-  deliveryStripWash: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.28)" },
-  deliveryStripIcon: { width: 31, height: 31, borderRadius: 11, backgroundColor: "rgba(35,131,79,0.10)", alignItems: "center", justifyContent: "center" },
-  deliveryStripIconDelivered: { backgroundColor: "rgba(35,131,79,0.12)" },
+  deliveryStrip: { minHeight: 64, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 15, overflow: "hidden", borderWidth: 1, borderColor: "rgba(90,90,90,0.22)", backgroundColor: "rgba(250,250,250,0.78)", flexDirection: "row", alignItems: "center", gap: 8 },
+  deliveryStripDelivered: { minHeight: 46, borderColor: "rgba(35,35,35,0.18)", backgroundColor: "rgba(248,248,248,0.82)" },
+  deliveryStripWash: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.30)" },
+  deliveryStripIcon: { width: 31, height: 31, borderRadius: 11, backgroundColor: "rgba(20,20,20,0.07)", alignItems: "center", justifyContent: "center" },
+  deliveryStripIconDelivered: { backgroundColor: "rgba(20,20,20,0.08)" },
   deliveryStripCopy: { flex: 1, minWidth: 0, justifyContent: "center" },
-  deliveryStripLabel: { color: "#145A3A", fontSize: 9, fontWeight: "900", letterSpacing: 0.65 },
-  deliveryStripLabelDelivered: { color: "#23834F" },
-  deliveryStripDetail: { color: "#365A46", fontSize: 10, fontWeight: "600", marginTop: 2 },
-  deliveryPinBadge: { minWidth: 52, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 9, backgroundColor: "rgba(20,90,58,0.09)", alignItems: "center", justifyContent: "center" },
-  deliveryPinLabel: { color: "#63816F", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
-  deliveryPinValue: { color: "#173A2A", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
+  deliveryStripLabel: { color: "#202020", fontSize: 9, fontWeight: "900", letterSpacing: 0.65 },
+  deliveryStripLabelDelivered: { color: "#303030" },
+  deliveryStripDetail: { color: "#555555", fontSize: 10, fontWeight: "600", marginTop: 2 },
+  deliveryPinBadge: { minWidth: 52, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 9, backgroundColor: "rgba(20,20,20,0.07)", alignItems: "center", justifyContent: "center" },
+  deliveryPinLabel: { color: "#777777", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
+  deliveryPinValue: { color: "#171717", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
   scrollContent: { paddingBottom: 20, paddingTop: 2 },
   sectionHeading: { paddingHorizontal: 18, marginTop: 8, marginBottom: 13, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headingCopy: { flex: 1 },
@@ -373,11 +359,11 @@ const styles = StyleSheet.create({
   showMoreText: { color: Colors.textPrimary, fontSize: 12, fontWeight: "700" },
   brandHeading: { marginTop: 18 },
   brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F4F8F4", borderWidth: 1, borderColor: "#E2ECE4" },
+  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
   brandImageBackground: { flex: 1, width: "100%", height: "100%" },
   brandImage: { borderRadius: 13 },
   brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 9 },
-  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#173A2A88", textShadowRadius: 5 },
+  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
   brandFallback: { flex: 1, paddingHorizontal: 9, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 8 },
   brandMonogram: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
   brandMonogramText: { fontSize: 20, fontWeight: "900", color: "#111111" },
