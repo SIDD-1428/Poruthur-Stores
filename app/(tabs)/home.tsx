@@ -10,8 +10,7 @@ import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Animated, Easing } from "react-native";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
@@ -37,7 +36,7 @@ export default function CustomerHome() {
   const [orderNotices, setOrderNotices] = useState<any[]>([]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
   const dismissedNoticeIds = React.useRef<Set<string>>(new Set());
-  const noticeSlide = React.useRef(new Animated.Value(0)).current;
+  const noticeScrollRef = React.useRef<ScrollView>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -96,34 +95,6 @@ export default function CustomerHome() {
   useEffect(() => {
     setActiveNoticeIndex(index => orderNotices.length ? index % orderNotices.length : 0);
   }, [orderNotices.length]);
-
-  // Slide each order notice fully out, switch the order, then slide the next one in.
-  useEffect(() => {
-    if (orderNotices.length < 2) {
-      noticeSlide.stopAnimation();
-      noticeSlide.setValue(0);
-      return;
-    }
-    const interval = setInterval(() => {
-      Animated.timing(noticeSlide, {
-        toValue: -1,
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start(({ finished }) => {
-        if (!finished) return;
-        setActiveNoticeIndex(index => (index + 1) % orderNotices.length);
-        noticeSlide.setValue(1);
-        Animated.timing(noticeSlide, {
-          toValue: 0,
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }).start();
-      });
-    }, 4200);
-    return () => clearInterval(interval);
-  }, [orderNotices.length, noticeSlide]);
 
   useEffect(() => {
     if (activeNotice?.type !== "delivered") return;
@@ -261,51 +232,60 @@ export default function CustomerHome() {
         <Ionicons name="search-outline" size={20} color={Colors.muted} /><Text style={styles.searchText}>Search for products</Text>
       </TouchableOpacity>
 
-      {activeNotice && (
+      {orderNotices.length > 0 && (
         <View style={styles.noticeCarousel}>
-          <Animated.View
-            style={{
-              opacity: 1,
-              transform: [{ translateX: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [-width * 0.32, 0, width * 0.32] }) }],
+          <ScrollView
+            ref={noticeScrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+              const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+              setActiveNoticeIndex(Math.max(0, Math.min(nextIndex, orderNotices.length - 1)));
             }}
           >
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={[
-                styles.deliveryStrip,
-                activeNotice.type === "out-for-delivery" ? styles.deliveryStripInTransit : styles.deliveryStripDelivered,
-              ]}
-              onPress={() => router.push({ pathname: "/order-details", params: { id: activeNotice.order.id } })}
-            >
-              <View style={[
-                styles.deliveryStripIcon,
-                activeNotice.type === "out-for-delivery" ? styles.deliveryStripIconInTransit : styles.deliveryStripIconDelivered,
-              ]}>
-                <Ionicons
-                  name={activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
-                  size={19}
-                  color="#16803C"
-                />
+            {orderNotices.map((notice: any, index: number) => (
+              <View key={notice.order.id} style={styles.noticePage}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  style={[
+                    styles.deliveryStrip,
+                    notice.type === "out-for-delivery" ? styles.deliveryStripInTransit : styles.deliveryStripDelivered,
+                  ]}
+                  onPress={() => router.push({ pathname: "/order-details", params: { id: notice.order.id } })}
+                >
+                  <View style={[
+                    styles.deliveryStripIcon,
+                    notice.type === "out-for-delivery" ? styles.deliveryStripIconInTransit : styles.deliveryStripIconDelivered,
+                  ]}>
+                    <Ionicons
+                      name={notice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
+                      size={19}
+                      color="#16803C"
+                    />
+                  </View>
+                  <View style={styles.deliveryStripCopy}>
+                    <Text style={styles.deliveryStripLabel} numberOfLines={1}>
+                      {notice.type === "delivered" ? "DELIVERY COMPLETE" : orderNotices.length > 1 ? `OUT FOR DELIVERY · ORDER ${index + 1} OF ${orderNotices.length}` : "OUT FOR DELIVERY"}
+                    </Text>
+                    <Text style={styles.deliveryStripDetail} numberOfLines={1}>
+                      {notice.type === "delivered"
+                        ? "Your order has been delivered"
+                        : `#${notice.order.orderNumber || notice.order.orderId || notice.order.id}${notice.order.delivery?.associateName ? ` · ${notice.order.delivery.associateName}` : ""}`}
+                    </Text>
+                  </View>
+                  {notice.type === "out-for-delivery" && (
+                    <View style={styles.deliveryPinBadge}>
+                      <Text style={styles.deliveryPinLabel}>OTP</Text>
+                      <Text style={styles.deliveryPinValue}>{notice.order.delivery?.pin || "----"}</Text>
+                    </View>
+                  )}
+                  <Ionicons name="chevron-forward" size={16} color="#16803C" />
+                </TouchableOpacity>
               </View>
-              <View style={styles.deliveryStripCopy}>
-                <Text style={styles.deliveryStripLabel} numberOfLines={1}>
-                  {activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : orderNotices.length > 1 ? `OUT FOR DELIVERY · ORDER ${activeNoticeIndex + 1} OF ${orderNotices.length}` : "OUT FOR DELIVERY"}
-                </Text>
-                <Text style={styles.deliveryStripDetail} numberOfLines={1}>
-                  {activeNotice.type === "delivered"
-                    ? "Your order has been delivered"
-                    : `#${activeNotice.order.orderNumber || activeNotice.order.orderId || activeNotice.order.id}${activeNotice.order.delivery?.associateName ? ` · ${activeNotice.order.delivery.associateName}` : ""}`}
-                </Text>
-              </View>
-              {activeNotice.type === "out-for-delivery" && (
-                <View style={styles.deliveryPinBadge}>
-                  <Text style={styles.deliveryPinLabel}>OTP</Text>
-                  <Text style={styles.deliveryPinValue}>{activeNotice.order.delivery?.pin || "----"}</Text>
-                </View>
-              )}
-              <Ionicons name="chevron-forward" size={16} color="#16803C" />
-            </TouchableOpacity>
-          </Animated.View>
+            ))}
+          </ScrollView>
           {orderNotices.length > 1 && (
             <View style={styles.noticePagination}>
               {orderNotices.map((notice: any, index: number) => (
@@ -314,24 +294,8 @@ export default function CustomerHome() {
                   accessibilityRole="button"
                   accessibilityLabel={`Show delivery notification ${index + 1} of ${orderNotices.length}`}
                   onPress={() => {
-                    if (index === activeNoticeIndex) return;
-                    noticeSlide.stopAnimation();
-                    Animated.timing(noticeSlide, {
-                      toValue: -1,
-                      duration: 160,
-                      easing: Easing.out(Easing.cubic),
-                      useNativeDriver: true,
-                    }).start(({ finished }) => {
-                      if (!finished) return;
-                      setActiveNoticeIndex(index);
-                      noticeSlide.setValue(1);
-                      Animated.timing(noticeSlide, {
-                        toValue: 0,
-                        duration: 200,
-                        easing: Easing.out(Easing.cubic),
-                        useNativeDriver: true,
-                      }).start();
-                    });
+                    setActiveNoticeIndex(index);
+                    noticeScrollRef.current?.scrollTo({ x: index * width, animated: true });
                   }}
                   style={[styles.noticeDot, index === activeNoticeIndex && styles.noticeDotActive]}
                 />
@@ -421,6 +385,7 @@ const styles = StyleSheet.create({
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
+  noticePage: { width },
   deliveryStrip: { minHeight: 54, marginHorizontal: 12, marginTop: -7, marginBottom: 3, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 13, overflow: "hidden", borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   deliveryStripInTransit: { borderColor: "#B7E4C7", backgroundColor: "#F0FBF3" },
   deliveryStripDelivered: { borderColor: "#A8DDBB", backgroundColor: "#EAF8EF" },
