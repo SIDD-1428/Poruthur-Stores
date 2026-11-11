@@ -1,56 +1,63 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { BlurView } from "expo-blur";
 import { useCart } from "../../context/CartContext";
 
-export default function TabLayout(){
+export default function TabLayout() {
   const { cart } = useCart();
   const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  return(
-    <Tabs screenOptions={{
-      headerShown: false,
-      tabBarActiveTintColor: "#111111",
-      tabBarInactiveTintColor: "#777777",
-      tabBarStyle: {
-        position: "absolute",
-        alignSelf: "center",
-        width: "80%",
-        bottom: 18,
-        height: 62,
-        paddingTop: 6,
-        paddingBottom: 6,
-        borderRadius: 32,
-        borderTopWidth: 0,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.82)",
-        backgroundColor: "transparent",
-        overflow: "hidden",
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.16,
-        shadowRadius: 22,
-        elevation: 14,
-      },
-      tabBarBackground: () => (
-        <BlurView
-          intensity={95}
-          tint="light"
-          experimentalBlurMethod="dimezisBlurView"
-          style={[StyleSheet.absoluteFill, styles.glassBackground]}
-        />
-      ),
-      tabBarLabelStyle: {
-        fontSize: 10,
-        fontWeight: "600",
-        marginBottom: 1,
-      },
-      tabBarIconStyle: {
-        marginTop: 1,
-      },
-      tabBarHideOnKeyboard: true,
-    }}>
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: "#111111",
+        tabBarInactiveTintColor: "#777777",
+        tabBarStyle: {
+          position: "absolute",
+          left: "10%",
+          right: "10%",
+          width: undefined,
+          bottom: 18,
+          height: 64,
+          paddingTop: 7,
+          paddingBottom: 7,
+          borderRadius: 32,
+          borderTopWidth: 0,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.72)",
+          backgroundColor: "transparent",
+          overflow: "hidden",
+          shadowColor: "#172033",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.18,
+          shadowRadius: 24,
+          elevation: 18,
+        },
+        tabBarBackground: () => (
+          <View style={StyleSheet.absoluteFill}>
+            <BlurView
+              intensity={100}
+              tint="light"
+              experimentalBlurMethod="dimezisBlurView"
+              style={StyleSheet.absoluteFill}
+            />
+            <View pointerEvents="none" style={styles.glassTint} />
+            <View pointerEvents="none" style={styles.glassHighlight} />
+          </View>
+        ),
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "600",
+          marginBottom: 1,
+        },
+        tabBarIconStyle: {
+          marginTop: 1,
+        },
+        tabBarHideOnKeyboard: true,
+      }}
+    >
       <Tabs.Screen
         name="home"
         options={{
@@ -96,7 +103,17 @@ export default function TabLayout(){
 }
 
 const styles = StyleSheet.create({
-  glassBackground: {
-    backgroundColor: "rgba(255,255,255,0.22)",
+  glassTint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(245, 249, 255, 0.12)",
+  },
+  glassHighlight: {
+    position: "absolute",
+    top: 1,
+    left: 18,
+    right: 18,
+    height: 1,
+    borderRadius: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
 });
