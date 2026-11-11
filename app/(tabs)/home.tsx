@@ -92,26 +92,36 @@ export default function CustomerHome() {
     ? orderNotices[activeNoticeIndex % orderNotices.length]
     : null;
 
-  // Rotate through delivery notifications; delivered notices auto-collapse after 3 seconds.
+  // Keep the selected notice in range as live orders are added or removed.
   useEffect(() => {
-    if (orderNotices.length < 2) return;
+    setActiveNoticeIndex(index => orderNotices.length ? index % orderNotices.length : 0);
+  }, [orderNotices.length]);
+
+  // Slide each order notice fully out, switch the order, then slide the next one in.
+  useEffect(() => {
+    if (orderNotices.length < 2) {
+      noticeSlide.stopAnimation();
+      noticeSlide.setValue(0);
+      return;
+    }
     const interval = setInterval(() => {
       Animated.timing(noticeSlide, {
         toValue: -1,
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
+        duration: 320,
+        easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
-      }).start(() => {
+      }).start(({ finished }) => {
+        if (!finished) return;
         setActiveNoticeIndex(index => (index + 1) % orderNotices.length);
         noticeSlide.setValue(1);
         Animated.timing(noticeSlide, {
           toValue: 0,
-          duration: 260,
+          duration: 380,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }).start();
       });
-    }, 5000);
+    }, 4200);
     return () => clearInterval(interval);
   }, [orderNotices.length, noticeSlide]);
 
@@ -252,53 +262,39 @@ export default function CustomerHome() {
       </TouchableOpacity>
 
       {activeNotice && (
-        <Animated.View
-          style={{
-            opacity: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
-            transform: [{ translateX: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [-24, 0, 24] }) }],
-          }}
-        >
-          <View style={[
-            styles.deliveryStrip,
-            activeNotice.type === "out-for-delivery" && styles.deliveryStripInTransit,
-            activeNotice.type === "delivered" && styles.deliveryStripDelivered,
-            
-          ]}>
+        <View style={styles.noticeCarousel}>
+          <Animated.View
+            style={{
+              opacity: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
+              transform: [{ translateX: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [-width * 0.28, 0, width * 0.28] }) }],
+            }}
+          >
             <TouchableOpacity
               activeOpacity={0.9}
-              style={styles.deliveryStripMain}
+              style={[
+                styles.deliveryStrip,
+                activeNotice.type === "out-for-delivery" ? styles.deliveryStripInTransit : styles.deliveryStripDelivered,
+              ]}
               onPress={() => router.push({ pathname: "/order-details", params: { id: activeNotice.order.id } })}
             >
               <View style={[
                 styles.deliveryStripIcon,
-                activeNotice.type === "out-for-delivery" && styles.deliveryStripIconInTransit,
-                activeNotice.type === "delivered" && styles.deliveryStripIconDelivered,
-                
+                activeNotice.type === "out-for-delivery" ? styles.deliveryStripIconInTransit : styles.deliveryStripIconDelivered,
               ]}>
                 <Ionicons
                   name={activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
-                  size={20}
+                  size={19}
                   color="#16803C"
                 />
               </View>
               <View style={styles.deliveryStripCopy}>
-                <Text style={[
-                  styles.deliveryStripLabel,
-                  activeNotice.type === "out-for-delivery" && styles.deliveryStripLabelInTransit,
-                  activeNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
-                  
-                ]}>
-                  {activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
+                <Text style={styles.deliveryStripLabel} numberOfLines={1}>
+                  {activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : orderNotices.length > 1 ? `OUT FOR DELIVERY · ORDER ${activeNoticeIndex + 1} OF ${orderNotices.length}` : "OUT FOR DELIVERY"}
                 </Text>
                 <Text style={styles.deliveryStripDetail} numberOfLines={1}>
                   {activeNotice.type === "delivered"
-                    ? "Your order has been delivered successfully"
-                    : activeNotice.order.delivery?.associateName
-                      ? `${activeNotice.order.delivery.associateName} · ${activeNotice.order.delivery.associatePhone || "Contact unavailable"}`
-                      : "Your order is on its way"}
-                </Text>
-                <Text style={styles.deliveryOrderId} numberOfLines={1}>
-                  Order ID: {activeNotice.order.orderNumber || activeNotice.order.orderId || activeNotice.order.id}
+                    ? "Your order has been delivered"
+                    : `#${activeNotice.order.orderNumber || activeNotice.order.orderId || activeNotice.order.id}${activeNotice.order.delivery?.associateName ? ` · ${activeNotice.order.delivery.associateName}` : ""}`}
                 </Text>
               </View>
               {activeNotice.type === "out-for-delivery" && (
@@ -307,10 +303,40 @@ export default function CustomerHome() {
                   <Text style={styles.deliveryPinValue}>{activeNotice.order.delivery?.pin || "----"}</Text>
                 </View>
               )}
-              <Ionicons name="chevron-forward" size={17} color="#16803C" />
+              <Ionicons name="chevron-forward" size={16} color="#16803C" />
             </TouchableOpacity>
-          </View>
-        </Animated.View>
+          </Animated.View>
+          {orderNotices.length > 1 && (
+            <View style={styles.noticePagination}>
+              {orderNotices.map((notice: any, index: number) => (
+                <TouchableOpacity
+                  key={notice.order.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Show delivery notification ${index + 1} of ${orderNotices.length}`}
+                  onPress={() => {
+                    if (index === activeNoticeIndex) return;
+                    noticeSlide.stopAnimation();
+                    Animated.timing(noticeSlide, {
+                      toValue: -1,
+                      duration: 180,
+                      useNativeDriver: true,
+                    }).start(({ finished }) => {
+                      if (!finished) return;
+                      setActiveNoticeIndex(index);
+                      noticeSlide.setValue(1);
+                      Animated.timing(noticeSlide, {
+                        toValue: 0,
+                        duration: 240,
+                        useNativeDriver: true,
+                      }).start();
+                    });
+                  }}
+                  style={[styles.noticeDot, index === activeNoticeIndex && styles.noticeDotActive]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
@@ -392,22 +418,22 @@ const styles = StyleSheet.create({
   addressText: { fontSize: 13, color: "#FFFFFF", fontWeight: "500", maxWidth: width - 120 },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
-  deliveryStrip: { minHeight: 68, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 16, overflow: "hidden", borderWidth: 1 },
-  deliveryStripMain: { flexDirection: "row", alignItems: "center", gap: 9 },
+  noticeCarousel: { marginBottom: 7 },
+  deliveryStrip: { minHeight: 54, marginHorizontal: 12, marginTop: -7, marginBottom: 3, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 13, overflow: "hidden", borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   deliveryStripInTransit: { borderColor: "#B7E4C7", backgroundColor: "#F0FBF3" },
   deliveryStripDelivered: { borderColor: "#A8DDBB", backgroundColor: "#EAF8EF" },
-  deliveryStripIcon: { width: 34, height: 34, borderRadius: 11, alignItems: "center", justifyContent: "center" },
+  deliveryStripIcon: { width: 30, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   deliveryStripIconInTransit: { backgroundColor: "#D8F3E1" },
   deliveryStripIconDelivered: { backgroundColor: "#D1F0DC" },
   deliveryStripCopy: { flex: 1, minWidth: 0, justifyContent: "center" },
-  deliveryStripLabel: { fontSize: 10, fontWeight: "900", letterSpacing: 0.55 },
-  deliveryStripLabelInTransit: { color: "#16743A" },
-  deliveryStripLabelDelivered: { color: "#16743A" },
-  deliveryStripDetail: { color: "#3F5145", fontSize: 10, fontWeight: "600", marginTop: 2 },
-  deliveryOrderId: { color: "#718078", fontSize: 8, fontWeight: "700", marginTop: 3 },
-  deliveryPinBadge: { minWidth: 48, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 9, backgroundColor: "#D8F3E1", alignItems: "center", justifyContent: "center" },
-  deliveryPinLabel: { color: "#34734A", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
-  deliveryPinValue: { color: "#14532D", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
+  deliveryStripLabel: { color: "#16743A", fontSize: 9, fontWeight: "900", letterSpacing: 0.35 },
+  deliveryStripDetail: { color: "#3F5145", fontSize: 9, fontWeight: "600", marginTop: 2 },
+  deliveryPinBadge: { minWidth: 43, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 8, backgroundColor: "#D8F3E1", alignItems: "center", justifyContent: "center" },
+  deliveryPinLabel: { color: "#34734A", fontSize: 7, fontWeight: "800", letterSpacing: 0.5 },
+  deliveryPinValue: { color: "#14532D", fontSize: 12, fontWeight: "900", letterSpacing: 1.1, marginTop: 1 },
+  noticePagination: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, marginTop: 1, marginBottom: 3 },
+  noticeDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#C8D7CC" },
+  noticeDotActive: { width: 15, backgroundColor: "#16803C" },
   scrollContent: { paddingBottom: 20, paddingTop: 2 },
   sectionHeading: { paddingHorizontal: 18, marginTop: 8, marginBottom: 13, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headingCopy: { flex: 1 },
