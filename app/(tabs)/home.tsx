@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -33,6 +34,7 @@ export default function CustomerHome() {
   const [checkingDelivery, setCheckingDelivery] = useState(true);
   const [showMoreCategories, setShowMoreCategories] = useState(false);
   const [deliveryNotice, setDeliveryNotice] = useState<any>(null);
+  const [dismissedRejectionId, setDismissedRejectionId] = useState<string | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -42,64 +44,55 @@ export default function CustomerHome() {
     else setGreeting(`Good evening, ${name}`);
   }, []);
 
-  // Keep the home-screen delivery strip synced with the customer's live order.
+  // Rejected orders are dismissible notifications; delivery stays visible until Delivered.
   useEffect(() => {
     const user = auth().currentUser;
-    if (!user) {
-      setDeliveryNotice(null);
-      return;
-    }
+    if (!user) { setDeliveryNotice(null); return; }
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    const dismissedKey = `@bonmart:dismissed-rejected-order:${user.uid}`;
 
-    return db.collection("orders").where("userId", "==", user.uid).onSnapshot(
-      snapshot => {
-        const customerOrders = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
-        const timestampMillis = (value: any) => {
-          if (typeof value?.toMillis === "function") return value.toMillis();
-          if (typeof value?.toDate === "function") return value.toDate().getTime();
-          if (value instanceof Date) return value.getTime();
-          return typeof value?.seconds === "number" ? value.seconds * 1000 : 0;
-        };
-        const newestFirst = (a: any, b: any) =>
-          timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
+    const startListener = async () => {
+      let dismissedId: string | null = null;
+      try { dismissedId = await AsyncStorage.getItem(dismissedKey); }
+      catch (error) { console.log("Rejected notification preference:", error); }
+      if (!active) return;
+      setDismissedRejectionId(dismissedId);
 
-        const rejectedByAdmin = customerOrders
-          .filter((order: any) =>
-            order.status === "Cancelled" &&
-            order.cancellationSource === "admin" &&
-            String(order.cancellationReason || "").trim().length > 0
-          )
-          .sort((a: any, b: any) =>
-            timestampMillis(b.cancelledAt || b.createdAt) - timestampMillis(a.cancelledAt || a.createdAt)
-          )[0];
+      unsubscribe = db.collection("orders").where("userId", "==", user.uid).onSnapshot(
+        snapshot => {
+          const customerOrders = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+          const timestampMillis = (value: any) => {
+            if (typeof value?.toMillis === "function") return value.toMillis();
+            if (typeof value?.toDate === "function") return value.toDate().getTime();
+            if (value instanceof Date) return value.getTime();
+            return typeof value?.seconds === "number" ? value.seconds * 1000 : 0;
+          };
+          const newestFirst = (a: any, b: any) => timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
 
-        if (rejectedByAdmin) {
-          setDeliveryNotice({ type: "rejected", order: rejectedByAdmin });
-          return;
-        }
+          const rejectedByAdmin = customerOrders
+            .filter((order: any) => order.status === "Cancelled" && order.cancellationSource === "admin" &&
+              String(order.cancellationReason || "").trim().length > 0 && order.id !== dismissedId)
+            .sort((a: any, b: any) => timestampMillis(b.cancelledAt || b.createdAt) - timestampMillis(a.cancelledAt || a.createdAt))[0];
 
-        const outForDelivery = customerOrders
-          .filter((order: any) => order.status === "Out For Delivery")
-          .sort(newestFirst)[0];
+          if (rejectedByAdmin) { setDeliveryNotice({ type: "rejected", order: rejectedByAdmin }); return; }
 
-        if (outForDelivery) {
-          setDeliveryNotice({ type: "out-for-delivery", order: outForDelivery });
-          return;
-        }
+          const outForDelivery = customerOrders.filter((order: any) => order.status === "Out For Delivery").sort(newestFirst)[0];
+          if (outForDelivery) { setDeliveryNotice({ type: "out-for-delivery", order: outForDelivery }); return; }
 
-        const deliveredRecently = customerOrders
-          .filter((order: any) => order.status === "Delivered" && order.delivery?.verified === true)
-          .filter((order: any) => {
-            const verifiedMillis = timestampMillis(order.delivery?.verifiedAt);
-            return verifiedMillis > Date.now() - 15 * 60 * 1000;
-          })
-          .sort((a: any, b: any) =>
-            timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt)
-          )[0];
+          const deliveredRecently = customerOrders
+            .filter((order: any) => order.status === "Delivered" && order.delivery?.verified === true)
+            .filter((order: any) => timestampMillis(order.delivery?.verifiedAt) > Date.now() - 15 * 60 * 1000)
+            .sort((a: any, b: any) => timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt))[0];
 
-        setDeliveryNotice(deliveredRecently ? { type: "delivered", order: deliveredRecently } : null);
-      },
-      error => console.log("Delivery status listener:", error.message)
-    );
+          setDeliveryNotice(deliveredRecently ? { type: "delivered", order: deliveredRecently } : null);
+        },
+        error => console.log("Delivery status listener:", error.message)
+      );
+    };
+
+    startListener();
+    return () => { active = false; unsubscribe?.(); };
   }, []);
 
   // Product catalogue stays live so stock, price and availability remain current.
@@ -230,7 +223,17 @@ export default function CustomerHome() {
       {deliveryNotice && (
         <TouchableOpacity
           activeOpacity={0.88}
-          onPress={() => router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } })}
+          onPress={async () => {
+            if (deliveryNotice.type === "rejected") {
+              try {
+                await AsyncStorage.setItem(`@bonmart:dismissed-rejected-order:${auth().currentUser?.uid || "guest"}`, deliveryNotice.order.id);
+              } catch (error) { console.log("Unable to save rejected notification dismissal:", error); }
+              setDismissedRejectionId(deliveryNotice.order.id);
+              setDeliveryNotice(null);
+              return;
+            }
+            router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } });
+          }}
           style={styles.deliveryStrip}
         >
           <BlurView intensity={48} tint="light" style={StyleSheet.absoluteFill} />
