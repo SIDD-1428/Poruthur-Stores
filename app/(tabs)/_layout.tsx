@@ -46,10 +46,10 @@ export default function TabLayout() {
         </View>
       ),
     }}>
-      <Tabs.Screen name="home" options={{ title: "Home", tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} /> }} />
-      <Tabs.Screen name="cart" options={{ title: "Cart", tabBarBadge: totalQty > 0 ? totalQty : undefined, tabBarIcon: ({ color, size }) => <Ionicons name="cart" size={size} color={color} /> }} />
-      <Tabs.Screen name="orders" options={{ title: "Orders", tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" size={size} color={color} /> }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: ({ color, size }) => <Ionicons name="person" color={color} size={size} /> }} />
+      <Tabs.Screen name="home" options={{ title: "Home", tabBarIcon: ({ color }) => <Ionicons name="home" color={color} size={18} /> }} />
+      <Tabs.Screen name="cart" options={{ title: "Cart", tabBarBadge: totalQty > 0 ? totalQty : undefined, tabBarIcon: ({ color }) => <Ionicons name="cart" size={18} color={color} /> }} />
+      <Tabs.Screen name="orders" options={{ title: "Orders", tabBarIcon: ({ color }) => <Ionicons name="receipt-outline" size={18} color={color} /> }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: ({ color }) => <Ionicons name="person" color={color} size={18} /> }} />
     </Tabs>
   );
 }
