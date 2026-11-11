@@ -33,8 +33,10 @@ export default function CustomerHome() {
   const [deliveryAllowed, setDeliveryAllowed] = useState<boolean | null>(null);
   const [checkingDelivery, setCheckingDelivery] = useState(true);
   const [showMoreCategories, setShowMoreCategories] = useState(false);
-  const [deliveryNotice, setDeliveryNotice] = useState<any>(null);
+  const [noticeQueue, setNoticeQueue] = useState<any[]>([]);
+  const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
   const dismissedRejectionIdRef = useRef<string | null>(null);
+  const deliveryNotice = noticeQueue.length ? noticeQueue[activeNoticeIndex % noticeQueue.length] : null;
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -44,10 +46,10 @@ export default function CustomerHome() {
     else setGreeting(`Good evening, ${name}`);
   }, []);
 
-  // Rejected orders are dismissible notifications; delivery stays visible until Delivered.
+  // Keep the newest relevant rejection and active delivery updates in a rotating queue.
   useEffect(() => {
     const user = auth().currentUser;
-    if (!user) { setDeliveryNotice(null); return; }
+    if (!user) { setNoticeQueue([]); return; }
     let active = true;
     let unsubscribe: (() => void) | undefined;
     const dismissedKey = `@bonmart:dismissed-rejected-order:${user.uid}`;
@@ -69,23 +71,31 @@ export default function CustomerHome() {
             return typeof value?.seconds === "number" ? value.seconds * 1000 : 0;
           };
           const newestFirst = (a: any, b: any) => timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
+          const sortedOrders = [...customerOrders].sort(newestFirst);
+          const latestOrder = sortedOrders[0];
 
-          const rejectedByAdmin = customerOrders
-            .filter((order: any) => order.status === "Cancelled" && order.cancellationSource === "admin" &&
-              String(order.cancellationReason || "").trim().length > 0 && order.id !== dismissedRejectionIdRef.current)
-            .sort((a: any, b: any) => timestampMillis(b.cancelledAt || b.createdAt) - timestampMillis(a.cancelledAt || a.createdAt))[0];
+          const queue: any[] = [];
+          // Only the latest order can produce a rejection notice. This prevents an old,
+          // previously rejected order from resurfacing after a newer order is placed.
+          if (latestOrder?.status === "Cancelled" &&
+              latestOrder.cancellationSource === "admin" &&
+              String(latestOrder.cancellationReason || "").trim().length > 0 &&
+              latestOrder.id !== dismissedRejectionIdRef.current) {
+            queue.push({ type: "rejected", order: latestOrder });
+          }
 
-          if (rejectedByAdmin) { setDeliveryNotice({ type: "rejected", order: rejectedByAdmin }); return; }
+          const outForDelivery = sortedOrders.find((order: any) => order.status === "Out For Delivery");
+          if (outForDelivery) queue.push({ type: "out-for-delivery", order: outForDelivery });
 
-          const outForDelivery = customerOrders.filter((order: any) => order.status === "Out For Delivery").sort(newestFirst)[0];
-          if (outForDelivery) { setDeliveryNotice({ type: "out-for-delivery", order: outForDelivery }); return; }
+          const deliveredRecently = sortedOrders.find((order: any) =>
+            order.status === "Delivered" &&
+            order.delivery?.verified === true &&
+            timestampMillis(order.delivery?.verifiedAt) > Date.now() - 15 * 60 * 1000
+          );
+          if (deliveredRecently && queue.length === 0) queue.push({ type: "delivered", order: deliveredRecently });
 
-          const deliveredRecently = customerOrders
-            .filter((order: any) => order.status === "Delivered" && order.delivery?.verified === true)
-            .filter((order: any) => timestampMillis(order.delivery?.verifiedAt) > Date.now() - 15 * 60 * 1000)
-            .sort((a: any, b: any) => timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt))[0];
-
-          setDeliveryNotice(deliveredRecently ? { type: "delivered", order: deliveredRecently } : null);
+          setNoticeQueue(queue);
+          setActiveNoticeIndex(0);
         },
         error => console.log("Delivery status listener:", error.message)
       );
@@ -94,6 +104,14 @@ export default function CustomerHome() {
     startListener();
     return () => { active = false; unsubscribe?.(); };
   }, []);
+
+  useEffect(() => {
+    if (noticeQueue.length < 2) return;
+    const rotation = setInterval(() => {
+      setActiveNoticeIndex(index => (index + 1) % noticeQueue.length);
+    }, 4500);
+    return () => clearInterval(rotation);
+  }, [noticeQueue.length]);
 
   // Product catalogue stays live so stock, price and availability remain current.
   useEffect(() => db.collection("products").onSnapshot(
@@ -229,7 +247,8 @@ export default function CustomerHome() {
                 await AsyncStorage.setItem(`@bonmart:dismissed-rejected-order:${auth().currentUser?.uid || "guest"}`, deliveryNotice.order.id);
               } catch (error) { console.log("Unable to save rejected notification dismissal:", error); }
               dismissedRejectionIdRef.current = deliveryNotice.order.id;
-              setDeliveryNotice(null);
+              setNoticeQueue(current => current.filter(item => item.type !== "rejected"));
+              setActiveNoticeIndex(0);
               router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } });
               return;
             }
