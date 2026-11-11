@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Image,
+  Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,6 +16,11 @@ import {
 import ProductCard from "../../components/ProductCard";
 import { db } from "../../firebase/config";
 import { getProducts } from "../../services/products";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const SIDEBAR_WIDTH = 80;
+const PRODUCT_GAP = 10;
+const PRODUCT_CARD_WIDTH = Math.floor((SCREEN_WIDTH - SIDEBAR_WIDTH - 24 - PRODUCT_GAP) / 2);
 
 export default function SectionScreen() {
   const { name } = useLocalSearchParams();
@@ -203,6 +209,8 @@ export default function SectionScreen() {
               <View style={styles.cardWrapper}>
                 <ProductCard
                   id={item.id}
+                  width={PRODUCT_CARD_WIDTH}
+                  categoryGridCard
                   name={item.name}
                   price={item.price}
         mrp={Number(item.mrp ?? item.price)}
@@ -346,7 +354,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cardWrapper: {
-    width: "47%",
+    width: PRODUCT_CARD_WIDTH,
     marginBottom: 12,
   },
 
