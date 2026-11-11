@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
     gap: 5,
   },
-  priceBlock: { width: "100%", minWidth: 0 }
+  priceBlock: { width: "100%", minWidth: 0 },
 
   mrp: { fontSize: 10, color: '#999', textDecorationLine: 'line-through', marginLeft: 5 },
   savings: { fontSize: 9, color: '#18864B', fontWeight: '700', marginTop: 2 },
