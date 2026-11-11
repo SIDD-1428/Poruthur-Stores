@@ -6,7 +6,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCart } from "../../context/CartContext";
 
 const Colors = {
@@ -17,7 +16,6 @@ const Colors = {
 };
 
 export default function Cart() {
-  const insets = useSafeAreaInsets();
   const { cart, increaseQty, decreaseQty, removeFromCart } = useCart();
   const total = cart.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0);
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -25,7 +23,7 @@ export default function Cart() {
     sum + Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity, 0);
 
   const renderHeader = () => (
-    <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 8 }]}>
+    <View style={[styles.header, { paddingTop: 18 }]}>
       <View>
         <Text style={styles.eyebrow}>BONMART</Text>
         <Text style={styles.title}>Your Cart</Text>
@@ -95,9 +93,9 @@ export default function Cart() {
       {renderHeader()}
       {cart.length === 0 ? renderEmpty() : <>
         <FlatList data={cart} keyExtractor={item => item.id}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 190 + insets.bottom }]}
+          contentContainerStyle={[styles.listContent, { paddingBottom: 190 }]}
           showsVerticalScrollIndicator={false} renderItem={renderItem} />
-        <View style={[styles.summaryDock, { bottom: 82 + insets.bottom }]}>
+        <View style={[styles.summaryDock, { bottom: 82 }]}>
           <BlurView intensity={78} tint="light" style={StyleSheet.absoluteFill} />
           <View style={styles.summaryInner}>
             <View style={styles.summaryCopy}>
