@@ -6,7 +6,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -47,6 +47,8 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "QR">("COD");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [loadingQR, setLoadingQR] = useState(false);
+  const [deliveryEligible, setDeliveryEligible] = useState<boolean | null>(null);
+  const [deliveryBlockMessage, setDeliveryBlockMessage] = useState("Checking delivery availability...");
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -64,6 +66,46 @@ export default function Checkout() {
       loadPaymentQR();
     }, [])
   );
+
+  useEffect(() => {
+    let active = true;
+    const checkSelectedAddress = async () => {
+      if (!selectedAddress) {
+        setDeliveryEligible(false);
+        setDeliveryBlockMessage("Select a delivery address to check serviceability.");
+        return;
+      }
+      setDeliveryEligible(null);
+      setDeliveryBlockMessage("Checking delivery availability...");
+      try {
+        const snapshot = await db.collection("settings").doc("delivery").get();
+        if (!snapshot.exists) throw new Error("Delivery settings are not configured.");
+        const delivery = snapshot.data() as any;
+        if (!delivery) throw new Error("Delivery settings are not configured.");
+        const hasCoordinates = Number.isFinite(Number(selectedAddress.latitude))
+          && Number.isFinite(Number(selectedAddress.longitude));
+        const distance = hasCoordinates
+          ? calculateDistance(delivery.shopLatitude, delivery.shopLongitude, selectedAddress.latitude, selectedAddress.longitude)
+          : Number.POSITIVE_INFINITY;
+        const insideRadius = distance <= Number(delivery.radiusKm);
+        const insidePincode = delivery.serviceablePincodes?.includes(String(selectedAddress.pincode)) ?? false;
+        const eligible = insideRadius && insidePincode;
+        if (!active) return;
+        setDeliveryEligible(eligible);
+        setDeliveryBlockMessage(!insidePincode
+          ? "This pincode is not serviceable. You can continue browsing, but orders cannot be placed."
+          : !insideRadius
+            ? "This address is outside our delivery radius. You can continue browsing, but orders cannot be placed."
+            : "Delivery is available to this address.");
+      } catch (error) {
+        if (!active) return;
+        setDeliveryEligible(false);
+        setDeliveryBlockMessage("We could not verify delivery availability. Ordering is disabled until the address can be verified.");
+      }
+    };
+    checkSelectedAddress();
+    return () => { active = false; };
+  }, [selectedAddress]);
 
   const loadPaymentQR = async () => {
   try {
@@ -114,6 +156,12 @@ export default function Checkout() {
 
   const placeOrder = async () => {
     if (placingOrder) return;
+
+    if (deliveryEligible !== true) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert("Delivery Unavailable", deliveryBlockMessage);
+      return;
+    }
 
     if (cart.length === 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -643,6 +691,13 @@ export default function Checkout() {
         <View style={styles.placeholder} />
       </View>
 
+      {deliveryEligible !== true && (
+        <View style={styles.deliveryWarningBanner}>
+          <Ionicons name="information-circle" size={20} color="#9A5B00" />
+          <Text style={styles.deliveryWarningText}>{deliveryBlockMessage}</Text>
+        </View>
+      )}
+
       <FlatList
         data={cart}
         keyExtractor={(item) => item.id}
@@ -900,9 +955,9 @@ export default function Checkout() {
           <Text style={styles.bottomTotalValue}>₹{grandTotal}</Text>
         </View>
         <TouchableOpacity
-          style={[styles.placeOrderBtn, placingOrder && styles.placeOrderDisabled]}
+          style={[styles.placeOrderBtn, (placingOrder || deliveryEligible !== true) && styles.placeOrderDisabled]}
           onPress={placeOrder}
-          disabled={placingOrder}
+          disabled={placingOrder || deliveryEligible !== true}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -963,6 +1018,8 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
+  deliveryWarningBanner: { marginHorizontal: 16, marginTop: 10, marginBottom: 2, padding: 12, borderRadius: 12, backgroundColor: "#FFF6E5", borderWidth: 1, borderColor: "#F3D49A", flexDirection: "row", alignItems: "center", gap: 9 },
+  deliveryWarningText: { flex: 1, color: "#805000", fontSize: 12, lineHeight: 17, fontWeight: "600" },
 
   // Address Card
   addressCard: {
