@@ -15,10 +15,10 @@ import { db } from "../../firebase/config";
 
 const { width } = Dimensions.get("window");
 const Colors = {
-  background: "#FFFFFF", card: "#FFFFFF", surface: "#F2F7F3",
-  textPrimary: "#173A2A", textSecondary: "#5F7568", muted: "#87978C",
-  separator: "#E2ECE4", primary: "#173A2A", primaryLight: "#173A2A10",
-  accent: "#145A3A", success: "#23834F", warning: "#FF9500", danger: "#FF3B30",
+  background: "#FFFFFF", card: "#FFFFFF", surface: "#F5F5F5",
+  textPrimary: "#000000", textSecondary: "#666666", muted: "#999999",
+  separator: "#E8E8E8", primary: "#000000", primaryLight: "#00000010",
+  accent: "#333333", success: "#34C759", warning: "#FF9500", danger: "#FF3B30",
 };
 
 export default function CustomerHome() {
@@ -268,11 +268,11 @@ const styles = StyleSheet.create({
   showMoreText: { color: Colors.textPrimary, fontSize: 12, fontWeight: "700" },
   brandHeading: { marginTop: 18 },
   brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F4F8F4", borderWidth: 1, borderColor: "#E2ECE4" },
+  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
   brandImageBackground: { flex: 1, width: "100%", height: "100%" },
   brandImage: { borderRadius: 13 },
   brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 9 },
-  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#173A2A88", textShadowRadius: 5 },
+  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
   brandFallback: { flex: 1, paddingHorizontal: 9, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 8 },
   brandMonogram: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
   brandMonogramText: { fontSize: 20, fontWeight: "900", color: "#111111" },
