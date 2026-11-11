@@ -9,7 +9,7 @@ import { BlurView } from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
@@ -34,7 +34,7 @@ export default function CustomerHome() {
   const [checkingDelivery, setCheckingDelivery] = useState(true);
   const [showMoreCategories, setShowMoreCategories] = useState(false);
   const [deliveryNotice, setDeliveryNotice] = useState<any>(null);
-  const [dismissedRejectionId, setDismissedRejectionId] = useState<string | null>(null);
+  const dismissedRejectionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -57,7 +57,7 @@ export default function CustomerHome() {
       try { dismissedId = await AsyncStorage.getItem(dismissedKey); }
       catch (error) { console.log("Rejected notification preference:", error); }
       if (!active) return;
-      setDismissedRejectionId(dismissedId);
+      dismissedRejectionIdRef.current = dismissedId;
 
       unsubscribe = db.collection("orders").where("userId", "==", user.uid).onSnapshot(
         snapshot => {
@@ -72,7 +72,7 @@ export default function CustomerHome() {
 
           const rejectedByAdmin = customerOrders
             .filter((order: any) => order.status === "Cancelled" && order.cancellationSource === "admin" &&
-              String(order.cancellationReason || "").trim().length > 0 && order.id !== dismissedId)
+              String(order.cancellationReason || "").trim().length > 0 && order.id !== dismissedRejectionIdRef.current)
             .sort((a: any, b: any) => timestampMillis(b.cancelledAt || b.createdAt) - timestampMillis(a.cancelledAt || a.createdAt))[0];
 
           if (rejectedByAdmin) { setDeliveryNotice({ type: "rejected", order: rejectedByAdmin }); return; }
@@ -228,7 +228,7 @@ export default function CustomerHome() {
               try {
                 await AsyncStorage.setItem(`@bonmart:dismissed-rejected-order:${auth().currentUser?.uid || "guest"}`, deliveryNotice.order.id);
               } catch (error) { console.log("Unable to save rejected notification dismissal:", error); }
-              setDismissedRejectionId(deliveryNotice.order.id);
+              dismissedRejectionIdRef.current = deliveryNotice.order.id;
               setDeliveryNotice(null);
               return;
             }
