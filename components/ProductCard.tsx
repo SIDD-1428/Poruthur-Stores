@@ -42,6 +42,7 @@ type Props = {
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
   compactCard?: boolean;
+  uniformCard?: boolean;
 };
 
 export default function ProductCard({
@@ -59,6 +60,7 @@ export default function ProductCard({
   maxOrderQty,
   availableOptions = [],
   compactCard = false,
+  uniformCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -212,6 +214,7 @@ export default function ProductCard({
         style={[
           styles.card,
           compactCard && styles.compactCard,
+          uniformCard && styles.uniformCard,
           { width },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
@@ -244,17 +247,17 @@ export default function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer]}>
-          <Text style={[styles.name, compactCard && styles.compactName]} numberOfLines={2}>{name}</Text>
-          <Text style={[styles.unit, compactCard && styles.compactUnit]}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer]}>
+          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit]} numberOfLines={1}>{unit}</Text>
 
           <View style={styles.bottomRow}>
-            <View>
-              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+            <View style={[styles.priceBlock, uniformCard && styles.uniformPriceBlock]}>
+              <View style={{ flexDirection: "row", alignItems: "baseline", flexWrap: "wrap" }}>
                 <Text style={[styles.price, compactCard && styles.compactPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                 {Number(mrp) > Number(price) ? <Text style={[styles.mrp, compactCard && styles.compactMrp]}>₹{mrp}</Text> : null}
               </View>
-              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : null}
+              {Number(mrp) > Number(price) ? <Text style={[styles.savings, compactCard && styles.compactSavings]}>You save ₹{((Number(mrp) - Number(price)) * (itemInCart?.quantity ?? 1)).toFixed(2)}</Text> : uniformCard ? <View style={styles.uniformSavingsPlaceholder} /> : null}
             </View>
 
             {isOutOfStock ? (
@@ -264,7 +267,7 @@ export default function ProductCard({
 
             ) : !itemInCart ? (
               <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-                <View style={styles.actionColumn}>
+                <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
                   <TouchableOpacity
                     style={[styles.addBtn, compactCard && styles.compactAddBtn]}
                     onPress={handleAddToCart}
@@ -273,19 +276,20 @@ export default function ProductCard({
                     <Ionicons name="add" size={12} color="#fff" />
                     <Text style={[styles.addText, compactCard && styles.compactAddText]}>Add</Text>
                   </TouchableOpacity>
-                  {otherOptions.length > 0 && (
+                  {otherOptions.length > 0 ? (
                     <TouchableOpacity
                       onPress={openOptions}
                       activeOpacity={0.7}
                       hitSlop={6}
                     >
-                      <Text style={styles.optionsLink}>See other options</Text>
+                      <Text style={[styles.optionsLink, uniformCard && styles.uniformOptionsLink]}>See other options</Text>
                     </TouchableOpacity>
-                  )}
+                  ) : uniformCard ? <View style={styles.uniformOptionsPlaceholder} /> : null}
                 </View>
               </Animated.View>
 
             ) : (
+              <View style={[styles.actionColumn, uniformCard && styles.uniformActionColumn]}>
               <View style={[styles.qtyBox, compactCard && styles.compactQtyBox]}>
                 <TouchableOpacity
                 disabled={false}
@@ -306,6 +310,7 @@ export default function ProductCard({
                 >
                   <Ionicons name="add" size={10} color="#fff" />
                 </TouchableOpacity>
+              </View>
               </View>
             )}
           </View>
@@ -453,6 +458,15 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
+  uniformCard: { height: 196 },
+  uniformInfoContainer: { flex: 1, justifyContent: "space-between" },
+  uniformName: { height: 26, minHeight: 26 },
+  uniformUnit: { height: 14, marginBottom: 3 },
+  uniformPriceBlock: { height: 25, justifyContent: "flex-start" },
+  uniformSavingsPlaceholder: { height: 9, marginTop: 1 },
+  uniformActionColumn: { height: 42, justifyContent: "flex-start" },
+  uniformOptionsLink: { height: 11, textAlign: "center" },
+  uniformOptionsPlaceholder: { height: 16 },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
@@ -460,10 +474,10 @@ const styles = StyleSheet.create({
   compactPrice: { fontSize: 11 },
   compactMrp: { fontSize: 8, marginLeft: 3 },
   compactSavings: { fontSize: 7, marginTop: 1 },
-  compactAddBtn: { paddingHorizontal: 6, paddingVertical: 4, borderRadius: 7 },
+  compactAddBtn: { minWidth: 66, minHeight: 25, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   compactAddText: { fontSize: 9 },
-  compactQtyBox: { paddingHorizontal: 2, gap: 0 },
-  compactQtyBtn: { width: 17, height: 17 },
+  compactQtyBox: { minWidth: 66, minHeight: 25, paddingHorizontal: 2, paddingVertical: 2, gap: 1 },
+  compactQtyBtn: { width: 20, height: 20, borderRadius: 6 },
   compactQtyText: { fontSize: 10, minWidth: 14 },
 
   outOfStockCard: { opacity: 0.7 },
