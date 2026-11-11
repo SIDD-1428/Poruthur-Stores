@@ -92,7 +92,7 @@ export default function RootLayout() {
           }
         }
 
-        if (inAuthGroup || firstSegment === "notification-permission") {
+        if (inAuthGroup) {
           router.replace("/(tabs)/home");
         }
       } catch (error) {
