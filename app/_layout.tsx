@@ -1,6 +1,9 @@
 import { db } from "@/firebase/config";
 import { Stack, useRouter, useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import messaging from "@react-native-firebase/messaging";
+import { PermissionsAndroid, Platform } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import InAppNotification from "@/components/InAppNotification";
@@ -71,7 +74,25 @@ export default function RootLayout() {
           return;
         }
 
-        if (inAuthGroup) {
+        if (firstSegment !== "notification-permission") {
+          const skipped = await AsyncStorage.getItem(`notification-permission-skipped:${user.uid}`);
+          let permissionGranted = false;
+          if (Platform.OS === "android" && Number(Platform.Version) >= 33) {
+            permissionGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+          } else {
+            const status = await messaging().hasPermission();
+            permissionGranted =
+              status === messaging.AuthorizationStatus.AUTHORIZED ||
+              status === messaging.AuthorizationStatus.PROVISIONAL;
+          }
+
+          if (!permissionGranted && skipped !== "true") {
+            router.replace("/notification-permission");
+            return;
+          }
+        }
+
+        if (inAuthGroup || firstSegment === "notification-permission") {
           router.replace("/(tabs)/home");
         }
       } catch (error) {
