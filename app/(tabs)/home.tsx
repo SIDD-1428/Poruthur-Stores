@@ -10,7 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
@@ -36,6 +36,7 @@ export default function CustomerHome() {
   const [noticeQueue, setNoticeQueue] = useState<any[]>([]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
   const dismissedRejectionIdRef = useRef<string | null>(null);
+  const noticeSlideAnim = useRef(new Animated.Value(0)).current;
   const deliveryNotice = noticeQueue.length ? noticeQueue[activeNoticeIndex % noticeQueue.length] : null;
 
   useEffect(() => {
@@ -104,6 +105,12 @@ export default function CustomerHome() {
     startListener();
     return () => { active = false; unsubscribe?.(); };
   }, []);
+
+  useEffect(() => {
+    if (noticeQueue.length < 2) return;
+    noticeSlideAnim.setValue(34);
+    Animated.spring(noticeSlideAnim, { toValue: 0, damping: 20, stiffness: 220, useNativeDriver: true }).start();
+  }, [activeNoticeIndex, noticeQueue.length]);
 
   useEffect(() => {
     if (noticeQueue.length < 2) return;
@@ -239,6 +246,7 @@ export default function CustomerHome() {
       </TouchableOpacity>
 
       {deliveryNotice && (
+        <Animated.View style={{ transform: [{ translateX: noticeSlideAnim }] }}>
         <TouchableOpacity
           activeOpacity={0.88}
           onPress={async () => {
@@ -293,6 +301,7 @@ export default function CustomerHome() {
           )}
           <Ionicons name="chevron-forward" size={15} color="#777777" />
         </TouchableOpacity>
+        </Animated.View>
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
