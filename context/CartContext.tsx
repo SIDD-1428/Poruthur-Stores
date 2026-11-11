@@ -7,6 +7,7 @@ type Product = {
     price: number;
     mrp?: number;
     image: string;
+    thumbnailUrl?: string;
     quantity: number;
     maxOrderQty?: number;
     stock?: number;
@@ -52,6 +53,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                         price: Number.isFinite(nextPrice) ? nextPrice : item.price,
                         mrp: Number.isFinite(nextMrp) ? nextMrp : item.mrp,
                         image: typeof data.image === "string" ? data.image : item.image,
+                        thumbnailUrl: typeof data.thumbnailUrl === "string" ? data.thumbnailUrl : item.thumbnailUrl,
                         stock: data.stock != null ? Number(data.stock) : item.stock,
                         maxOrderQty: data.maxOrderQty != null ? Number(data.maxOrderQty) : item.maxOrderQty,
                         unit: typeof data.unit === "string" ? data.unit : item.unit,
