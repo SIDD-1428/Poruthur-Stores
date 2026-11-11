@@ -5,7 +5,6 @@ import PromotionalBannerSlider from "@/components/PromotionalBannerSlider";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -38,7 +37,6 @@ export default function CustomerHome() {
   const [orderNotices, setOrderNotices] = useState<any[]>([]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
   const [dismissedNoticeIds, setDismissedNoticeIds] = useState<Set<string>>(() => new Set());
-  const [notificationsReady, setNotificationsReady] = useState(false);
   const noticeSlide = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -49,30 +47,9 @@ export default function CustomerHome() {
     else setGreeting(`Good evening, ${name}`);
   }, []);
 
-  // Restore read rejection notifications on this device.
-  useEffect(() => {
-    const userId = auth().currentUser?.uid;
-    if (!userId) { setNotificationsReady(true); return; }
-    AsyncStorage.getItem(`bonmart:read-order-notices:${userId}`)
-      .then(value => {
-        const ids = value ? JSON.parse(value) : [];
-        setDismissedNoticeIds(new Set(Array.isArray(ids) ? ids : []));
-      })
-      .catch(error => console.log("Read notifications storage:", error.message))
-      .finally(() => setNotificationsReady(true));
-  }, []);
-
-  useEffect(() => {
-    const userId = auth().currentUser?.uid;
-    if (!userId || !notificationsReady) return;
-    AsyncStorage.setItem(`bonmart:read-order-notices:${userId}`, JSON.stringify([...dismissedNoticeIds]))
-      .catch(error => console.log("Save read notifications:", error.message));
-  }, [dismissedNoticeIds, notificationsReady]);
-
   // Live order notifications: delivery updates and rejected orders.
   useEffect(() => {
     const user = auth().currentUser;
-    if (!notificationsReady) return;
     if (!user) {
       setOrderNotices([]);
       return;
@@ -103,24 +80,19 @@ export default function CustomerHome() {
           .sort((a: any, b: any) => timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt))
           .map((order: any) => ({ type: "delivered", order }));
 
-        const rejected = customerOrders
-          .filter((order: any) => String(order.status || "").toLowerCase().includes("reject"))
-          .sort(newestFirst)
-          .map((order: any) => ({ type: "rejected", order }));
-
-        const nextNotices = [...rejected, ...activeDelivery, ...delivered]
+        const nextNotices = [...activeDelivery, ...delivered]
           .filter((notice: any) => !dismissedNoticeIds.has(notice.order.id));
         setOrderNotices(nextNotices);
       },
       error => console.log("Order notification listener:", error.message)
     );
-  }, [dismissedNoticeIds, notificationsReady]);
+  }, [dismissedNoticeIds]);
 
   const activeNotice = orderNotices.length
     ? orderNotices[activeNoticeIndex % orderNotices.length]
     : null;
 
-  // Rotate through notifications; delivered notices auto-collapse after 3 seconds.
+  // Rotate through delivery notifications; delivered notices auto-collapse after 3 seconds.
   useEffect(() => {
     if (orderNotices.length < 2) return;
     const interval = setInterval(() => {
@@ -290,7 +262,7 @@ export default function CustomerHome() {
             styles.deliveryStrip,
             activeNotice.type === "out-for-delivery" && styles.deliveryStripInTransit,
             activeNotice.type === "delivered" && styles.deliveryStripDelivered,
-            activeNotice.type === "rejected" && styles.deliveryStripRejected,
+            false && styles.deliveryStripRejected,
           ]}>
             <TouchableOpacity
               activeOpacity={0.9}
@@ -301,12 +273,12 @@ export default function CustomerHome() {
                 styles.deliveryStripIcon,
                 activeNotice.type === "out-for-delivery" && styles.deliveryStripIconInTransit,
                 activeNotice.type === "delivered" && styles.deliveryStripIconDelivered,
-                activeNotice.type === "rejected" && styles.deliveryStripIconRejected,
+                false && styles.deliveryStripIconRejected,
               ]}>
                 <Ionicons
-                  name={activeNotice.type === "rejected" ? "close-circle" : activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
+                  name={activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
                   size={20}
-                  color={activeNotice.type === "rejected" ? "#B42318" : "#16803C"}
+                  color={#16803C}
                 />
               </View>
               <View style={styles.deliveryStripCopy}>
@@ -314,18 +286,16 @@ export default function CustomerHome() {
                   styles.deliveryStripLabel,
                   activeNotice.type === "out-for-delivery" && styles.deliveryStripLabelInTransit,
                   activeNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
-                  activeNotice.type === "rejected" && styles.deliveryStripLabelRejected,
+                  false && styles.deliveryStripLabelRejected,
                 ]}>
-                  {activeNotice.type === "rejected" ? "ORDER REJECTED" : activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
+                  {activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
                 </Text>
                 <Text style={styles.deliveryStripDetail} numberOfLines={1}>
-                  {activeNotice.type === "rejected"
-                    ? (activeNotice.order.rejectionReason || activeNotice.order.rejection?.reason || activeNotice.order.statusReason || "Tap to view the rejection details")
-                    : activeNotice.type === "delivered"
-                      ? "Your order has been delivered successfully"
-                      : activeNotice.order.delivery?.associateName
-                        ? `${activeNotice.order.delivery.associateName} · ${activeNotice.order.delivery.associatePhone || "Contact unavailable"}`
-                        : "Your order is on its way"}
+                  {activeNotice.type === "delivered"
+                    ? "Your order has been delivered successfully"
+                    : activeNotice.order.delivery?.associateName
+                      ? `${activeNotice.order.delivery.associateName} · ${activeNotice.order.delivery.associatePhone || "Contact unavailable"}`
+                      : "Your order is on its way"}
                 </Text>
                 <Text style={styles.deliveryOrderId} numberOfLines={1}>
                   Order ID: {activeNotice.order.orderNumber || activeNotice.order.orderId || activeNotice.order.id}
@@ -339,21 +309,7 @@ export default function CustomerHome() {
               )}
               <Ionicons name="chevron-forward" size={17} color={activeNotice.type === "rejected" ? "#B42318" : "#16803C"} />
             </TouchableOpacity>
-            {activeNotice.type === "rejected" && (
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Mark rejection notification as read"
-                style={styles.markReadButton}
-                onPress={() => {
-                  const orderId = activeNotice.order.id;
-                  setDismissedNoticeIds(current => new Set(current).add(orderId));
-                  setOrderNotices(current => current.filter(notice => notice.order.id !== orderId));
-                  setActiveNoticeIndex(0);
-                }}
-              >
-                <Text style={styles.markReadText}>Mark as read</Text>
-              </TouchableOpacity>
-            )}
+
           </View>
         </Animated.View>
       )}
@@ -441,20 +397,15 @@ const styles = StyleSheet.create({
   deliveryStripMain: { flexDirection: "row", alignItems: "center", gap: 9 },
   deliveryStripInTransit: { borderColor: "#B7E4C7", backgroundColor: "#F0FBF3" },
   deliveryStripDelivered: { borderColor: "#A8DDBB", backgroundColor: "#EAF8EF" },
-  deliveryStripRejected: { borderColor: "#F2B8B5", backgroundColor: "#FFF1F0" },
   deliveryStripIcon: { width: 34, height: 34, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   deliveryStripIconInTransit: { backgroundColor: "#D8F3E1" },
   deliveryStripIconDelivered: { backgroundColor: "#D1F0DC" },
-  deliveryStripIconRejected: { backgroundColor: "#FDE0DE" },
   deliveryStripCopy: { flex: 1, minWidth: 0, justifyContent: "center" },
   deliveryStripLabel: { fontSize: 10, fontWeight: "900", letterSpacing: 0.55 },
   deliveryStripLabelInTransit: { color: "#16743A" },
   deliveryStripLabelDelivered: { color: "#16743A" },
-  deliveryStripLabelRejected: { color: "#B42318" },
   deliveryStripDetail: { color: "#3F5145", fontSize: 10, fontWeight: "600", marginTop: 2 },
   deliveryOrderId: { color: "#718078", fontSize: 8, fontWeight: "700", marginTop: 3 },
-  markReadButton: { alignSelf: "flex-end", marginTop: 5, marginRight: 2, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 8, backgroundColor: "#FDE0DE" },
-  markReadText: { color: "#B42318", fontSize: 9, fontWeight: "800" },
   deliveryPinBadge: { minWidth: 48, paddingHorizontal: 7, paddingVertical: 5, borderRadius: 9, backgroundColor: "#D8F3E1", alignItems: "center", justifyContent: "center" },
   deliveryPinLabel: { color: "#34734A", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
   deliveryPinValue: { color: "#14532D", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
