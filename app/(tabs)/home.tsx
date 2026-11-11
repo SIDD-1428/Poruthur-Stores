@@ -304,7 +304,7 @@ export default function CustomerHome() {
                 activeNotice.type === "rejected" && styles.deliveryStripIconRejected,
               ]}>
                 <Ionicons
-                  name={activeNotice.type === "rejected" ? "close-circle" : "checkmark-circle"}
+                  name={activeNotice.type === "rejected" ? "close-circle" : activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
                   size={20}
                   color={activeNotice.type === "rejected" ? "#B42318" : "#16803C"}
                 />
