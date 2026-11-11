@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
   noticePage: { width },
-  deliveryStrip: { minHeight: 54, marginHorizontal: 12, marginTop: -7, marginBottom: 3, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 13, overflow: "hidden", borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 8 },
+  deliveryStrip: { minHeight: 54, marginHorizontal: 12, marginTop: 4, marginBottom: 3, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 13, overflow: "hidden", borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   deliveryStripInTransit: { borderColor: "#B7E4C7", backgroundColor: "#F0FBF3" },
   deliveryStripDelivered: { borderColor: "#A8DDBB", backgroundColor: "#EAF8EF" },
   deliveryStripIcon: { width: 30, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
