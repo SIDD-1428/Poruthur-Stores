@@ -131,6 +131,7 @@ const openAccountManagement = async () => {
   const menuItems = [
   { icon: "bag-outline", title: "My Orders", route: "/(tabs)/orders" },
   { icon: "location-outline", title: "Delivery Address", route: "/address" },
+  { icon: "notifications-outline", title: "Notification Settings", route: "/notification-permission" },
   { icon: "help-circle-outline", title: "Support & Bulk Orders", route: "/support" },
   { icon: "shield-checkmark-outline", title: "Privacy Policy", route: "/privacy" },
   { icon: "person-circle-outline", title: "Account Management", route: "/account-management" },
