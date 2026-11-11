@@ -7,36 +7,38 @@ import { useCart } from "../../context/CartContext";
 export default function TabLayout(){
   const { cart } = useCart();
   const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   return(
     <Tabs screenOptions={{
-      headerShown:false,
+      headerShown: false,
       tabBarActiveTintColor: "#111111",
       tabBarInactiveTintColor: "#777777",
       tabBarStyle: {
         position: "absolute",
-        left: "10%",
+        alignSelf: "center",
         width: "80%",
         bottom: 18,
-        height: 58,
-        paddingTop: 5,
-        paddingBottom: 5,
-        borderRadius: 30,
+        height: 62,
+        paddingTop: 6,
+        paddingBottom: 6,
+        borderRadius: 32,
         borderTopWidth: 0,
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.72)",
-        backgroundColor: "rgba(255,255,255,0.48)",
+        borderColor: "rgba(255,255,255,0.82)",
+        backgroundColor: "transparent",
         overflow: "hidden",
         shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.12,
-        shadowRadius: 18,
-        elevation: 10,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 22,
+        elevation: 14,
       },
       tabBarBackground: () => (
         <BlurView
-          intensity={82}
+          intensity={95}
           tint="light"
-          style={StyleSheet.absoluteFill}
+          experimentalBlurMethod="dimezisBlurView"
+          style={[StyleSheet.absoluteFill, styles.glassBackground]}
         />
       ),
       tabBarLabelStyle: {
@@ -49,16 +51,16 @@ export default function TabLayout(){
       },
       tabBarHideOnKeyboard: true,
     }}>
-      {/*Home screen*/}
-      <Tabs.Screen name="home"
-      options={{
-        title: "Home",
-        tabBarIcon: ({color, size})=>(
-            <Ionicons name="home" color={color} size={size}/>
-        )
-      }}/>
-    
-      {/*Cart screen*/}
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="cart"
         options={{
@@ -70,7 +72,6 @@ export default function TabLayout(){
         }}
       />
 
-      {/*order*/}
       <Tabs.Screen
         name="orders"
         options={{
@@ -81,14 +82,21 @@ export default function TabLayout(){
         }}
       />
 
-      {/*Profile screen*/}
-      <Tabs.Screen name="profile"
-      options={{
-        title: "Profile",
-        tabBarIcon: ({color, size})=>(
-            <Ionicons name="person" color={color} size={size}/>
-        )
-      }} />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" color={color} size={size} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  glassBackground: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+  },
+});
