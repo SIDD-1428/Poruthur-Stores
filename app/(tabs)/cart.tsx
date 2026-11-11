@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -95,10 +94,10 @@ export default function Cart() {
       {renderHeader()}
       {cart.length === 0 ? renderEmpty() : <>
         <FlatList data={cart} keyExtractor={item => item.id}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 190 + insets.bottom }]}
+          style={styles.cartList}
+          contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false} renderItem={renderItem} />
-        <View style={[styles.summaryDock, { bottom: 82 + insets.bottom }]}>
-          <BlurView intensity={78} tint="light" style={StyleSheet.absoluteFill} />
+        <View style={styles.summaryDock}>
           <View style={styles.summaryInner}>
             <View style={styles.summaryCopy}>
               <Text style={styles.summaryLabel}>TOTAL AMOUNT</Text>
@@ -133,7 +132,8 @@ const styles = StyleSheet.create({
   shopBtn: { borderRadius: 24, overflow: "hidden" },
   shopBtnGradient: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingHorizontal: 23, paddingVertical: 13, gap: 9 },
   shopBtnText: { fontSize: 14, fontWeight: "700", color: "#FFFFFF" },
-  listContent: { paddingHorizontal: 16, paddingTop: 16 },
+  cartList: { flex: 1 },
+  listContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 },
   productCard: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, borderRadius: 19, padding: 11, marginBottom: 12, borderWidth: 1, borderColor: Colors.separator, shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.035, shadowRadius: 9, elevation: 2 },
   imageWrap: { width: 76, height: 76, borderRadius: 14, overflow: "hidden", backgroundColor: Colors.surface },
   productImage: { width: "100%", height: "100%" },
@@ -151,8 +151,8 @@ const styles = StyleSheet.create({
   quantityControl: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.surface, borderRadius: 12, padding: 3, gap: 3 },
   quantityButton: { width: 27, height: 27, borderRadius: 9, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" },
   quantityValue: { minWidth: 20, textAlign: "center", fontSize: 12, fontWeight: "800", color: Colors.textPrimary },
-  summaryDock: { position: "absolute", left: 12, right: 12, borderRadius: 22, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.9)", backgroundColor: "rgba(255,255,255,0.78)", shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 10 },
-  summaryInner: { flexDirection: "row", alignItems: "center", padding: 13, gap: 10 },
+  summaryDock: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderTopWidth: 1, borderTopColor: Colors.separator, backgroundColor: "#FFFFFF" },
+  summaryInner: { flexDirection: "row", alignItems: "center", paddingVertical: 2, gap: 10 },
   summaryCopy: { flex: 1, minWidth: 0 },
   summaryLabel: { fontSize: 9, color: Colors.muted, fontWeight: "900", letterSpacing: 0.8 },
   summarySavings: { fontSize: 10, color: Colors.success, fontWeight: "700", marginTop: 2 },
