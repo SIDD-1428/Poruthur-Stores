@@ -62,6 +62,21 @@ export default function CustomerHome() {
         const newestFirst = (a: any, b: any) =>
           timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
 
+        const rejectedByAdmin = customerOrders
+          .filter((order: any) =>
+            order.status === "Cancelled" &&
+            order.cancellationSource === "admin" &&
+            String(order.cancellationReason || "").trim().length > 0
+          )
+          .sort((a: any, b: any) =>
+            timestampMillis(b.cancelledAt || b.createdAt) - timestampMillis(a.cancelledAt || a.createdAt)
+          )[0];
+
+        if (rejectedByAdmin) {
+          setDeliveryNotice({ type: "rejected", order: rejectedByAdmin });
+          return;
+        }
+
         const outForDelivery = customerOrders
           .filter((order: any) => order.status === "Out For Delivery")
           .sort(newestFirst)[0];
@@ -216,34 +231,33 @@ export default function CustomerHome() {
         <TouchableOpacity
           activeOpacity={0.88}
           onPress={() => router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } })}
-          style={[
-            styles.deliveryStrip,
-            deliveryNotice.type === "delivered" && styles.deliveryStripDelivered,
-          ]}
+          style={styles.deliveryStrip}
         >
           <BlurView intensity={48} tint="light" style={StyleSheet.absoluteFill} />
           <View style={styles.deliveryStripWash} />
           <View style={[
             styles.deliveryStripIcon,
-            deliveryNotice.type === "delivered" && styles.deliveryStripIconDelivered,
+            deliveryNotice.type !== "out-for-delivery" && styles.deliveryStripIconDelivered,
           ]}>
             <Ionicons
-              name={deliveryNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
-              size={17}
-              color={deliveryNotice.type === "delivered" ? "#333333" : "#222222"}
+              name={deliveryNotice.type === "rejected" ? "alert-circle" : deliveryNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
+              size={18}
+              color="#18864B"
             />
           </View>
           <View style={styles.deliveryStripCopy}>
             <Text style={[
               styles.deliveryStripLabel,
-              deliveryNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
+              deliveryNotice.type !== "out-for-delivery" && styles.deliveryStripLabelDelivered,
             ]}>
-              {deliveryNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
+              {deliveryNotice.type === "rejected" ? "ORDER REJECTED" : deliveryNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
             </Text>
             <Text style={styles.deliveryStripDetail} numberOfLines={1}>
-              {deliveryNotice.type === "delivered"
-                ? "Order has been delivered"
-                : deliveryNotice.order.delivery?.associateName
+              {deliveryNotice.type === "rejected"
+                ? "Tap to view the reason from the store"
+                : deliveryNotice.type === "delivered"
+                  ? "Order has been delivered"
+                  : deliveryNotice.order.delivery?.associateName
                   ? `${deliveryNotice.order.delivery.associateName} · ${deliveryNotice.order.delivery.associatePhone || "Contact unavailable"}`
                   : "Delivery associate details will appear shortly"}
             </Text>
@@ -331,18 +345,18 @@ const styles = StyleSheet.create({
   addressText: { fontSize: 13, color: "#FFFFFF", fontWeight: "500", maxWidth: width - 120 },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
-  deliveryStrip: { minHeight: 64, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 15, overflow: "hidden", borderWidth: 1, borderColor: "rgba(90,90,90,0.22)", backgroundColor: "rgba(250,250,250,0.78)", flexDirection: "row", alignItems: "center", gap: 8 },
-  deliveryStripDelivered: { minHeight: 46, borderColor: "rgba(35,35,35,0.18)", backgroundColor: "rgba(248,248,248,0.82)" },
-  deliveryStripWash: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.30)" },
-  deliveryStripIcon: { width: 31, height: 31, borderRadius: 11, backgroundColor: "rgba(20,20,20,0.07)", alignItems: "center", justifyContent: "center" },
-  deliveryStripIconDelivered: { backgroundColor: "rgba(20,20,20,0.08)" },
+  deliveryStrip: { minHeight: 64, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 15, overflow: "hidden", borderWidth: 1, borderColor: "#B9E7C8", backgroundColor: "rgba(232,248,238,0.88)", flexDirection: "row", alignItems: "center", gap: 8 },
+  deliveryStripDelivered: { minHeight: 46, borderColor: "#B9E7C8", backgroundColor: "rgba(232,248,238,0.88)" },
+  deliveryStripWash: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.16)" },
+  deliveryStripIcon: { width: 31, height: 31, borderRadius: 11, backgroundColor: "#D6F2DF", alignItems: "center", justifyContent: "center" },
+  deliveryStripIconDelivered: { backgroundColor: "#D6F2DF" },
   deliveryStripCopy: { flex: 1, minWidth: 0, justifyContent: "center" },
-  deliveryStripLabel: { color: "#202020", fontSize: 9, fontWeight: "900", letterSpacing: 0.65 },
-  deliveryStripLabelDelivered: { color: "#303030" },
-  deliveryStripDetail: { color: "#555555", fontSize: 10, fontWeight: "600", marginTop: 2 },
-  deliveryPinBadge: { minWidth: 52, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 9, backgroundColor: "rgba(20,20,20,0.07)", alignItems: "center", justifyContent: "center" },
-  deliveryPinLabel: { color: "#777777", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
-  deliveryPinValue: { color: "#171717", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
+  deliveryStripLabel: { color: "#176B38", fontSize: 9, fontWeight: "900", letterSpacing: 0.65 },
+  deliveryStripLabelDelivered: { color: "#176B38" },
+  deliveryStripDetail: { color: "#356B49", fontSize: 10, fontWeight: "600", marginTop: 2 },
+  deliveryPinBadge: { minWidth: 52, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 9, backgroundColor: "#D6F2DF", alignItems: "center", justifyContent: "center" },
+  deliveryPinLabel: { color: "#39724D", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
+  deliveryPinValue: { color: "#176B38", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
   scrollContent: { paddingBottom: 20, paddingTop: 2 },
   sectionHeading: { paddingHorizontal: 18, marginTop: 8, marginBottom: 13, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headingCopy: { flex: 1 },
@@ -359,16 +373,16 @@ const styles = StyleSheet.create({
   showMoreText: { color: Colors.textPrimary, fontSize: 12, fontWeight: "700" },
   brandHeading: { marginTop: 18 },
   brandRail: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  brandTile: { width: (width - 42) / 2, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
+  brandTile: { width: (width - 52) / 3, height: 78, borderRadius: 14, overflow: "hidden", backgroundColor: "#F7F7F7", borderWidth: 1, borderColor: "#E8E8E8" },
   brandImageBackground: { flex: 1, width: "100%", height: "100%" },
   brandImage: { borderRadius: 13 },
   brandImageGradient: { flex: 1, justifyContent: "flex-end", padding: 9 },
-  brandImageName: { color: "#FFFFFF", fontSize: 16, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
-  brandFallback: { flex: 1, paddingHorizontal: 9, paddingVertical: 8, flexDirection: "row", alignItems: "center", gap: 8 },
-  brandMonogram: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
-  brandMonogramText: { fontSize: 20, fontWeight: "900", color: "#111111" },
+  brandImageName: { color: "#FFFFFF", fontSize: 12, fontWeight: "900", textShadowColor: "#00000088", textShadowRadius: 5 },
+  brandFallback: { flex: 1, paddingHorizontal: 6, paddingVertical: 7, flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 },
+  brandMonogram: { width: 34, height: 34, borderRadius: 10, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E6E6", alignItems: "center", justifyContent: "center" },
+  brandMonogramText: { fontSize: 17, fontWeight: "900", color: "#111111" },
   brandTileCopy: { flex: 1, minWidth: 0 },
-  brandName: { color: "#111111", fontSize: 16, fontWeight: "900" },
+  brandName: { color: "#111111", fontSize: 11, fontWeight: "900", textAlign: "center" },
   centerContainer: { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 30, backgroundColor: Colors.background },
   statusTitle: { fontSize: 24, fontWeight: "700", color: Colors.textPrimary, marginTop: 20, textAlign: "center" },
   statusSubtitle: { marginTop: 10, fontSize: 15, color: Colors.textSecondary, textAlign: "center", lineHeight: 22 },
