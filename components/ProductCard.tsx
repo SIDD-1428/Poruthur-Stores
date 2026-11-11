@@ -23,6 +23,7 @@ type ProductOption = {
   unit: string;
   stock?: number;
   image?: string;
+  thumbnailUrl?: string;
   maxOrderQty?: number;
 };
 
@@ -33,6 +34,7 @@ type Props = {
   price: number;
   mrp?: number;
   image: string;
+  thumbnailUrl?: string;
   protext?: string;
   rating: number;
   unit: string;
@@ -49,6 +51,7 @@ export default function ProductCard({
   mrp = price,
   stock = 0,
   image,
+  thumbnailUrl,
   protext = "",
   rating,
   unit,
@@ -229,7 +232,7 @@ export default function ProductCard({
         {/* Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: image }}
+            source={{ uri: thumbnailUrl || image }}
             style={[styles.image, compactCard && styles.compactImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
@@ -360,9 +363,9 @@ export default function ProductCard({
                         router.push({ pathname: "/product/[id]", params: { id: option.id } });
                       }}
                     >
-                      {option.image ? (
+                      {option.thumbnailUrl || option.image ? (
                         <Image
-                          source={{ uri: option.image }}
+                          source={{ uri: option.thumbnailUrl || option.image }}
                           style={[styles.optionImage, optionOutOfStock && styles.optionImageOutOfStock]}
                           resizeMode="cover"
                         />
