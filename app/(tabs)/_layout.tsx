@@ -9,7 +9,6 @@ export default function TabLayout() {
   const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
   const { width: screenWidth } = useWindowDimensions();
   const tabBarWidth = screenWidth * 0.82;
-  const tabBarSideInset = (screenWidth - tabBarWidth) / 2;
 
   return (
     <Tabs
@@ -20,9 +19,9 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           width: tabBarWidth,
-          left: tabBarSideInset,
+          left: "50%",
           right: undefined,
-          alignSelf: "center",
+          transform: [{ translateX: -tabBarWidth / 2 }],
           bottom: 18,
           height: 64,
           paddingTop: 7,
