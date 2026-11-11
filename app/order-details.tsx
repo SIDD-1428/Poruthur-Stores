@@ -219,6 +219,21 @@ export default function OrderDetails() {
         </View>
       </View>
 
+      {order.status === "Cancelled" && order.cancellationSource === "admin" && String(order.cancellationReason || "").trim().length > 0 && (
+        <View style={[styles.card, { borderColor: "#F2C5C5", backgroundColor: "#FFF8F8" }]}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="alert-circle-outline" size={20} color={Colors.danger} />
+            <Text style={styles.cardTitle}>Reason for Rejection</Text>
+          </View>
+          <Text style={{ color: Colors.textPrimary, fontSize: 14, lineHeight: 21 }}>
+            {order.cancellationReason}
+          </Text>
+          <Text style={{ color: Colors.muted, fontSize: 11, marginTop: 8 }}>
+            This note was added by the store when your order was rejected.
+          </Text>
+        </View>
+      )}
+
       {/*pin*/}
       {order.status === "Out For Delivery" && (
         <View style={styles.pinCard}>
