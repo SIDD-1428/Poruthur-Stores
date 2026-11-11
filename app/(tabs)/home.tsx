@@ -6,6 +6,7 @@ import { calculateDistance } from "@/utils/calculateDistance";
 import { Ionicons } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
+import { BlurView } from "expo-blur";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -31,6 +32,7 @@ export default function CustomerHome() {
   const [deliveryAllowed, setDeliveryAllowed] = useState<boolean | null>(null);
   const [checkingDelivery, setCheckingDelivery] = useState(true);
   const [showMoreCategories, setShowMoreCategories] = useState(false);
+  const [deliveryNotice, setDeliveryNotice] = useState<any>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -38,6 +40,52 @@ export default function CustomerHome() {
     if (hour < 12) setGreeting(`Good morning, ${name}`);
     else if (hour < 17) setGreeting(`Good afternoon, ${name}`);
     else setGreeting(`Good evening, ${name}`);
+  }, []);
+
+  // Keep the home-screen delivery strip synced with the customer's live order.
+  useEffect(() => {
+    const user = auth().currentUser;
+    if (!user) {
+      setDeliveryNotice(null);
+      return;
+    }
+
+    return db.collection("orders").where("userId", "==", user.uid).onSnapshot(
+      snapshot => {
+        const customerOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+        const newestFirst = (a: any, b: any) => {
+          const aTime = a.createdAt?.toMillis?.() ?? a.createdAt?.seconds * 1000 ?? 0;
+          const bTime = b.createdAt?.toMillis?.() ?? b.createdAt?.seconds * 1000 ?? 0;
+          return bTime - aTime;
+        };
+
+        const outForDelivery = customerOrders
+          .filter((order: any) => order.status === "Out For Delivery")
+          .sort(newestFirst)[0];
+
+        if (outForDelivery) {
+          setDeliveryNotice({ type: "out-for-delivery", order: outForDelivery });
+          return;
+        }
+
+        const deliveredRecently = customerOrders
+          .filter((order: any) => order.status === "Delivered" && order.delivery?.verified === true)
+          .filter((order: any) => {
+            const verifiedAt = order.delivery?.verifiedAt;
+            const verifiedMillis = verifiedAt?.toDate?.().getTime()
+              ?? (verifiedAt instanceof Date ? verifiedAt.getTime() : verifiedAt?.seconds ? verifiedAt.seconds * 1000 : 0);
+            return verifiedMillis > Date.now() - 15 * 60 * 1000;
+          })
+          .sort((a: any, b: any) => {
+            const aTime = a.delivery?.verifiedAt?.toMillis?.() ?? 0;
+            const bTime = b.delivery?.verifiedAt?.toMillis?.() ?? 0;
+            return bTime - aTime;
+          })[0];
+
+        setDeliveryNotice(deliveredRecently ? { type: "delivered", order: deliveredRecently } : null);
+      },
+      error => console.log("Delivery status listener:", error.message)
+    );
   }, []);
 
   // Product catalogue stays live so stock, price and availability remain current.
@@ -177,6 +225,52 @@ export default function CustomerHome() {
         <Ionicons name="search-outline" size={20} color={Colors.muted} /><Text style={styles.searchText}>Search for products</Text>
       </TouchableOpacity>
 
+      {deliveryNotice && (
+        <TouchableOpacity
+          activeOpacity={0.88}
+          onPress={() => router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } })}
+          style={[
+            styles.deliveryStrip,
+            deliveryNotice.type === "delivered" && styles.deliveryStripDelivered,
+          ]}
+        >
+          <BlurView intensity={48} tint="light" style={StyleSheet.absoluteFill} />
+          <View style={styles.deliveryStripWash} />
+          <View style={[
+            styles.deliveryStripIcon,
+            deliveryNotice.type === "delivered" && styles.deliveryStripIconDelivered,
+          ]}>
+            <Ionicons
+              name={deliveryNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
+              size={17}
+              color={deliveryNotice.type === "delivered" ? "#23834F" : "#145A3A"}
+            />
+          </View>
+          <View style={styles.deliveryStripCopy}>
+            <Text style={[
+              styles.deliveryStripLabel,
+              deliveryNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
+            ]}>
+              {deliveryNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
+            </Text>
+            <Text style={styles.deliveryStripDetail} numberOfLines={1}>
+              {deliveryNotice.type === "delivered"
+                ? "Order has been delivered"
+                : deliveryNotice.order.delivery?.associateName
+                  ? `${deliveryNotice.order.delivery.associateName} · ${deliveryNotice.order.delivery.associatePhone || "Contact unavailable"}`
+                  : "Delivery associate details will appear shortly"}
+            </Text>
+          </View>
+          {deliveryNotice.type === "out-for-delivery" && (
+            <View style={styles.deliveryPinBadge}>
+              <Text style={styles.deliveryPinLabel}>OTP</Text>
+              <Text style={styles.deliveryPinValue}>{deliveryNotice.order.delivery?.pin || "----"}</Text>
+            </View>
+          )}
+          <Ionicons name="chevron-forward" size={15} color="#789084" />
+        </TouchableOpacity>
+      )}
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}>
         <PromotionalBannerSlider />
         {/* Recommendations */}
@@ -252,6 +346,18 @@ const styles = StyleSheet.create({
   addressText: { fontSize: 13, color: "#FFFFFF", fontWeight: "500", maxWidth: width - 120 },
   searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
+  deliveryStrip: { minHeight: 64, marginHorizontal: 12, marginTop: -7, marginBottom: 10, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 15, overflow: "hidden", borderWidth: 1, borderColor: "rgba(150,190,165,0.65)", backgroundColor: "rgba(244,252,247,0.72)", flexDirection: "row", alignItems: "center", gap: 8 },
+  deliveryStripDelivered: { minHeight: 46, borderColor: "rgba(35,131,79,0.28)", backgroundColor: "rgba(239,250,243,0.78)" },
+  deliveryStripWash: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.28)" },
+  deliveryStripIcon: { width: 31, height: 31, borderRadius: 11, backgroundColor: "rgba(35,131,79,0.10)", alignItems: "center", justifyContent: "center" },
+  deliveryStripIconDelivered: { backgroundColor: "rgba(35,131,79,0.12)" },
+  deliveryStripCopy: { flex: 1, minWidth: 0, justifyContent: "center" },
+  deliveryStripLabel: { color: "#145A3A", fontSize: 9, fontWeight: "900", letterSpacing: 0.65 },
+  deliveryStripLabelDelivered: { color: "#23834F" },
+  deliveryStripDetail: { color: "#365A46", fontSize: 10, fontWeight: "600", marginTop: 2 },
+  deliveryPinBadge: { minWidth: 52, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 9, backgroundColor: "rgba(20,90,58,0.09)", alignItems: "center", justifyContent: "center" },
+  deliveryPinLabel: { color: "#63816F", fontSize: 8, fontWeight: "800", letterSpacing: 0.6 },
+  deliveryPinValue: { color: "#173A2A", fontSize: 13, fontWeight: "900", letterSpacing: 1.3, marginTop: 1 },
   scrollContent: { paddingBottom: 20, paddingTop: 2 },
   sectionHeading: { paddingHorizontal: 18, marginTop: 8, marginBottom: 13, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headingCopy: { flex: 1 },
