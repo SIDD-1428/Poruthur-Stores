@@ -299,8 +299,8 @@ export default function ProductCard({
                 ) : !itemInCart ? (
                   <Animated.View style={{ transform: [{ scale: btnScale }], width: "100%" }}>
                     <TouchableOpacity style={[styles.addBtn, styles.uniformAddBtn]} onPress={handleAddToCart} activeOpacity={0.8}>
-                      <Ionicons name="add" size={14} color="#fff" />
-                      <Text style={styles.addText}>Add</Text>
+                      <Ionicons name="add" size={18} color="#fff" />
+                      <Text style={styles.uniformAddText}>Add</Text>
                     </TouchableOpacity>
                     {otherOptions.length > 0 && (
                       <TouchableOpacity onPress={openOptions} activeOpacity={0.7} hitSlop={6}>
@@ -559,11 +559,12 @@ const styles = StyleSheet.create({
   uniformContent: { flex: 1, justifyContent: "space-between" },
   uniformPriceBlock: { minHeight: 27, justifyContent: "flex-start" },
   uniformSavingsPlaceholder: { height: 9, marginTop: 1 },
-  uniformActionArea: { width: "100%", minHeight: 31, justifyContent: "flex-end" },
-  uniformAddBtn: { width: "100%", minHeight: 30, justifyContent: "center", paddingHorizontal: 8, paddingVertical: 6 },
+  uniformActionArea: { width: "100%", minHeight: 44, justifyContent: "flex-end" },
+  uniformAddBtn: { width: "100%", height: 44, minHeight: 44, borderRadius: 11, justifyContent: "center", alignItems: "center", paddingHorizontal: 10, paddingVertical: 0 },
   uniformUnavailableBtn: { width: "100%", minHeight: 30, alignItems: "center", justifyContent: "center" },
-  uniformQtyBox: { width: "100%", minHeight: 30, justifyContent: "space-between", paddingHorizontal: 5, paddingVertical: 3 },
-  uniformOptionsLink: { color: "#007AFF", fontSize: 8, fontWeight: "600", marginTop: 2, textAlign: "center" },
+  uniformQtyBox: { width: "100%", height: 44, minHeight: 44, borderRadius: 11, justifyContent: "space-between", paddingHorizontal: 8, paddingVertical: 4 },
+  uniformOptionsLink: { color: "#007AFF", fontSize: 10, fontWeight: "600", marginTop: 4, textAlign: "center" },
+  uniformAddText: { color: "#FFFFFF", fontWeight: "700", fontSize: 15, lineHeight: 19 },
   compactImage: { height: 64 },
   compactInfoContainer: { paddingHorizontal: 6, paddingTop: 5, paddingBottom: 6 },
   compactName: { fontSize: 10, lineHeight: 13, minHeight: 26 },
