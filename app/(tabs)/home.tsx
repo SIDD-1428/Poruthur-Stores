@@ -52,12 +52,15 @@ export default function CustomerHome() {
 
     return db.collection("orders").where("userId", "==", user.uid).onSnapshot(
       snapshot => {
-        const customerOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
-        const newestFirst = (a: any, b: any) => {
-          const aTime = a.createdAt?.toMillis?.() ?? a.createdAt?.seconds * 1000 ?? 0;
-          const bTime = b.createdAt?.toMillis?.() ?? b.createdAt?.seconds * 1000 ?? 0;
-          return bTime - aTime;
+        const customerOrders = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+        const timestampMillis = (value: any) => {
+          if (typeof value?.toMillis === "function") return value.toMillis();
+          if (typeof value?.toDate === "function") return value.toDate().getTime();
+          if (value instanceof Date) return value.getTime();
+          return typeof value?.seconds === "number" ? value.seconds * 1000 : 0;
         };
+        const newestFirst = (a: any, b: any) =>
+          timestampMillis(b.createdAt) - timestampMillis(a.createdAt);
 
         const outForDelivery = customerOrders
           .filter((order: any) => order.status === "Out For Delivery")
@@ -71,16 +74,12 @@ export default function CustomerHome() {
         const deliveredRecently = customerOrders
           .filter((order: any) => order.status === "Delivered" && order.delivery?.verified === true)
           .filter((order: any) => {
-            const verifiedAt = order.delivery?.verifiedAt;
-            const verifiedMillis = verifiedAt?.toDate?.().getTime()
-              ?? (verifiedAt instanceof Date ? verifiedAt.getTime() : verifiedAt?.seconds ? verifiedAt.seconds * 1000 : 0);
+            const verifiedMillis = timestampMillis(order.delivery?.verifiedAt);
             return verifiedMillis > Date.now() - 15 * 60 * 1000;
           })
-          .sort((a: any, b: any) => {
-            const aTime = a.delivery?.verifiedAt?.toMillis?.() ?? 0;
-            const bTime = b.delivery?.verifiedAt?.toMillis?.() ?? 0;
-            return bTime - aTime;
-          })[0];
+          .sort((a: any, b: any) =>
+            timestampMillis(b.delivery?.verifiedAt) - timestampMillis(a.delivery?.verifiedAt)
+          )[0];
 
         setDeliveryNotice(deliveredRecently ? { type: "delivered", order: deliveredRecently } : null);
       },
