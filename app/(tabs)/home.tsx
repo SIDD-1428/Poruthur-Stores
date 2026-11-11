@@ -36,7 +36,7 @@ export default function CustomerHome() {
   const [showMoreCategories, setShowMoreCategories] = useState(false);
   const [orderNotices, setOrderNotices] = useState<any[]>([]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
-  const [dismissedNoticeIds, setDismissedNoticeIds] = useState<Set<string>>(() => new Set());
+  const dismissedNoticeIds = React.useRef<Set<string>>(new Set());
   const noticeSlide = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -81,12 +81,12 @@ export default function CustomerHome() {
           .map((order: any) => ({ type: "delivered", order }));
 
         const nextNotices = [...activeDelivery, ...delivered]
-          .filter((notice: any) => !dismissedNoticeIds.has(notice.order.id));
+          .filter((notice: any) => !dismissedNoticeIds.current.has(notice.order.id));
         setOrderNotices(nextNotices);
       },
       error => console.log("Order notification listener:", error.message)
     );
-  }, [dismissedNoticeIds]);
+  }, []);
 
   const activeNotice = orderNotices.length
     ? orderNotices[activeNoticeIndex % orderNotices.length]
@@ -107,8 +107,8 @@ export default function CustomerHome() {
     const interval = setInterval(() => {
       Animated.timing(noticeSlide, {
         toValue: -1,
-        duration: 320,
-        easing: Easing.in(Easing.cubic),
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start(({ finished }) => {
         if (!finished) return;
@@ -116,7 +116,7 @@ export default function CustomerHome() {
         noticeSlide.setValue(1);
         Animated.timing(noticeSlide, {
           toValue: 0,
-          duration: 380,
+          duration: 220,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }).start();
@@ -129,7 +129,7 @@ export default function CustomerHome() {
     if (activeNotice?.type !== "delivered") return;
     const orderId = activeNotice.order.id;
     const timeout = setTimeout(() => {
-      setDismissedNoticeIds(current => new Set(current).add(orderId));
+      dismissedNoticeIds.current.add(orderId);
       setOrderNotices(current => current.filter(notice => notice.order.id !== orderId));
       setActiveNoticeIndex(0);
     }, 3000);
@@ -265,8 +265,8 @@ export default function CustomerHome() {
         <View style={styles.noticeCarousel}>
           <Animated.View
             style={{
-              opacity: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
-              transform: [{ translateX: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [-width * 0.28, 0, width * 0.28] }) }],
+              opacity: 1,
+              transform: [{ translateX: noticeSlide.interpolate({ inputRange: [-1, 0, 1], outputRange: [-width * 0.32, 0, width * 0.32] }) }],
             }}
           >
             <TouchableOpacity
@@ -318,7 +318,8 @@ export default function CustomerHome() {
                     noticeSlide.stopAnimation();
                     Animated.timing(noticeSlide, {
                       toValue: -1,
-                      duration: 180,
+                      duration: 160,
+                      easing: Easing.out(Easing.cubic),
                       useNativeDriver: true,
                     }).start(({ finished }) => {
                       if (!finished) return;
@@ -326,7 +327,8 @@ export default function CustomerHome() {
                       noticeSlide.setValue(1);
                       Animated.timing(noticeSlide, {
                         toValue: 0,
-                        duration: 240,
+                        duration: 200,
+                        easing: Easing.out(Easing.cubic),
                         useNativeDriver: true,
                       }).start();
                     });
