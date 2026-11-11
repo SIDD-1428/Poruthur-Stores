@@ -26,7 +26,7 @@ export default function TabLayout() {
           borderRadius: 32,
           borderTopWidth: 0,
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.78)",
+          borderColor: "rgba(255,255,255,0.72)",
           backgroundColor: "transparent",
           overflow: "hidden",
           shadowColor: "#172033",
@@ -36,15 +36,14 @@ export default function TabLayout() {
           elevation: 20,
         },
         tabBarBackground: () => (
-          <View style={StyleSheet.absoluteFill}>
+          <View style={styles.glassContainer}>
             <BlurView
               intensity={100}
-              tint="light"
               blurReductionFactor={1}
               experimentalBlurMethod="dimezisBlurView"
               style={StyleSheet.absoluteFill}
             />
-            <View pointerEvents="none" style={styles.glassMilk} />
+            <View pointerEvents="none" style={styles.glassWash} />
             <View pointerEvents="none" style={styles.glassTopSheen} />
             <View pointerEvents="none" style={styles.glassLowerEdge} />
           </View>
@@ -105,9 +104,15 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  glassMilk: {
+  glassContainer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(246, 249, 255, 0.08)",
+    overflow: "hidden",
+    borderRadius: 32,
+    backgroundColor: "transparent",
+  },
+  glassWash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255, 255, 255, 0.10)",
   },
   glassTopSheen: {
     position: "absolute",
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
     right: 22,
     height: 1,
     borderRadius: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
   glassLowerEdge: {
     position: "absolute",
@@ -125,6 +130,6 @@ const styles = StyleSheet.create({
     right: 26,
     height: 1,
     borderRadius: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.42)",
+    backgroundColor: "rgba(255, 255, 255, 0.38)",
   },
 });
