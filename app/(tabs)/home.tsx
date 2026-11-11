@@ -230,6 +230,7 @@ export default function CustomerHome() {
               } catch (error) { console.log("Unable to save rejected notification dismissal:", error); }
               dismissedRejectionIdRef.current = deliveryNotice.order.id;
               setDeliveryNotice(null);
+              router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } });
               return;
             }
             router.push({ pathname: "/order-details", params: { id: deliveryNotice.order.id } });
