@@ -262,7 +262,7 @@ export default function CustomerHome() {
             styles.deliveryStrip,
             activeNotice.type === "out-for-delivery" && styles.deliveryStripInTransit,
             activeNotice.type === "delivered" && styles.deliveryStripDelivered,
-            false && styles.deliveryStripRejected,
+            
           ]}>
             <TouchableOpacity
               activeOpacity={0.9}
@@ -273,12 +273,12 @@ export default function CustomerHome() {
                 styles.deliveryStripIcon,
                 activeNotice.type === "out-for-delivery" && styles.deliveryStripIconInTransit,
                 activeNotice.type === "delivered" && styles.deliveryStripIconDelivered,
-                false && styles.deliveryStripIconRejected,
+                
               ]}>
                 <Ionicons
                   name={activeNotice.type === "delivered" ? "checkmark-circle" : "bicycle-outline"}
                   size={20}
-                  color={#16803C}
+                  color="#16803C"
                 />
               </View>
               <View style={styles.deliveryStripCopy}>
@@ -286,7 +286,7 @@ export default function CustomerHome() {
                   styles.deliveryStripLabel,
                   activeNotice.type === "out-for-delivery" && styles.deliveryStripLabelInTransit,
                   activeNotice.type === "delivered" && styles.deliveryStripLabelDelivered,
-                  false && styles.deliveryStripLabelRejected,
+                  
                 ]}>
                   {activeNotice.type === "delivered" ? "DELIVERY COMPLETE" : "OUT FOR DELIVERY"}
                 </Text>
@@ -307,9 +307,8 @@ export default function CustomerHome() {
                   <Text style={styles.deliveryPinValue}>{activeNotice.order.delivery?.pin || "----"}</Text>
                 </View>
               )}
-              <Ionicons name="chevron-forward" size={17} color={activeNotice.type === "rejected" ? "#B42318" : "#16803C"} />
+              <Ionicons name="chevron-forward" size={17} color="#16803C" />
             </TouchableOpacity>
-
           </View>
         </Animated.View>
       )}
