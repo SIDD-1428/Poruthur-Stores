@@ -38,7 +38,7 @@ type Props = {
   protext?: string;
   rating: number;
   unit: string;
-  width?: number;
+  width?: number | `${number}%`;
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
   compactCard?: boolean;
@@ -543,13 +543,13 @@ const styles = StyleSheet.create({
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
   uniformCard: { height: 210 },
-  categoryGridCard: { borderRadius: 12, marginRight: 0, marginBottom: 0, padding: 0, flexDirection: "column", justifyContent: "flex-start" },
-  categoryGridImage: { height: 76, width: "100%" },
-  categoryGridInfo: { paddingHorizontal: 8, paddingTop: 6, paddingBottom: 8 },
+  categoryGridCard: { height: 232, borderRadius: 12, marginRight: 0, marginBottom: 0, padding: 0, flexDirection: "column", justifyContent: "flex-start" },
+  categoryGridImage: { height: 96, width: "100%" },
+  categoryGridInfo: { flex: 1, paddingHorizontal: 8, paddingTop: 6, paddingBottom: 8 },
   categoryGridName: { fontSize: 12, lineHeight: 14, minHeight: 28, fontWeight: "700" },
   categoryGridUnit: { fontSize: 10, lineHeight: 12, marginTop: 0, marginBottom: 0 },
-  categoryGridContent: { gap: 10 },
-  categoryGridDetails: { minHeight: 0 },
+  categoryGridContent: { flex: 1, justifyContent: "space-between", gap: 6 },
+  categoryGridDetails: { minHeight: 28 },
   categoryGridNamePrice: { flexDirection: "row", alignItems: "baseline", flexWrap: "wrap", gap: 3 },
   categoryGridPrice: { fontSize: 13, fontWeight: "800", color: "#1C1C1E" },
   categoryGridMrp: { fontSize: 11, color: "#999", textDecorationLine: "line-through" },
