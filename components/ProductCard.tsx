@@ -44,6 +44,7 @@ type Props = {
   compactCard?: boolean;
   uniformCard?: boolean;
   categoryGridCard?: boolean;
+  compactGridCard?: boolean;
 };
 
 export default function ProductCard({
@@ -63,6 +64,7 @@ export default function ProductCard({
   compactCard = false,
   uniformCard = false,
   categoryGridCard = false,
+  compactGridCard = false,
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -223,6 +225,7 @@ export default function ProductCard({
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       onPress={handleCardPress}
+      style={{ width }}
     >
       <Animated.View
         style={[
@@ -230,7 +233,7 @@ export default function ProductCard({
           compactCard && styles.compactCard,
           uniformCard && styles.uniformCard,
           categoryGridCard && styles.categoryGridCard,
-          { width },
+          compactGridCard && styles.compactGridCard,
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
         ]}
@@ -251,7 +254,7 @@ export default function ProductCard({
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: thumbnailUrl || image }}
-            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, categoryGridCard && styles.categoryGridImage, isOutOfStock && { opacity: 0.5 }]}
+            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, categoryGridCard && styles.categoryGridImage, compactGridCard && styles.compactGridImage, isOutOfStock && { opacity: 0.5 }]}
           />
           {rating > 0 && !isOutOfStock && (
             <View style={styles.ratingBadge}>
@@ -262,31 +265,31 @@ export default function ProductCard({
         </View>
 
         {/* Info */}
-        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer, categoryGridCard && styles.categoryGridInfo]}>
-          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName, categoryGridCard && styles.categoryGridName]} numberOfLines={2}>{name}</Text>
-          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit, categoryGridCard && styles.categoryGridUnit]} numberOfLines={1}>{unit}</Text>
+        <View style={[styles.infoContainer, compactCard && styles.compactInfoContainer, uniformCard && styles.uniformInfoContainer, categoryGridCard && styles.categoryGridInfo, compactGridCard && styles.compactGridInfo]}>
+          <Text style={[styles.name, compactCard && styles.compactName, uniformCard && styles.uniformName, categoryGridCard && styles.categoryGridName, compactGridCard && styles.compactGridName]} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit, categoryGridCard && styles.categoryGridUnit, compactGridCard && styles.compactGridUnit]} numberOfLines={1}>{unit}</Text>
 
           {categoryGridCard ? (
             <View style={styles.categoryGridContent}>
               <View style={styles.categoryGridDetails}>
                 <View style={styles.categoryGridNamePrice}>
-                  <Text style={[styles.categoryGridPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
-                  {Number(mrp) > Number(price) ? <Text style={styles.categoryGridMrp}>₹{mrp}</Text> : null}
+                  <Text style={[styles.categoryGridPrice, compactGridCard && styles.compactGridPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
+                  {Number(mrp) > Number(price) ? <Text style={[styles.categoryGridMrp, compactGridCard && styles.compactGridMrp]}>₹{mrp}</Text> : null}
                 </View>
-                {Number(mrp) > Number(price) ? <Text style={styles.categoryGridSavings}>Save ₹{(Number(mrp) - Number(price)).toFixed(0)}</Text> : null}
+                {Number(mrp) > Number(price) ? <Text style={[styles.categoryGridSavings, compactGridCard && styles.compactGridSavings]}>Save ₹{(Number(mrp) - Number(price)).toFixed(0)}</Text> : null}
               </View>
               <View style={styles.categoryGridAction}>
-                {otherOptions.length > 0 && !isOutOfStock && <TouchableOpacity onPress={openOptions} activeOpacity={0.7}><Text style={styles.categoryGridOptions}>Other options</Text></TouchableOpacity>}
+                {otherOptions.length > 0 && !isOutOfStock && <TouchableOpacity onPress={openOptions} activeOpacity={0.7}><Text style={[styles.categoryGridOptions, compactGridCard && styles.compactGridOptions]}>Other options</Text></TouchableOpacity>}
                 {isOutOfStock ? (
-                  <View style={styles.categoryGridUnavailable}><Text style={styles.categoryGridUnavailableText}>Out of Stock</Text></View>
+                  <View style={[styles.categoryGridUnavailable, compactGridCard && styles.compactGridAction]}><Text style={styles.categoryGridUnavailableText}>Out of Stock</Text></View>
                 ) : !itemInCart ? (
                   <Animated.View style={{ transform: [{ scale: btnScale }], width: "100%" }}>
-                    <TouchableOpacity style={styles.categoryGridAddBtn} onPress={handleAddToCart} activeOpacity={0.8}>
+                    <TouchableOpacity style={[styles.categoryGridAddBtn, compactGridCard && styles.compactGridAction]} onPress={handleAddToCart} activeOpacity={0.8}>
                       <Ionicons name="add" size={13} color="#fff" /><Text style={styles.categoryGridAddText}>Add</Text>
                     </TouchableOpacity>
                   </Animated.View>
                 ) : (
-                  <View style={styles.categoryGridQtyBox}>
+                  <View style={[styles.categoryGridQtyBox, compactGridCard && styles.compactGridAction]}>
                     <TouchableOpacity style={styles.categoryGridQtyBtn} onPress={handleDecrease}><Ionicons name="remove" size={12} color="#007AFF" /></TouchableOpacity>
                     <Text style={styles.categoryGridQtyText}>{itemInCart.quantity}</Text>
                     <TouchableOpacity style={[styles.categoryGridQtyBtn, styles.categoryGridQtyBtnAdd]} onPress={handleIncrease}><Ionicons name="add" size={12} color="#fff" /></TouchableOpacity>
@@ -544,6 +547,16 @@ const styles = StyleSheet.create({
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
   uniformCard: { height: 210 },
   categoryGridCard: { borderRadius: 12, marginRight: 0, marginBottom: 0, padding: 0, flexDirection: "column", justifyContent: "flex-start" },
+  compactGridCard: { flexShrink: 1, alignSelf: "flex-start" },
+  compactGridImage: { height: 66 },
+  compactGridInfo: { paddingHorizontal: 7, paddingTop: 5, paddingBottom: 6 },
+  compactGridName: { fontSize: 11, lineHeight: 13, minHeight: 26 },
+  compactGridUnit: { fontSize: 9, lineHeight: 11, marginTop: 0, marginBottom: 0 },
+  compactGridPrice: { fontSize: 12 },
+  compactGridMrp: { fontSize: 10 },
+  compactGridSavings: { fontSize: 8, lineHeight: 10 },
+  compactGridOptions: { fontSize: 9 },
+  compactGridAction: { height: 25, minHeight: 25, paddingVertical: 0 },
   categoryGridImage: { height: 76, width: "100%" },
   categoryGridInfo: { paddingHorizontal: 8, paddingTop: 6, paddingBottom: 8 },
   categoryGridName: { fontSize: 12, lineHeight: 14, minHeight: 28, fontWeight: "700" },
