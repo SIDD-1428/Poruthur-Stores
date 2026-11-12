@@ -42,7 +42,7 @@ export default function BrandProductsScreen() {
         </View>
       </LinearGradient>
       {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#000000" /></View> : (
-        <FlatList data={products} keyExtractor={item => item.id} numColumns={2} columnWrapperStyle={styles.row} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
+        <FlatList data={products} keyExtractor={item => item.id} numColumns={3} columnWrapperStyle={styles.row} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <View style={styles.cardWrap}><ProductCard id={item.id} width="100%" categoryGridCard compactGridCard name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? allProducts.filter(option => option.groupId === item.groupId) : []} /></View>}
           ListEmptyComponent={<View style={styles.empty}><Ionicons name="pricetag-outline" size={44} color="#999999" /><Text style={styles.emptyTitle}>No products available</Text><Text style={styles.emptyText}>There are currently no products listed under this brand.</Text></View>}
         />
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#FFFFFFAA", fontSize: 12, marginTop: 3 },
   list: { paddingHorizontal: 14, paddingTop: 16, paddingBottom: 110 },
   row: { justifyContent: "space-between", marginBottom: 12 },
-  cardWrap: { width: "46%", minWidth: 0 },
+  cardWrap: { width: "31.5%", minWidth: 0 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 35, paddingTop: 100 },
   emptyTitle: { color: "#111111", fontSize: 17, fontWeight: "700", marginTop: 12 },
