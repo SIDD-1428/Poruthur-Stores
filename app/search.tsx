@@ -336,7 +336,7 @@ export default function SearchScreen() {
           data={filteredProducts}
           keyExtractor={(item) => item.id}
           renderItem={renderProductCard}
-          numColumns={2}
+          numColumns={3}
           columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   productCardWrapper: {
-    width: "46%",
+    width: "31.5%",
   },
 
   // Loading State
