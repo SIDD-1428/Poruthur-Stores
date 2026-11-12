@@ -271,16 +271,16 @@ export default function ProductCard({
           <Text style={[styles.unit, compactCard && styles.compactUnit, uniformCard && styles.uniformUnit, categoryGridCard && styles.categoryGridUnit, compactGridCard && styles.compactGridUnit]} numberOfLines={1}>{unit}</Text>
 
           {categoryGridCard ? (
-            <View style={styles.categoryGridContent}>
-              <View style={styles.categoryGridDetails}>
+            <View style={[styles.categoryGridContent, compactGridCard && styles.compactGridContent]}>
+              <View style={[styles.categoryGridDetails, compactGridCard && styles.compactGridDetails]}>
                 <View style={styles.categoryGridNamePrice}>
                   <Text style={[styles.categoryGridPrice, compactGridCard && styles.compactGridPrice, isOutOfStock && { color: "#ABABAB" }]}>₹{price}</Text>
                   {Number(mrp) > Number(price) ? <Text style={[styles.categoryGridMrp, compactGridCard && styles.compactGridMrp]}>₹{mrp}</Text> : null}
                 </View>
-                {Number(mrp) > Number(price) ? <Text style={[styles.categoryGridSavings, compactGridCard && styles.compactGridSavings]}>Save ₹{(Number(mrp) - Number(price)).toFixed(0)}</Text> : null}
+                {Number(mrp) > Number(price) ? <Text style={[styles.categoryGridSavings, compactGridCard && styles.compactGridSavings]}>Save ₹{(Number(mrp) - Number(price)).toFixed(0)}</Text> : compactGridCard ? <View style={styles.compactGridSavingsPlaceholder} /> : null}
               </View>
-              <View style={styles.categoryGridAction}>
-                {otherOptions.length > 0 && !isOutOfStock && <TouchableOpacity onPress={openOptions} activeOpacity={0.7}><Text style={[styles.categoryGridOptions, compactGridCard && styles.compactGridOptions]}>Other options</Text></TouchableOpacity>}
+              <View style={[styles.categoryGridAction, compactGridCard && styles.compactGridActionColumn]}>
+                {otherOptions.length > 0 && !isOutOfStock ? <TouchableOpacity onPress={openOptions} activeOpacity={0.7}><Text style={[styles.categoryGridOptions, compactGridCard && styles.compactGridOptions]}>Other options</Text></TouchableOpacity> : compactGridCard ? <View style={styles.compactGridOptionsPlaceholder} /> : null}
                 {isOutOfStock ? (
                   <View style={[styles.categoryGridUnavailable, compactGridCard && styles.compactGridAction]}><Text style={styles.categoryGridUnavailableText}>Out of Stock</Text></View>
                 ) : !itemInCart ? (
@@ -548,16 +548,21 @@ const styles = StyleSheet.create({
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
   uniformCard: { height: 210 },
   categoryGridCard: { borderRadius: 12, marginRight: 0, marginBottom: 0, padding: 0, flexDirection: "column", justifyContent: "flex-start" },
-  compactGridCard: { flexShrink: 1, alignSelf: "flex-start" },
+  compactGridCard: { height: 190, flexShrink: 0, alignSelf: "stretch" },
   compactGridImage: { height: 66 },
-  compactGridInfo: { paddingHorizontal: 7, paddingTop: 5, paddingBottom: 6 },
+  compactGridInfo: { flex: 1, justifyContent: "space-between", paddingHorizontal: 7, paddingTop: 5, paddingBottom: 6 },
   compactGridName: { fontSize: 11, lineHeight: 13, minHeight: 26 },
   compactGridUnit: { fontSize: 9, lineHeight: 11, marginTop: 0, marginBottom: 0 },
   compactGridPrice: { fontSize: 12 },
   compactGridMrp: { fontSize: 10 },
   compactGridSavings: { fontSize: 8, lineHeight: 10 },
-  compactGridOptions: { fontSize: 9 },
+  compactGridSavingsPlaceholder: { height: 10 },
+  compactGridOptions: { fontSize: 9, lineHeight: 11 },
+  compactGridOptionsPlaceholder: { height: 11 },
   compactGridAction: { height: 25, minHeight: 25, paddingVertical: 0 },
+  compactGridContent: { flex: 1, justifyContent: "space-between", gap: 0 },
+  compactGridDetails: { minHeight: 35 },
+  compactGridActionColumn: { width: "100%", minHeight: 38, gap: 2, paddingTop: 0 },
   categoryGridImage: { height: 76, width: "100%" },
   categoryGridInfo: { paddingHorizontal: 8, paddingTop: 6, paddingBottom: 8 },
   categoryGridName: { fontSize: 12, lineHeight: 14, minHeight: 28, fontWeight: "700" },
