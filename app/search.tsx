@@ -213,6 +213,7 @@ export default function SearchScreen() {
         mrp={Number(item.mrp ?? item.price)}
         stock={item.stock}
         image={item.image}
+        thumbnailUrl={item.thumbnailUrl}
         protext={item.protext}
         rating={item.rating}
         unit={item.unit}
