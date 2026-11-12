@@ -38,7 +38,7 @@ type Props = {
   protext?: string;
   rating: number;
   unit: string;
-  width?: number;
+  width?: number | string;
   maxOrderQty?: number;
   availableOptions?: ProductOption[];
   compactCard?: boolean;
