@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#FFFFFFAA", fontSize: 12, marginTop: 3 },
   list: { paddingHorizontal: 14, paddingTop: 16, paddingBottom: 110 },
   row: { justifyContent: "space-between", marginBottom: 12 },
-  cardWrap: { width: "48%" },
+  cardWrap: { width: "46%", minWidth: 0 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 35, paddingTop: 100 },
   emptyTitle: { color: "#111111", fontSize: 17, fontWeight: "700", marginTop: 12 },
