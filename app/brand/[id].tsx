@@ -4,11 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { db } from "../../firebase/config";
-
-const SCREEN_WIDTH = Dimensions.get("window").width;
-const PRODUCT_CARD_WIDTH = (SCREEN_WIDTH - 28) * 0.48;
 
 export default function BrandProductsScreen() {
   const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
@@ -46,7 +43,7 @@ export default function BrandProductsScreen() {
       </LinearGradient>
       {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#000000" /></View> : (
         <FlatList data={products} keyExtractor={item => item.id} numColumns={2} columnWrapperStyle={styles.row} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <View style={styles.cardWrap}><ProductCard id={item.id} width={PRODUCT_CARD_WIDTH} categoryGridCard name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? allProducts.filter(option => option.groupId === item.groupId) : []} /></View>}
+          renderItem={({ item }) => <View style={styles.cardWrap}><ProductCard id={item.id} width="100%" categoryGridCard name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? allProducts.filter(option => option.groupId === item.groupId) : []} /></View>}
           ListEmptyComponent={<View style={styles.empty}><Ionicons name="pricetag-outline" size={44} color="#999999" /><Text style={styles.emptyTitle}>No products available</Text><Text style={styles.emptyText}>There are currently no products listed under this brand.</Text></View>}
         />
       )}
