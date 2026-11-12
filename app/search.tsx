@@ -204,6 +204,7 @@ export default function SearchScreen() {
         id={item.id}
         width="100%"
         categoryGridCard
+        compactGridCard
         name={item.name}
         price={item.price}
         mrp={Number(item.mrp ?? item.price)}
