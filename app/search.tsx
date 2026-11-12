@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   productCardWrapper: {
-    width: "48%",
+    width: "46%",
   },
 
   // Loading State
