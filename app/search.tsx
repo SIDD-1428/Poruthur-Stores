@@ -333,6 +333,7 @@ export default function SearchScreen() {
         </View>
       ) : (
         <FlatList
+          key="search-products-3-columns"
           data={filteredProducts}
           keyExtractor={(item) => item.id}
           renderItem={renderProductCard}
