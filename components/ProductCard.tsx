@@ -234,6 +234,7 @@ export default function ProductCard({
           uniformCard && styles.uniformCard,
           categoryGridCard && styles.categoryGridCard,
           compactGridCard && styles.compactGridCard,
+          { width: "100%" },
           isOutOfStock && styles.outOfStockCard,
           { transform: [{ scale }] },
         ]}
