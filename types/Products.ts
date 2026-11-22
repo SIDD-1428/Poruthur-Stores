@@ -4,7 +4,7 @@ export type Product ={
     price: number;
     image: string;
     thumbnailUrl?: string;
-    images?: Array<string | { imageUrl: string; thumbnailUrl?: string }>;
+    images?: Array<string | { image?: string; imageUrl?: string; thumbnailUrl?: string }>;
     category: string;
     protext: string;
     unit: string;
