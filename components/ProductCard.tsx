@@ -74,6 +74,9 @@ export default function ProductCard({
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [imageWidth, setImageWidth] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  // Try the lightweight thumbnail first; remember failures and fall back to
+  // the original optimized image URL for that thumbnail.
+  const [failedThumbnailUrls, setFailedThumbnailUrls] = useState<Record<string, boolean>>({});
   // Admin documents store gallery entries as { image, thumbnailUrl }.
   // Also accept imageUrl for compatibility with older customer-side records.
   const normalizedImages = images
@@ -289,10 +292,26 @@ export default function ProductCard({
             {productImages.map((photo, index) => (
               <Image
                 key={`${photo.imageUrl}-${index}`}
-                // Use the original optimized image URL here. Some older thumbnailUrl
-                // values are stale, while the primary image URL is known to work
-                // (the product detail screen uses this same URL).
-                source={{ uri: photo.imageUrl || photo.thumbnailUrl }}
+                source={{
+                  uri:
+                    photo.thumbnailUrl &&
+                    photo.thumbnailUrl !== photo.imageUrl &&
+                    !failedThumbnailUrls[photo.thumbnailUrl]
+                      ? photo.thumbnailUrl
+                      : photo.imageUrl,
+                }}
+                onError={() => {
+                  if (
+                    photo.thumbnailUrl &&
+                    photo.thumbnailUrl !== photo.imageUrl &&
+                    !failedThumbnailUrls[photo.thumbnailUrl]
+                  ) {
+                    setFailedThumbnailUrls((previous) => ({
+                      ...previous,
+                      [photo.thumbnailUrl]: true,
+                    }));
+                  }
+                }}
                 style={[
                   styles.image,
                   compactCard && styles.compactImage,
