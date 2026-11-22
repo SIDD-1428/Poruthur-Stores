@@ -88,6 +88,7 @@ export default function ProductCard({
     : image
       ? [{ imageUrl: image, thumbnailUrl: thumbnailUrl || image }]
       : [];
+  const cardImageHeight = compactCard ? 64 : categoryGridCard ? (compactGridCard ? 78 : 76) : 88;
   const [popupFrame, setPopupFrame] = useState({ left: 12, top: 100, width: 260 });
   const cardRef = useRef<View>(null);
   const popupScale = useRef(new Animated.Value(0.88)).current;
@@ -273,11 +274,33 @@ export default function ProductCard({
 
         {/* Image */}
         <View style={styles.imageContainer} onLayout={(event) => setImageWidth(event.nativeEvent.layout.width)}>
-          <ScrollView horizontal pagingEnabled nestedScrollEnabled directionalLockEnabled showsHorizontalScrollIndicator={false} scrollEventThrottle={16}
-            onMomentumScrollEnd={(event) => { if (imageWidth > 0) setActiveImageIndex(Math.round(event.nativeEvent.contentOffset.x / imageWidth)); }}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            nestedScrollEnabled
+            directionalLockEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            style={{ height: cardImageHeight, width: "100%" }}
+            onMomentumScrollEnd={(event) => {
+              if (imageWidth > 0) setActiveImageIndex(Math.round(event.nativeEvent.contentOffset.x / imageWidth));
+            }}
+          >
             {productImages.map((photo, index) => (
-              <Image key={`${photo.imageUrl}-${index}`} source={{ uri: photo.thumbnailUrl || photo.imageUrl }}
-                style={[styles.image, { width: imageWidth || 120 }, compactCard && styles.compactImage, uniformCard && styles.uniformImage, categoryGridCard && styles.categoryGridImage, compactGridCard && styles.compactGridImage, isOutOfStock && { opacity: 0.5 }]} resizeMode="cover" />
+              <Image
+                key={`${photo.imageUrl}-${index}`}
+                source={{ uri: photo.thumbnailUrl || photo.imageUrl }}
+                style={[
+                  styles.image,
+                  { width: imageWidth || 120, height: cardImageHeight },
+                  compactCard && styles.compactImage,
+                  uniformCard && styles.uniformImage,
+                  categoryGridCard && styles.categoryGridImage,
+                  compactGridCard && styles.compactGridImage,
+                  isOutOfStock && { opacity: 0.5 },
+                ]}
+                resizeMode="cover"
+              />
             ))}
           </ScrollView>
           {productImages.length > 1 && (
