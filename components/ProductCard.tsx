@@ -8,6 +8,7 @@ import {
   Dimensions,
   Image,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -24,6 +25,7 @@ type ProductOption = {
   stock?: number;
   image?: string;
   thumbnailUrl?: string;
+  images?: Array<string | { imageUrl?: string; thumbnailUrl?: string }>;
   maxOrderQty?: number;
 };
 
@@ -35,6 +37,7 @@ type Props = {
   mrp?: number;
   image: string;
   thumbnailUrl?: string;
+  images?: Array<string | { imageUrl?: string; thumbnailUrl?: string }>;
   protext?: string;
   rating: number;
   unit: string;
@@ -55,6 +58,7 @@ export default function ProductCard({
   stock = 0,
   image,
   thumbnailUrl,
+  images = [],
   protext = "",
   rating,
   unit,
@@ -68,6 +72,9 @@ export default function ProductCard({
 }: Props) {
   const { addToCart, cart, increaseQty, decreaseQty } = useCart();
   const [optionsVisible, setOptionsVisible] = useState(false);
+  const [imageWidth, setImageWidth] = useState(0);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const productImages = images.length ? images.map((item) => typeof item === "string" ? { imageUrl: item, thumbnailUrl: item } : item).filter((item) => !!(item.thumbnailUrl || item.imageUrl)) : [{ imageUrl: image, thumbnailUrl: thumbnailUrl || image }];
   const [popupFrame, setPopupFrame] = useState({ left: 12, top: 100, width: 260 });
   const cardRef = useRef<View>(null);
   const popupScale = useRef(new Animated.Value(0.88)).current;
@@ -252,16 +259,21 @@ export default function ProductCard({
         )}
 
         {/* Image */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: thumbnailUrl || image }}
-            style={[styles.image, compactCard && styles.compactImage, uniformCard && styles.uniformImage, categoryGridCard && styles.categoryGridImage, compactGridCard && styles.compactGridImage, isOutOfStock && { opacity: 0.5 }]}
-          />
-          {rating > 0 && !isOutOfStock && (
-            <View style={styles.ratingBadge}>
-              <Ionicons name="star" size={8} color="#FF9500" />
-              <Text style={styles.ratingText}>{rating}</Text>
+        <View style={styles.imageContainer} onLayout={(event) => setImageWidth(event.nativeEvent.layout.width)}>
+          <ScrollView horizontal pagingEnabled nestedScrollEnabled directionalLockEnabled showsHorizontalScrollIndicator={false} scrollEventThrottle={16}
+            onMomentumScrollEnd={(event) => { if (imageWidth > 0) setActiveImageIndex(Math.round(event.nativeEvent.contentOffset.x / imageWidth)); }}>
+            {productImages.map((photo, index) => (
+              <Image key={`${photo.imageUrl}-${index}`} source={{ uri: photo.thumbnailUrl || photo.imageUrl }}
+                style={[styles.image, { width: imageWidth || 120 }, compactCard && styles.compactImage, uniformCard && styles.uniformImage, categoryGridCard && styles.categoryGridImage, compactGridCard && styles.compactGridImage, isOutOfStock && { opacity: 0.5 }]} resizeMode="cover" />
+            ))}
+          </ScrollView>
+          {productImages.length > 1 && (
+            <View style={{ position: "absolute", bottom: 4, alignSelf: "center", flexDirection: "row", gap: 3 }}>
+              {productImages.map((_, index) => <View key={index} style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: index === activeImageIndex ? "#FFFFFF" : "rgba(255,255,255,0.55)" }} />)}
             </View>
+          )}
+          {rating > 0 && !isOutOfStock && (
+            <View style={styles.ratingBadge}><Ionicons name="star" size={8} color="#FF9500" /><Text style={styles.ratingText}>{rating}</Text></View>
           )}
         </View>
 
