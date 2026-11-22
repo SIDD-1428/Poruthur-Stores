@@ -213,7 +213,7 @@ export default function CustomerHome() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[deliveryAllowed ? 1 : 2]}
@@ -221,7 +221,7 @@ export default function CustomerHome() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
-      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: insets.top + 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: 16, marginBottom: deliveryAllowed ? -15 : 0 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
         <View style={styles.header}>
           <View><Text style={styles.greeting}>{greeting}</Text><Text style={styles.welcomeText}>Welcome to BonMart</Text></View>
           <TouchableOpacity style={styles.profileBtn} onPress={() => router.push("/profile")}><Ionicons name="person-outline" size={22} color="#FFFFFF" /></TouchableOpacity>
@@ -408,8 +408,8 @@ const styles = StyleSheet.create({
   deliveryAvailabilityText: { color: "#805000", fontSize: 10, lineHeight: 14, marginTop: 2 },
   deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
   deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
-  stickySearchContainer: { backgroundColor: Colors.background, paddingTop: 0, paddingBottom: 6, zIndex: 10, elevation: 3 },
-  searchBox: { height: 54, minHeight: 54, flexDirection: "row", flexWrap: "nowrap", alignItems: "center", justifyContent: "flex-start", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 0, paddingHorizontal: 16, paddingVertical: 0, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
+  stickySearchContainer: { backgroundColor: "transparent", paddingTop: 0, paddingBottom: 0, zIndex: 10, elevation: 0 },
+  searchBox: { height: 54, minHeight: 54, flexDirection: "row", flexWrap: "nowrap", alignItems: "center", justifyContent: "flex-start", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: 0, marginBottom: 0, paddingHorizontal: 16, paddingVertical: 0, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchBoxBelowDeliveryBanner: { marginTop: 8 },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
