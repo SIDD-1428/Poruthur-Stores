@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
   },
 
   compactCard: { borderRadius: 11, marginRight: 0, marginBottom: 0, shadowOpacity: 0.035, shadowRadius: 4, elevation: 1 },
-  uniformCard: { height: 210 },
+  uniformCard: { minHeight: 210 },
   categoryGridCard: { borderRadius: 12, marginRight: 0, marginBottom: 0, padding: 0, flexDirection: "column", justifyContent: "flex-start" },
   compactGridCard: { height: 190, flexShrink: 0, alignSelf: "stretch", marginRight: 0, marginBottom: 0 },
   compactGridImage: { height: 78 },
