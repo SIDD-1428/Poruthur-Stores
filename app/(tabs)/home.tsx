@@ -8,7 +8,6 @@ import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -248,20 +247,17 @@ export default function CustomerHome() {
       )}
 
       <View collapsable={false} style={styles.stickySearchContainer}>
-        <View pointerEvents="box-none" style={styles.searchGlass}>
-          <BlurView intensity={65} tint="light" pointerEvents="none" style={StyleSheet.absoluteFill} />
-          <View pointerEvents="none" style={styles.searchGlassTint} />
-          <Pressable
-            onPress={handleSearchPress}
-            style={styles.searchBox}
-            android_ripple={{ color: "rgba(0,0,0,0.06)", borderless: false }}
-            accessibilityRole="button"
-            accessibilityLabel="Search for products"
-          >
-            <Ionicons name="search-outline" size={20} color="#777777" />
-            <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
-          </Pressable>
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.82}
+          onPress={handleSearchPress}
+          style={styles.searchGlass}
+          accessibilityRole="button"
+          accessibilityLabel="Search for products"
+          importantForAccessibility="yes"
+        >
+          <Ionicons name="search-outline" size={21} color="#777777" />
+          <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
+        </TouchableOpacity>
       </View>
 
       {orderNotices.length > 0 && (
@@ -419,11 +415,9 @@ const styles = StyleSheet.create({
   deliveryAvailabilityText: { color: "#805000", fontSize: 10, lineHeight: 14, marginTop: 2 },
   deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
   deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
-  stickySearchContainer: { backgroundColor: "transparent", paddingTop: 8, paddingBottom: 8, zIndex: 30, elevation: 30 },
-  searchGlass: { marginHorizontal: 16, height: 52, borderRadius: 18, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.88)", backgroundColor: "rgba(255,255,255,0.72)", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 5 },
-  searchGlassTint: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.18)" },
-  searchBox: { height: 52, minHeight: 52, width: "100%", flexDirection: "row", flexWrap: "nowrap", alignItems: "center", justifyContent: "flex-start", backgroundColor: "transparent", paddingHorizontal: 16, paddingVertical: 0, borderRadius: 18, gap: 12, zIndex: 2, elevation: 2 },
-  searchText: { flex: 1, fontSize: 15, color: Colors.muted },
+  stickySearchContainer: { backgroundColor: "transparent", paddingTop: 6, paddingBottom: 6, zIndex: 30, elevation: 30 },
+  searchGlass: { marginHorizontal: 16, height: 52, borderRadius: 18, overflow: "hidden", borderWidth: 1, borderColor: "#E8E8E8", backgroundColor: "#FFFFFF", shadowColor: "#000000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 5, elevation: 3, flexDirection: "row", alignItems: "center", paddingHorizontal: 16, gap: 12 },
+  searchText: { flex: 1, fontSize: 15, color: Colors.muted, backgroundColor: "transparent" },
   noticeCarousel: { marginBottom: 7 },
   noticePage: { width },
   deliveryStrip: { minHeight: 54, marginHorizontal: 12, marginTop: 4, marginBottom: 3, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 13, overflow: "hidden", borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 8 },
