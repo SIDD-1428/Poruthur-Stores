@@ -327,7 +327,7 @@ export default function CustomerHome() {
               <View key={columnIndex} style={styles.recommendationColumn}>
                 {[recommendedProducts[columnIndex * 2], recommendedProducts[columnIndex * 2 + 1]].filter(Boolean).map((item: any) => (
                   <View key={item.id} style={styles.recommendationCard}>
-                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} images={item.images} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={94} uniformCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? optionsByGroup[item.groupId] ?? [] : []} />
+                    <ProductCard id={item.id} name={item.name} price={Number(item.price) || 0} mrp={Number(item.mrp ?? item.price)} stock={Number(item.stock) || 0} image={item.image || ""} thumbnailUrl={item.thumbnailUrl} images={item.images} protext={item.protext ?? item.description ?? ""} rating={Number(item.rating) || 0} unit={item.unit || ""} width={148} uniformCard maxOrderQty={item.maxOrderQty} availableOptions={item.groupId ? optionsByGroup[item.groupId] ?? [] : []} />
                   </View>
                 ))}
               </View>
@@ -424,8 +424,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 19, fontWeight: "800", color: Colors.textPrimary, letterSpacing: -0.45 },
   sectionSubtitle: { fontSize: 11, color: Colors.muted, marginTop: 3 },
   recommendationRail: { paddingHorizontal: 16, paddingBottom: 8 },
-  recommendationColumn: { width: 102, marginRight: 8, gap: 6 },
-  recommendationCard: { width: 94 },
+  recommendationColumn: { width: 156, marginRight: 10, gap: 8 },
+  recommendationCard: { width: 148 },
   emptyHint: { color: Colors.muted, fontSize: 12, paddingHorizontal: 18, paddingVertical: 18 },
   categoryHeading: { marginTop: 16 },
   countLabel: { color: Colors.muted, fontSize: 10, fontWeight: "600" },
