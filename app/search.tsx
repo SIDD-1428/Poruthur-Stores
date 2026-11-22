@@ -211,6 +211,7 @@ export default function SearchScreen() {
         stock={item.stock}
         image={item.image}
         thumbnailUrl={item.thumbnailUrl}
+        images={item.images}
         protext={item.protext}
         rating={item.rating}
         unit={item.unit}
