@@ -30,6 +30,8 @@ export default function ProductDetail() {
     const [product, setProduct] = useState<any>(null);
     const [groupVariants, setGroupVariants] = useState<any[]>([]);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [heroWidth, setHeroWidth] = useState(0);
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const { cart, addToCart, increaseQty, decreaseQty } = useCart();
 
     // Animations
@@ -143,6 +145,19 @@ export default function ProductDetail() {
         );
     }
 
+    const productImages = (Array.isArray(product.images) ? product.images : [])
+        .map((item: any) => {
+            if (typeof item === "string") return { image: item, thumbnailUrl: item };
+            const imageUrl = item?.image || item?.imageUrl || "";
+            return { image: imageUrl, thumbnailUrl: item?.thumbnailUrl || imageUrl };
+        })
+        .filter((item: any) => typeof item.image === "string" && item.image.trim().length > 0);
+    const galleryImages = productImages.length
+        ? productImages
+        : product.image
+            ? [{ image: product.image, thumbnailUrl: product.thumbnailUrl || product.image }]
+            : [];
+
     const itemInCart = cart.find((item) => item.id === product.id);
     const isOutOfStock = product.stock <= 0;
     const productPrice = Number(product.price);
@@ -179,18 +194,42 @@ export default function ProductDetail() {
             {/* CARD */}
 
             {/* Product image hero */}
-            <View style={styles.hero}>
+            <View style={styles.hero} onLayout={(event) => setHeroWidth(event.nativeEvent.layout.width)}>
                 <Animated.View style={[styles.heroImageWrap, { transform: [{ scale: imageScale }] }]}>
-                    <Image
-                        source={{ uri: product.image }}
-                        style={styles.image}
-                        resizeMode="contain"
-                        onLoadStart={() => setImageLoaded(false)}
-                        onLoadEnd={() => setImageLoaded(true)}
-                    />
+                    <ScrollView
+                        horizontal
+                        pagingEnabled
+                        nestedScrollEnabled
+                        directionalLockEnabled
+                        showsHorizontalScrollIndicator={false}
+                        scrollEventThrottle={16}
+                        style={{ width: "100%", height: "100%" }}
+                        onMomentumScrollEnd={(event) => {
+                            const pageWidth = heroWidth || width * 0.93;
+                            if (pageWidth > 0) setActiveImageIndex(Math.round(event.nativeEvent.contentOffset.x / pageWidth));
+                        }}
+                    >
+                        {galleryImages.map((photo: any, index: number) => (
+                            <Image
+                                key={`${photo.image}-${index}`}
+                                source={{ uri: photo.image }}
+                                style={[styles.image, { width: heroWidth || width * 0.93 }]}
+                                resizeMode="contain"
+                                onLoadStart={() => { if (index === activeImageIndex) setImageLoaded(false); }}
+                                onLoadEnd={() => { if (index === activeImageIndex) setImageLoaded(true); }}
+                            />
+                        ))}
+                    </ScrollView>
                     {!imageLoaded && (
-                        <View style={styles.imagePlaceholder}>
+                        <View pointerEvents="none" style={styles.imagePlaceholder}>
                             <Ionicons name="image-outline" size={42} color="#C5C9C3" />
+                        </View>
+                    )}
+                    {galleryImages.length > 1 && (
+                        <View pointerEvents="none" style={{ position: "absolute", bottom: 12, alignSelf: "center", flexDirection: "row", gap: 6 }}>
+                            {galleryImages.map((_: any, index: number) => (
+                                <View key={index} style={{ width: index === activeImageIndex ? 16 : 6, height: 6, borderRadius: 4, backgroundColor: index === activeImageIndex ? "#222222" : "#AAAAAA" }} />
+                            ))}
                         </View>
                     )}
                 </Animated.View>
@@ -307,6 +346,7 @@ export default function ProductDetail() {
                                                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                                                 setProduct(variant);
                                                 setImageLoaded(false);
+                                                setActiveImageIndex(0);
                                             }}
                                             activeOpacity={0.8}
                                             style={[
