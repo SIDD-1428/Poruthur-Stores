@@ -8,6 +8,7 @@ import auth from "@react-native-firebase/auth";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -38,6 +39,7 @@ export default function CustomerHome() {
   const [showMoreCategories, setShowMoreCategories] = useState(false);
   const [orderNotices, setOrderNotices] = useState<any[]>([]);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
+  const [searchHasReachedTop, setSearchHasReachedTop] = useState(false);
   const dismissedNoticeIds = React.useRef<Set<string>>(new Set());
   const noticeScrollRef = React.useRef<ScrollView>(null);
 
@@ -217,6 +219,11 @@ export default function CustomerHome() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[deliveryAllowed ? 1 : 2]}
+        onScroll={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const nextStickyState = event.nativeEvent.contentOffset.y > 120;
+          setSearchHasReachedTop(current => current === nextStickyState ? current : nextStickyState);
+        }}
+        scrollEventThrottle={16}
         contentInsetAdjustmentBehavior="never"
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
@@ -246,11 +253,15 @@ export default function CustomerHome() {
         </View>
       )}
 
-      <View style={styles.stickySearchContainer}>
-        <TouchableOpacity style={[styles.searchBox, !deliveryAllowed && styles.searchBoxBelowDeliveryBanner]} onPress={handleSearchPress} activeOpacity={0.9}>
-          <Ionicons name="search-outline" size={20} color={Colors.muted} />
-          <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
-        </TouchableOpacity>
+      <View style={[styles.stickySearchContainer, searchHasReachedTop && styles.stickySearchContainerAtTop]}>
+        <View style={styles.searchGlass}>
+          <BlurView intensity={75} tint="light" style={StyleSheet.absoluteFill} />
+          <View style={styles.searchGlassTint} />
+          <TouchableOpacity style={[styles.searchBox, !deliveryAllowed && styles.searchBoxBelowDeliveryBanner]} onPress={handleSearchPress} activeOpacity={0.9}>
+            <Ionicons name="search-outline" size={20} color="#777777" />
+            <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {orderNotices.length > 0 && (
@@ -409,7 +420,10 @@ const styles = StyleSheet.create({
   deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
   deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
   stickySearchContainer: { backgroundColor: "transparent", paddingTop: 0, paddingBottom: 0, zIndex: 10, elevation: 0 },
-  searchBox: { height: 54, minHeight: 54, flexDirection: "row", flexWrap: "nowrap", alignItems: "center", justifyContent: "flex-start", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: 0, marginBottom: 0, paddingHorizontal: 16, paddingVertical: 0, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
+  stickySearchContainerAtTop: { paddingTop: 8 },
+  searchGlass: { marginHorizontal: 16, height: 54, borderRadius: 20, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.82)", backgroundColor: "rgba(255,255,255,0.62)", shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.10, shadowRadius: 10, elevation: 4 },
+  searchGlassTint: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.28)" },
+  searchBox: { height: 54, minHeight: 54, flexDirection: "row", flexWrap: "nowrap", alignItems: "center", justifyContent: "flex-start", backgroundColor: "transparent", marginHorizontal: 0, marginTop: 0, marginBottom: 0, paddingHorizontal: 16, paddingVertical: 0, borderRadius: 20, gap: 12, borderWidth: 0, borderColor: "transparent" },
   searchBoxBelowDeliveryBanner: { marginTop: 8 },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
