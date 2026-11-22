@@ -217,6 +217,7 @@ export default function CustomerHome() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[deliveryAllowed ? 1 : 2]}
+        contentInsetAdjustmentBehavior="never"
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -245,9 +246,12 @@ export default function CustomerHome() {
         </View>
       )}
 
-      <TouchableOpacity style={[styles.searchBox, !deliveryAllowed && styles.searchBoxBelowDeliveryBanner]} onPress={handleSearchPress} activeOpacity={0.9}>
-        <Ionicons name="search-outline" size={20} color={Colors.muted} /><Text style={styles.searchText}>Search for products</Text>
-      </TouchableOpacity>
+      <View style={styles.stickySearchContainer}>
+        <TouchableOpacity style={[styles.searchBox, !deliveryAllowed && styles.searchBoxBelowDeliveryBanner]} onPress={handleSearchPress} activeOpacity={0.9}>
+          <Ionicons name="search-outline" size={20} color={Colors.muted} />
+          <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
+        </TouchableOpacity>
+      </View>
 
       {orderNotices.length > 0 && (
         <View style={styles.noticeCarousel}>
@@ -404,7 +408,8 @@ const styles = StyleSheet.create({
   deliveryAvailabilityText: { color: "#805000", fontSize: 10, lineHeight: 14, marginTop: 2 },
   deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
   deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
-  searchBox: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 16, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
+  stickySearchContainer: { backgroundColor: Colors.background, paddingTop: 0, paddingBottom: 6, zIndex: 10, elevation: 3 },
+  searchBox: { height: 54, minHeight: 54, flexDirection: "row", flexWrap: "nowrap", alignItems: "center", justifyContent: "flex-start", backgroundColor: Colors.card, marginHorizontal: 16, marginTop: -15, marginBottom: 0, paddingHorizontal: 16, paddingVertical: 0, borderRadius: 20, gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: Colors.separator },
   searchBoxBelowDeliveryBanner: { marginTop: 8 },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted },
   noticeCarousel: { marginBottom: 7 },
@@ -424,7 +429,7 @@ const styles = StyleSheet.create({
   noticePagination: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, marginTop: 1, marginBottom: 3 },
   noticeDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#C8D7CC" },
   noticeDotActive: { width: 15, backgroundColor: "#16803C" },
-  scrollContent: { paddingBottom: 20, paddingTop: 2 },
+  scrollContent: { paddingBottom: 20, paddingTop: 0 },
   sectionHeading: { paddingHorizontal: 18, marginTop: 8, marginBottom: 13, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headingCopy: { flex: 1 },
   sectionTitle: { fontSize: 19, fontWeight: "800", color: Colors.textPrimary, letterSpacing: -0.45 },
