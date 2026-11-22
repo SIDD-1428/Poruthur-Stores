@@ -214,7 +214,12 @@ export default function CustomerHome() {
 
   return (
     <View style={styles.container}>
-      {/* Header, address and search are intentionally unchanged. */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[deliveryAllowed ? 1 : 2]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+      >
       <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: insets.top + 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
         <View style={styles.header}>
           <View><Text style={styles.greeting}>{greeting}</Text><Text style={styles.welcomeText}>Welcome to BonMart</Text></View>
@@ -317,7 +322,6 @@ export default function CustomerHome() {
         </View>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}>
         <PromotionalBannerSlider />
         {/* Recommendations */}
         <View style={styles.sectionHeading}>
