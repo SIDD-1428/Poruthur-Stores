@@ -25,7 +25,7 @@ type ProductOption = {
   stock?: number;
   image?: string;
   thumbnailUrl?: string;
-  images?: Array<string | { imageUrl?: string; thumbnailUrl?: string }>;
+  images?: Array<string | { image?: string; imageUrl?: string; thumbnailUrl?: string }>;
   maxOrderQty?: number;
 };
 
@@ -37,7 +37,7 @@ type Props = {
   mrp?: number;
   image: string;
   thumbnailUrl?: string;
-  images?: Array<string | { imageUrl?: string; thumbnailUrl?: string }>;
+  images?: Array<string | { image?: string; imageUrl?: string; thumbnailUrl?: string }>;
   protext?: string;
   rating: number;
   unit: string;
@@ -74,7 +74,20 @@ export default function ProductCard({
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [imageWidth, setImageWidth] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const productImages = images.length ? images.map((item) => typeof item === "string" ? { imageUrl: item, thumbnailUrl: item } : item).filter((item) => !!(item.thumbnailUrl || item.imageUrl)) : [{ imageUrl: image, thumbnailUrl: thumbnailUrl || image }];
+  // Admin documents store gallery entries as { image, thumbnailUrl }.
+  // Also accept imageUrl for compatibility with older customer-side records.
+  const normalizedImages = images
+    .map((item) => {
+      if (typeof item === "string") return { imageUrl: item, thumbnailUrl: item };
+      const imageUrl = item.imageUrl || item.image || "";
+      return { imageUrl, thumbnailUrl: item.thumbnailUrl || imageUrl };
+    })
+    .filter((item) => !!item.imageUrl);
+  const productImages = normalizedImages.length
+    ? normalizedImages
+    : image
+      ? [{ imageUrl: image, thumbnailUrl: thumbnailUrl || image }]
+      : [];
   const [popupFrame, setPopupFrame] = useState({ left: 12, top: 100, width: 260 });
   const cardRef = useRef<View>(null);
   const popupScale = useRef(new Animated.Value(0.88)).current;
