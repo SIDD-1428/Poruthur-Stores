@@ -3,6 +3,8 @@ export type Product ={
     name: string;
     price: number;
     image: string;
+    thumbnailUrl?: string;
+    images?: Array<string | { imageUrl: string; thumbnailUrl?: string }>;
     category: string;
     protext: string;
     unit: string;
