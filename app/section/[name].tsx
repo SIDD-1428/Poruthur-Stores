@@ -216,6 +216,8 @@ export default function SectionScreen() {
         mrp={Number(item.mrp ?? item.price)}
                   stock={item.stock}
                   image={item.image}
+                  images={item.images}
+                  thumbnailUrl={item.thumbnailUrl}
                   protext={item.protext ?? item.description}
                   rating={item.rating}
                   unit={item.unit}
