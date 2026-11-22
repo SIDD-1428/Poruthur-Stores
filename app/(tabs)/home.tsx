@@ -228,7 +228,7 @@ export default function CustomerHome() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
-      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: 16, marginBottom: deliveryAllowed ? -15 : 0 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+      <LinearGradient colors={[Colors.primary, Colors.accent]} style={[styles.headerGradient, { paddingTop: 16 }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
         <View style={styles.header}>
           <View><Text style={styles.greeting}>{greeting}</Text><Text style={styles.welcomeText}>Welcome to BonMart</Text></View>
           <TouchableOpacity style={styles.profileBtn} onPress={() => router.push("/profile")}><Ionicons name="person-outline" size={22} color="#FFFFFF" /></TouchableOpacity>
@@ -255,8 +255,8 @@ export default function CustomerHome() {
 
       <View style={[styles.stickySearchContainer, searchHasReachedTop && styles.stickySearchContainerAtTop]}>
         <View style={styles.searchGlass}>
-          <BlurView intensity={75} tint="light" style={StyleSheet.absoluteFill} />
-          <View style={styles.searchGlassTint} />
+          <BlurView intensity={75} tint="light" pointerEvents="none" style={StyleSheet.absoluteFill} />
+          <View pointerEvents="none" style={styles.searchGlassTint} />
           <TouchableOpacity style={[styles.searchBox, !deliveryAllowed && styles.searchBoxBelowDeliveryBanner]} onPress={handleSearchPress} activeOpacity={0.9}>
             <Ionicons name="search-outline" size={20} color="#777777" />
             <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
