@@ -213,7 +213,7 @@ export default function CustomerHome() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[deliveryAllowed ? 1 : 2]}
