@@ -11,6 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { db } from "../../firebase/config";
 
@@ -246,18 +247,27 @@ export default function CustomerHome() {
         </View>
       )}
 
-      <View collapsable={false} style={styles.stickySearchContainer}>
-        <TouchableOpacity
-          activeOpacity={0.82}
+      <View collapsable={false} pointerEvents="box-none" style={styles.stickySearchContainer}>
+        <Pressable
           onPress={handleSearchPress}
-          style={styles.searchGlass}
+          android_ripple={{ color: "rgba(0,0,0,0.06)", borderless: false }}
+          style={({ pressed }) => [styles.searchGlass, pressed && styles.searchGlassPressed]}
           accessibilityRole="button"
           accessibilityLabel="Search for products"
-          importantForAccessibility="yes"
+          accessibilityHint="Opens product search"
         >
-          <Ionicons name="search-outline" size={21} color="#777777" />
-          <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
-        </TouchableOpacity>
+          <BlurView
+            pointerEvents="none"
+            intensity={55}
+            tint="light"
+            style={StyleSheet.absoluteFill}
+          />
+          <View pointerEvents="none" style={styles.searchGlassTint} />
+          <View pointerEvents="none" style={styles.searchGlassContent}>
+            <Ionicons name="search-outline" size={21} color="#777777" />
+            <Text style={styles.searchText} numberOfLines={1}>Search for products</Text>
+          </View>
+        </Pressable>
       </View>
 
       {orderNotices.length > 0 && (
@@ -415,8 +425,11 @@ const styles = StyleSheet.create({
   deliveryAvailabilityText: { color: "#805000", fontSize: 10, lineHeight: 14, marginTop: 2 },
   deliveryAvailabilityAction: { paddingHorizontal: 8, paddingVertical: 6 },
   deliveryAvailabilityActionText: { color: "#805000", fontSize: 11, fontWeight: "800" },
-  stickySearchContainer: { backgroundColor: "transparent", paddingTop: 6, paddingBottom: 6, zIndex: 30, elevation: 30 },
-  searchGlass: { marginHorizontal: 16, height: 52, borderRadius: 18, overflow: "hidden", borderWidth: 1, borderColor: "#E8E8E8", backgroundColor: "#FFFFFF", shadowColor: "#000000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 5, elevation: 3, flexDirection: "row", alignItems: "center", paddingHorizontal: 16, gap: 12 },
+  stickySearchContainer: { backgroundColor: "transparent", paddingTop: 7, paddingBottom: 7, zIndex: 100, elevation: 100 },
+  searchGlass: { marginHorizontal: 16, height: 52, borderRadius: 18, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.58)", backgroundColor: "rgba(255,255,255,0.48)", shadowColor: "#000000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 8, justifyContent: "center" },
+  searchGlassPressed: { opacity: 0.86 },
+  searchGlassTint: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.22)" },
+  searchGlassContent: { flex: 1, flexDirection: "row", alignItems: "center", paddingHorizontal: 16, gap: 12 },
   searchText: { flex: 1, fontSize: 15, color: Colors.muted, backgroundColor: "transparent" },
   noticeCarousel: { marginBottom: 7 },
   noticePage: { width },
