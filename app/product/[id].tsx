@@ -213,7 +213,7 @@ export default function ProductDetail() {
                             <Image
                                 key={`${photo.image}-${index}`}
                                 source={{ uri: photo.image }}
-                                style={[styles.image, { width: heroWidth || width * 0.93 }]}
+                                style={[styles.image, { width: heroWidth || width, flexShrink: 0 }]}
                                 resizeMode="contain"
                                 onLoadStart={() => { if (index === activeImageIndex) setImageLoaded(false); }}
                                 onLoadEnd={() => { if (index === activeImageIndex) setImageLoaded(true); }}
@@ -554,7 +554,9 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         alignItems: "center",
         justifyContent: "center",
-        paddingHorizontal: 24,
+        // The pager and each page must share the exact same width.
+        // Horizontal padding here made later pages drift off-center.
+        paddingHorizontal: 0,
         paddingTop: 18,
         paddingBottom: 12,
     },
