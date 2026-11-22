@@ -289,15 +289,19 @@ export default function ProductCard({
             {productImages.map((photo, index) => (
               <Image
                 key={`${photo.imageUrl}-${index}`}
-                source={{ uri: photo.thumbnailUrl || photo.imageUrl }}
+                // Use the original optimized image URL here. Some older thumbnailUrl
+                // values are stale, while the primary image URL is known to work
+                // (the product detail screen uses this same URL).
+                source={{ uri: photo.imageUrl || photo.thumbnailUrl }}
                 style={[
                   styles.image,
-                  { width: imageWidth || 120, height: cardImageHeight },
                   compactCard && styles.compactImage,
                   uniformCard && styles.uniformImage,
                   categoryGridCard && styles.categoryGridImage,
                   compactGridCard && styles.compactGridImage,
                   isOutOfStock && { opacity: 0.5 },
+                  // Keep every page exactly the width of the visible pager.
+                  { width: imageWidth || 120, height: cardImageHeight, flexShrink: 0 },
                 ]}
                 resizeMode="cover"
               />
