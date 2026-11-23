@@ -22,6 +22,16 @@ import {
 import { useCart } from "../context/CartContext";
 import { db } from "../firebase/config";
 
+const DEFAULT_FREE_DELIVERY_THRESHOLD = 1000;
+const DEFAULT_DELIVERY_CHARGE = 30;
+
+const getFreeDeliveryThreshold = (delivery: any) => {
+  const configured = Number(delivery?.freeDeliveryThreshold);
+  return Number.isFinite(configured) && configured >= 500 && configured <= 5000
+    ? configured
+    : DEFAULT_FREE_DELIVERY_THRESHOLD;
+};
+
 const Colors = {
   background: "#FFFFFF",
   card: "#FFFFFF",
@@ -49,6 +59,7 @@ export default function Checkout() {
   const [loadingQR, setLoadingQR] = useState(false);
   const [deliveryEligible, setDeliveryEligible] = useState<boolean | null>(null);
   const [deliveryBlockMessage, setDeliveryBlockMessage] = useState("Checking delivery availability...");
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(DEFAULT_FREE_DELIVERY_THRESHOLD);
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -56,9 +67,27 @@ export default function Checkout() {
   );
 
   const totalSavings = cart.reduce((sum, item) => sum + Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity, 0);
-  const deliveryCharge = subtotal >= 999 ? 0 : 30;
+  const deliveryCharge = subtotal >= freeDeliveryThreshold ? 0 : DEFAULT_DELIVERY_CHARGE;
   const discount = 0;
   const grandTotal = subtotal + deliveryCharge - discount;
+
+  // Keep checkout pricing synchronized with changes made in Admin.
+  useEffect(() => {
+    const unsubscribe = db
+      .collection("settings")
+      .doc("delivery")
+      .onSnapshot(
+        (snapshot) => {
+          setFreeDeliveryThreshold(getFreeDeliveryThreshold(snapshot.data()));
+        },
+        (error) => {
+          console.error("Failed to listen to free-delivery threshold:", error);
+          setFreeDeliveryThreshold(DEFAULT_FREE_DELIVERY_THRESHOLD);
+        }
+      );
+
+    return unsubscribe;
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -216,6 +245,13 @@ export default function Checkout() {
         throw new Error("Delivery settings not configured");
       }
 
+      // Recalculate from the latest Firestore settings at order time so an
+      // Admin change cannot leave the saved order with a stale delivery fee.
+      const currentFreeDeliveryThreshold = getFreeDeliveryThreshold(delivery);
+      const currentDeliveryCharge =
+        subtotal >= currentFreeDeliveryThreshold ? 0 : DEFAULT_DELIVERY_CHARGE;
+      const currentGrandTotal = subtotal + currentDeliveryCharge - discount;
+
       //radius validation
       const distance = calculateDistance(
         delivery.shopLatitude,
@@ -276,9 +312,9 @@ export default function Checkout() {
         pricing: {
           subtotal,
           savings: cart.reduce((sum, item) => sum + Math.max(0, Number(item.mrp ?? item.price) - Number(item.price)) * item.quantity, 0),
-          deliveryCharge,
+          deliveryCharge: currentDeliveryCharge,
           discount,
-          grandTotal,
+          grandTotal: currentGrandTotal,
         },
         invoice: {
           number: `PS-INV-${Date.now()}`,
@@ -289,7 +325,7 @@ export default function Checkout() {
           method: paymentMethod === "COD" ? "Cash on Delivery" : "QR Payment",
           status: "Pending",
         },
-        total: grandTotal,
+        total: currentGrandTotal,
         status: "Pending",
         stockDeducted: false,
         stockRestored: false,
